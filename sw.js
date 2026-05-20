@@ -1,4 +1,4 @@
-const CACHE = 'training-20260520211524';
+const CACHE = 'training-20260520222029';
 const ASSETS = [
   './',
   './index.html',
@@ -24,7 +24,6 @@ self.addEventListener('fetch', e => {
       }
       return res;
     }).catch(() => {
-      // Only fall back to index.html for navigation requests, not arbitrary assets
       if (e.request.mode === 'navigate') return caches.match('./index.html');
       return new Response('', {status: 503, statusText: 'Offline'});
     });

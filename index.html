@@ -53,7 +53,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .ex-dropdown.open{display:block}
 .ex-search-wrap{padding:7px 8px;border-bottom:0.5px solid var(--border)}
 .ex-search{width:100%;font-size:12px;padding:6px 8px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg2);color:var(--text);outline:none;font-family:inherit}
-.ex-list{max-height:240px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.ex-list{overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y}
 .ex-group{font-size:10px;font-weight:500;letter-spacing:0.05em;text-transform:uppercase;color:var(--text3);padding:7px 10px 3px}
 .ex-option{font-size:13px;padding:10px 10px;cursor:pointer;color:var(--text)}
 .ex-option:active{background:var(--bg2)}
@@ -112,6 +112,31 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .modal-actions .primary{background:var(--text);color:var(--bg);border-color:var(--text)}
 .modal-actions .danger{background:var(--danger-bg);color:var(--danger-text);border-color:var(--danger-text)}
 .modal-text{font-size:14px;color:var(--text);text-align:center;line-height:1.5;margin:6px 0 4px}
+
+/* Custom exercise editor */
+.ce-modal{background:var(--bg);border-radius:12px;padding:16px;width:100%;max-width:340px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 8px 32px var(--shadow)}
+.ce-title{font-size:15px;font-weight:500;color:var(--text);text-align:center;margin-bottom:12px}
+.ce-body{overflow-y:auto;flex:1;padding-right:4px}
+.ce-field{margin-bottom:12px}
+.ce-label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;font-weight:500;display:block;margin-bottom:5px}
+.ce-input{width:100%;font-size:14px;padding:8px 10px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg2);color:var(--text);outline:none;font-family:inherit}
+.ce-muscles{display:grid;grid-template-columns:repeat(2,1fr);gap:5px}
+.ce-mus-btn{padding:7px 8px;font-size:12px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text2);cursor:pointer;text-align:center;font-family:inherit;touch-action:manipulation}
+.ce-mus-btn.primary{background:var(--text);color:var(--bg);border-color:var(--text);font-weight:500}
+.ce-mus-btn.secondary{background:var(--bg2);color:var(--text);border-color:var(--text2);font-weight:500}
+.ce-hint{font-size:11px;color:var(--text3);margin-top:4px;line-height:1.4}
+.ce-error{font-size:11px;color:var(--danger-text);margin-top:4px;min-height:14px}
+.ce-actions{display:flex;gap:8px;margin-top:12px;flex-shrink:0}
+.ce-actions button{flex:1;padding:10px;font-size:14px;font-weight:500;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);cursor:pointer;font-family:inherit;touch-action:manipulation}
+.ce-actions .primary{background:var(--text);color:var(--bg);border-color:var(--text)}
+.ce-actions .danger{background:var(--danger-bg);color:var(--danger-text);border-color:var(--danger-text)}
+
+.ex-option-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.ex-edit-btn{font-size:14px;padding:4px 8px;color:var(--text3);background:transparent;border:none;cursor:pointer;border-radius:var(--radius);min-width:32px}
+.ex-edit-btn:active{background:var(--bg2);color:var(--text)}
+.ex-add{font-size:12px;padding:10px;border-top:0.5px solid var(--border);color:var(--text2);cursor:pointer;text-align:left;display:flex;align-items:center;gap:6px}
+.ex-add:active{background:var(--bg2)}
+.ex-add i{font-size:14px}
 </style>
 </head>
 <body>
@@ -180,8 +205,37 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
   </div>
 </div>
 
+<!-- Custom exercise editor modal -->
+<div class="modal-bg" id="ce-bg">
+  <div class="ce-modal">
+    <div class="ce-title" id="ce-title">New exercise</div>
+    <div class="ce-body">
+      <div class="ce-field">
+        <label class="ce-label">Name</label>
+        <input class="ce-input" id="ce-name" type="text" placeholder="e.g. Bulgarian Split Squat" maxlength="60">
+      </div>
+      <div class="ce-field">
+        <label class="ce-label">Primary muscles</label>
+        <div class="ce-muscles" id="ce-primary"></div>
+        <div class="ce-hint">Tap to mark a muscle as primary (counts as 1.0).</div>
+      </div>
+      <div class="ce-field">
+        <label class="ce-label">Secondary muscles</label>
+        <div class="ce-muscles" id="ce-secondary"></div>
+        <div class="ce-hint">Tap to mark a muscle as secondary (counts as 0.5).</div>
+      </div>
+      <div class="ce-error" id="ce-error"></div>
+    </div>
+    <div class="ce-actions">
+      <button onclick="closeCustomEditor()">Cancel</button>
+      <button class="danger" id="ce-delete" onclick="deleteCustomExercise()" style="display:none">Delete</button>
+      <button class="primary" onclick="saveCustomExercise()">Save</button>
+    </div>
+  </div>
+</div>
+
 <script>
-const EX={
+const BUILTIN_EX={
   "Chest":[["Barbell Bench Press",{Chest:1,"Front Delt":0.5,Triceps:0.5}],["Dumbbell Bench Press",{Chest:1,"Front Delt":0.5,Triceps:0.5}],["Incline Dumbbell Bench Press",{Chest:1,"Front Delt":0.5,Triceps:0.5}],["Dumbbell Fly",{Chest:1,"Front Delt":0.5}],["Cable Crossover",{Chest:1,"Front Delt":0.5}],["Pec Deck",{Chest:1}],["Push-Up",{Chest:1,"Front Delt":0.5,Triceps:0.5}],["Landmine Press",{Chest:1,"Front Delt":0.5,Triceps:0.5}],["Dumbbell Pullover",{Chest:0.5,Lats:1,Triceps:0.5}]],
   "Back / Lats":[["Barbell Row",{Lats:1,Traps:1,"Rear Delt":0.5,Biceps:0.5,Erectors:0.5}],["Dumbbell Row",{Lats:1,Traps:1,"Rear Delt":0.5,Biceps:0.5}],["Underhand Barbell Row",{Lats:1,Traps:1,"Rear Delt":0.5,Biceps:0.5}],["Narrow Grip Cable Row",{Lats:1,Traps:1,"Rear Delt":0.5,Biceps:0.5}],["Wide Grip Cable Row",{Lats:1,Traps:1,"Rear Delt":0.5,Biceps:0.5}],["One Arm Cable Row",{Lats:1,Traps:1,"Rear Delt":0.5,Biceps:0.5}],["Lat Pulldown",{Lats:1,"Rear Delt":0.5,Biceps:0.5}],["One Arm Lat Pulldown",{Lats:1,"Rear Delt":0.5,Biceps:0.5}],["Pull-Ups",{Lats:1,Traps:0.5,"Rear Delt":0.5,Biceps:0.5}],["Chin-Ups",{Lats:1,Traps:0.5,"Rear Delt":0.5,Biceps:1}],["Back Fly",{Traps:0.5,"Rear Delt":1}]],
   "Shoulders":[["Barbell Shoulder Press",{Traps:0.5,"Front Delt":1,"Side Delt":1,Triceps:0.5}],["Dumbbell Shoulder Press",{Traps:0.5,"Front Delt":1,"Side Delt":1,Triceps:0.5}],["Barbell Push Press",{Traps:0.5,"Front Delt":1,"Side Delt":1,Triceps:0.5,Quads:0.5}],["Dumbbell Lateral Raise",{Traps:0.5,"Side Delt":1}],["Upright Row",{Traps:1,"Front Delt":0.5,"Side Delt":1,Biceps:0.5}],["Clean and Press",{Traps:1,"Front Delt":1,Quads:0.5,Glutes:0.5,Erectors:0.5}],["Face Pull",{Traps:1,"Rear Delt":1}]],
@@ -194,7 +248,37 @@ const EX={
 const ALL_MUS=["Chest","Lats","Traps","Front Delt","Side Delt","Rear Delt","Biceps","Triceps","Quads","Hamstrings","Glutes","Calves","Abs","Erectors","Obliques"];
 const BLOCKS=["A","B","C"],DAY_IDS=["d1","d2","d3"];
 const MAX_SETS=99;
+const CUSTOM_GROUP="Custom";
+const CUSTOM_KEY="trainblock_custom_v1";
 let curBlock="A",curTab="d1",activeDropdown=null;
+
+// Custom exercises: array of {name, muscles: {muscleName: 1 | 0.5}}
+let customExercises=[];
+
+function loadCustomExercises(){
+  try{
+    const raw=localStorage.getItem(CUSTOM_KEY);
+    if(raw){
+      const parsed=JSON.parse(raw);
+      if(Array.isArray(parsed))customExercises=parsed.filter(e=>e&&typeof e.name==="string"&&e.muscles);
+    }
+  }catch(e){customExercises=[]}
+}
+function saveCustomExercises(){
+  try{localStorage.setItem(CUSTOM_KEY,JSON.stringify(customExercises))}catch(e){}
+}
+
+// EX is a merged view of builtin + custom, rebuilt whenever custom changes
+let EX={};
+function rebuildEX(){
+  EX={};
+  // Builtin groups first, in order
+  Object.entries(BUILTIN_EX).forEach(([g,items])=>{EX[g]=items.slice()});
+  // Custom group last, only if there are any
+  if(customExercises.length){
+    EX[CUSTOM_GROUP]=customExercises.map(e=>[e.name,e.muscles]);
+  }
+}
 
 function makeEmptyDay(){return{label:"",rows:Array(10).fill(null).map(()=>({ex:"",sets:0}))}}
 function makeEmptyBlock(id){return{id,name:"Block "+id,days:{d1:makeEmptyDay(),d2:makeEmptyDay(),d3:makeEmptyDay()}}}
@@ -269,13 +353,29 @@ function makePicker(rowEx,onChange){
       items.forEach(([name])=>{
         if(q&&!name.toLowerCase().includes(q))return;
         groupHasVisible=true;anyVisible=true;
-        const opt=document.createElement("div");opt.className="ex-option"+(name===currentVal?" selected":"");opt.textContent=name;
-        opt.onclick=e=>{e.stopPropagation();currentVal=name;onChange(name);updateDisplay();closeAllDropdowns();renderSummary();autoSave()};
+        const opt=document.createElement("div");opt.className="ex-option"+(name===currentVal?" selected":"");
+        if(group===CUSTOM_GROUP){
+          const row=document.createElement("div");row.className="ex-option-row";
+          const nm=document.createElement("span");nm.textContent=name;nm.style.flex="1";nm.style.overflow="hidden";nm.style.textOverflow="ellipsis";nm.style.whiteSpace="nowrap";
+          nm.onclick=e=>{e.stopPropagation();currentVal=name;onChange(name,false);updateDisplay();closeAllDropdowns();renderSummary();autoSave()};
+          const edit=document.createElement("button");edit.className="ex-edit-btn";edit.type="button";edit.innerHTML='<i class="ti ti-pencil" aria-hidden="true"></i>';edit.setAttribute("aria-label","Edit exercise");
+          edit.onclick=e=>{e.stopPropagation();openCustomEditor(name)};
+          row.appendChild(nm);row.appendChild(edit);
+          opt.appendChild(row);
+        } else {
+          opt.textContent=name;
+          opt.onclick=e=>{e.stopPropagation();currentVal=name;onChange(name,false);updateDisplay();closeAllDropdowns();renderSummary();autoSave()};
+        }
         list.appendChild(opt);
       });
       if(!groupHasVisible)groupEl.classList.add("hidden");else groupEl.classList.remove("hidden");
     });
     if(!anyVisible){const empty=document.createElement("div");empty.className="ex-empty";empty.textContent="No exercises found";list.appendChild(empty)}
+    // Add-exercise row at the very bottom of the list
+    const addRow=document.createElement("div");addRow.className="ex-add";
+    addRow.innerHTML='<i class="ti ti-plus" aria-hidden="true"></i><span>Add custom exercise</span>';
+    addRow.onclick=e=>{e.stopPropagation();closeAllDropdowns();openCustomEditor(null)};
+    list.appendChild(addRow);
   }
   search.oninput=()=>buildList(search.value);
   search.onclick=e=>{e.stopPropagation();search.removeAttribute("readonly");search.focus()};
@@ -286,8 +386,14 @@ function makePicker(rowEx,onChange){
     else{
       closeAllDropdowns();dropdown.classList.add("open");activeDropdown=dropdown;
       search.setAttribute("readonly","readonly");search.value="";buildList("");
-      const rect=wrap.getBoundingClientRect(),spaceBelow=window.innerHeight-rect.bottom;
-      if(spaceBelow<260){dropdown.style.top="auto";dropdown.style.bottom="calc(100% + 4px)"}
+      const rect=wrap.getBoundingClientRect();
+      const spaceBelow=window.innerHeight-rect.bottom-12;
+      const spaceAbove=rect.top-12;
+      const openUp=spaceBelow<260 && spaceAbove>spaceBelow;
+      // Reserve ~95px for the search bar + clear/add rows; the list itself gets the rest
+      const avail=Math.max(140, (openUp?spaceAbove:spaceBelow) - 95);
+      list.style.maxHeight=avail+"px";
+      if(openUp){dropdown.style.top="auto";dropdown.style.bottom="calc(100% + 4px)"}
       else{dropdown.style.top="calc(100% + 4px)";dropdown.style.bottom="auto"}
     }
   };
@@ -390,6 +496,164 @@ function doResetBlock(){
 }
 document.getElementById("reset-bg").addEventListener("click",e=>{if(e.target.id==="reset-bg")closeResetModal()});
 
+// === Custom exercise editor ===
+// ceCtx tracks state of the editor: {editingName: string|null, selected: Map<muscle, 1|0.5>}
+let ceCtx=null;
+
+function buildMuscleButtons(containerId, weight){
+  const c=document.getElementById(containerId);
+  c.innerHTML="";
+  ALL_MUS.forEach(m=>{
+    const b=document.createElement("button");
+    b.className="ce-mus-btn";
+    b.type="button";
+    b.textContent=m;
+    b.dataset.muscle=m;
+    b.onclick=()=>toggleMuscle(m, weight);
+    c.appendChild(b);
+  });
+}
+
+function refreshMuscleButtons(){
+  if(!ceCtx)return;
+  ["ce-primary","ce-secondary"].forEach((id,idx)=>{
+    const containerWeight=idx===0?1:0.5;
+    document.querySelectorAll("#"+id+" .ce-mus-btn").forEach(btn=>{
+      const m=btn.dataset.muscle;
+      const w=ceCtx.selected.get(m);
+      btn.classList.remove("primary","secondary");
+      if(w===containerWeight){
+        btn.classList.add(containerWeight===1?"primary":"secondary");
+      }
+    });
+  });
+}
+
+function toggleMuscle(muscle, weight){
+  if(!ceCtx)return;
+  const current=ceCtx.selected.get(muscle);
+  if(current===weight){
+    ceCtx.selected.delete(muscle); // tapping same weight again deselects
+  } else {
+    ceCtx.selected.set(muscle, weight); // switches between primary/secondary or selects fresh
+  }
+  refreshMuscleButtons();
+  setCeError("");
+}
+
+function setCeError(msg){document.getElementById("ce-error").textContent=msg}
+
+function openCustomEditor(existingName){
+  // Build muscle pickers if not built yet
+  if(!document.querySelector("#ce-primary .ce-mus-btn")){
+    buildMuscleButtons("ce-primary",1);
+    buildMuscleButtons("ce-secondary",0.5);
+  }
+  const selected=new Map();
+  let nameVal="";
+  if(existingName){
+    const ex=customExercises.find(e=>e.name===existingName);
+    if(ex){
+      nameVal=ex.name;
+      Object.entries(ex.muscles).forEach(([m,w])=>selected.set(m,w));
+    }
+  }
+  ceCtx={editingName:existingName, selected};
+  document.getElementById("ce-title").textContent=existingName?"Edit exercise":"New exercise";
+  document.getElementById("ce-name").value=nameVal;
+  document.getElementById("ce-delete").style.display=existingName?"":"none";
+  setCeError("");
+  refreshMuscleButtons();
+  document.getElementById("ce-bg").classList.add("open");
+  setTimeout(()=>document.getElementById("ce-name").focus(),100);
+}
+
+function closeCustomEditor(){
+  ceCtx=null;
+  document.getElementById("ce-bg").classList.remove("open");
+}
+
+function saveCustomExercise(){
+  if(!ceCtx)return;
+  const rawName=document.getElementById("ce-name").value.trim();
+  if(!rawName){setCeError("Name is required.");return}
+  if(rawName.length<2){setCeError("Name is too short.");return}
+  // Check for duplicate names (against builtin + other customs)
+  const lowerName=rawName.toLowerCase();
+  let conflict=false;
+  Object.entries(BUILTIN_EX).forEach(([,items])=>{
+    items.forEach(([n])=>{if(n.toLowerCase()===lowerName)conflict=true});
+  });
+  customExercises.forEach(e=>{
+    if(e.name===ceCtx.editingName)return; // editing self is fine
+    if(e.name.toLowerCase()===lowerName)conflict=true;
+  });
+  if(conflict){setCeError("An exercise with this name already exists.");return}
+  if(ceCtx.selected.size===0){setCeError("Select at least one muscle.");return}
+  const muscles={};
+  ceCtx.selected.forEach((w,m)=>{muscles[m]=w});
+  if(ceCtx.editingName){
+    // Update existing
+    const idx=customExercises.findIndex(e=>e.name===ceCtx.editingName);
+    if(idx>=0){
+      const oldName=customExercises[idx].name;
+      customExercises[idx]={name:rawName,muscles};
+      // If renamed, update any rows referencing the old name
+      if(oldName!==rawName){
+        BLOCKS.forEach(b=>{
+          DAY_IDS.forEach(d=>{
+            mem[b].days[d].rows.forEach(row=>{
+              if(row.ex===oldName)row.ex=rawName;
+            });
+          });
+          try{localStorage.setItem(storageKey(b),JSON.stringify(mem[b]))}catch(e){}
+        });
+      }
+    }
+  } else {
+    customExercises.push({name:rawName,muscles});
+  }
+  saveCustomExercises();
+  rebuildEX();
+  closeCustomEditor();
+  // Re-render the current day so any open picker reflects the new exercise
+  DAY_IDS.forEach(renderDay);
+  renderSummary();
+}
+
+function deleteCustomExercise(){
+  if(!ceCtx||!ceCtx.editingName)return;
+  const name=ceCtx.editingName;
+  // Find usages
+  let usages=0;
+  BLOCKS.forEach(b=>{
+    DAY_IDS.forEach(d=>{
+      mem[b].days[d].rows.forEach(row=>{if(row.ex===name)usages++});
+    });
+  });
+  const msg=usages>0
+    ?`Delete "${name}"? It's used in ${usages} row${usages===1?"":"s"} — those will be cleared.`
+    :`Delete "${name}"?`;
+  if(!confirm(msg))return;
+  // Clear usages
+  BLOCKS.forEach(b=>{
+    DAY_IDS.forEach(d=>{
+      mem[b].days[d].rows.forEach(row=>{
+        if(row.ex===name){row.ex="";row.sets=0}
+      });
+    });
+    try{localStorage.setItem(storageKey(b),JSON.stringify(mem[b]))}catch(e){}
+  });
+  customExercises=customExercises.filter(e=>e.name!==name);
+  saveCustomExercises();
+  rebuildEX();
+  closeCustomEditor();
+  DAY_IDS.forEach(renderDay);
+  renderSummary();
+}
+
+document.getElementById("ce-bg").addEventListener("click",e=>{if(e.target.id==="ce-bg")closeCustomEditor()});
+
 function renderDay(dayId){
   closeAllDropdowns();const dayData=mem[curBlock].days[dayId];
   const el=document.getElementById(dayId);el.innerHTML="";
@@ -474,6 +738,8 @@ function renderSummary(){
 }
 
 // Boot
+loadCustomExercises();
+rebuildEX();
 loadAllBlocks();
 DAY_IDS.forEach(renderDay);
 syncBlockButtons();
