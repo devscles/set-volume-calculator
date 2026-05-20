@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#ffffff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Training">
+<title>Training Program</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+  :root {
+    --bg: #ffffff;
+    --bg2: #f5f5f4;
+    --bg3: #eeede9;
+    --text: #1a1a1a;
+    --text2: #6b6b6b;
+    --text3: #a0a0a0;
+    --border: rgba(0,0,0,0.12);
+    --border2: rgba(0,0,0,0.22);
+    --radius: 8px;
+    --radius-lg: 12px;
+    --danger-bg: #fcebeb;
+    --danger-text: #a32d2d;
+    --success-bg: #eaf3de;
+    --success-text: #3b6d11;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1c1e;
+      --bg2: #2c2c2e;
+      --bg3: #3a3a3c;
+      --text: #f2f2f7;
+      --text2: #aeaeb2;
+      --text3: #636366;
+      --border: rgba(255,255,255,0.12);
+      --border2: rgba(255,255,255,0.22);
+      --danger-bg: #3a1a1a;
+      --danger-text: #f09595;
+      --success-bg: #1a2e10;
+      --success-text: #97c459;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+  body { display: flex; flex-direction: column; max-width: 480px; margin: 0 auto; }
+
+  .top-bar {
+    padding: 12px 14px 0;
+    flex-shrink: 0;
+  }
+  .block-bar {
+    display: flex; gap: 6px; align-items: center; margin-bottom: 10px; flex-wrap: nowrap;
+  }
+  .block-btn {
+    padding: 5px 11px; font-size: 12px; font-weight: 500;
+    border-radius: var(--radius); border: 0.5px solid var(--border2);
+    background: var(--bg); color: var(--text2); cursor: pointer;
+    white-space: nowrap; flex-shrink: 0;
+  }
+  .block-btn.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+  .block-actions { display: flex; gap: 6px; margin-left: auto; }
+  .icon-btn {
+    padding: 5px 9px; font-size: 15px; border-radius: var(--radius);
+    border: 0.5px solid var(--border2); background: var(--bg); color: var(--text2); cursor: pointer;
+    display: flex; align-items: center;
+  }
+  .save-toast {
+    font-size: 12px; color: var(--success-text); margin-left: 4px;
+    opacity: 0; transition: opacity 0.3s; white-space: nowrap;
+  }
+  .save-toast.show { opacity: 1; }
+  .block-label-row {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+  }
+  .block-label-row label { font-size: 11px; color: var(--text2); white-space: nowrap; text-transform: uppercase; letter-spacing: 0.05em; }
+  .editable-label {
+    font-size: 13px; font-weight: 500; border: none;
+    border-bottom: 0.5px solid var(--border2); background: transparent;
+    color: var(--text); padding: 2px 0; width: 100%; outline: none;
+  }
+
+  .tabs {
+    display: flex; gap: 0; border-bottom: 0.5px solid var(--border);
+    flex-shrink: 0;
+  }
+  .tab {
+    flex: 1; padding: 7px 2px; font-size: 12px; font-weight: 500; text-align: center;
+    cursor: pointer; border: none; background: none; color: var(--text2);
+    border-bottom: 2px solid transparent; margin-bottom: -1px; line-height: 1.3;
+  }
+  .tab.active { color: var(--text); border-bottom-color: var(--text); }
+  .tab-sub { display: block; font-size: 10px; font-weight: 400; color: var(--text3); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tab.active .tab-sub { color: var(--text2); }
+  .tab-sum {
+    flex: 1; padding: 7px 2px; font-size: 12px; font-weight: 500; text-align: center;
+    cursor: pointer; border: none; background: none; color: var(--text2);
+    border-bottom: 2px solid transparent; margin-bottom: -1px;
+  }
+  .tab-sum.active { color: var(--text); border-bottom-color: var(--text); }
+
+  .panels { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .panel { display: none; padding: 12px 14px; }
+  .panel.active { display: block; }
+
+  .day-label-row { display: flex; align-items: center; margin-bottom: 10px; }
+  .exercise-row { display: grid; grid-template-columns: 1fr 84px; gap: 6px; align-items: center; margin-bottom: 7px; }
+  .exercise-row select {
+    font-size: 12px; padding: 6px 6px; border-radius: var(--radius);
+    border: 0.5px solid var(--border); background: var(--bg); color: var(--text); width: 100%;
+    appearance: auto;
+  }
+  .sets-ctrl { display: flex; align-items: center; gap: 3px; }
+  .s-btn {
+    width: 28px; height: 28px; border-radius: var(--radius);
+    border: 0.5px solid var(--border2); background: var(--bg2); color: var(--text);
+    font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .s-num { width: 24px; text-align: center; font-size: 13px; font-weight: 500; color: var(--text); }
+
+  .legend { display: flex; gap: 10px; margin-bottom: 10px; font-size: 11px; color: var(--text2); }
+  .leg-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 3px; }
+  .summary-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; }
+  .m-card { border-radius: var(--radius); padding: 9px 11px; }
+  .m-card.neutral { background: var(--bg2); }
+  .m-card.low { background: var(--danger-bg); }
+  .m-card.high { background: var(--success-bg); }
+  .m-name { font-size: 11px; margin-bottom: 3px; }
+  .m-card.neutral .m-name { color: var(--text2); }
+  .m-card.low .m-name { color: var(--danger-text); }
+  .m-card.high .m-name { color: var(--success-text); }
+  .m-vals { display: flex; gap: 5px; align-items: baseline; }
+  .m-total { font-size: 19px; font-weight: 500; }
+  .m-card.neutral .m-total { color: var(--text); }
+  .m-card.low .m-total { color: var(--danger-text); }
+  .m-card.high .m-total { color: var(--success-text); }
+  .m-days { font-size: 11px; color: var(--text3); }
+  .total-card {
+    grid-column: 1 / -1; background: var(--bg2); border-radius: var(--radius);
+    padding: 10px 12px; display: flex; justify-content: space-between; align-items: center;
+    margin-top: 2px;
+  }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="block-bar">
+    <button class="block-btn active" id="btn-A" onclick="switchBlock('A')">Block A</button>
+    <button class="block-btn" id="btn-B" onclick="switchBlock('B')">Block B</button>
+    <button class="block-btn" id="btn-C" onclick="switchBlock('C')">Block C</button>
+    <div class="block-actions">
+      <button class="icon-btn" onclick="saveBlock()" title="Save block"><i class="ti ti-device-floppy"></i></button>
+      <button class="icon-btn" onclick="loadBlock()" title="Load block"><i class="ti ti-folder-open"></i></button>
+    </div>
+    <span class="save-toast" id="toast">Saved</span>
+  </div>
+  <div class="block-label-row">
+    <label>Block&nbsp;name&nbsp;</label>
+    <input class="editable-label" id="block-name-input" type="text" placeholder="e.g. Hypertrophy Phase" oninput="onBlockNameInput(this.value)">
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" id="tab-d1" onclick="showTab('d1')">Day 1<span class="tab-sub" id="tabsub-d1"></span></button>
+  <button class="tab" id="tab-d2" onclick="showTab('d2')">Day 2<span class="tab-sub" id="tabsub-d2"></span></button>
+  <button class="tab" id="tab-d3" onclick="showTab('d3')">Day 3<span class="tab-sub" id="tabsub-d3"></span></button>
+  <button class="tab-sum" id="tab-sum" onclick="showTab('sum')">Summary</button>
+</div>
+
+<div class="panels">
+  <div id="d1" class="panel active"></div>
+  <div id="d2" class="panel"></div>
+  <div id="d3" class="panel"></div>
+  <div id="sum" class="panel"></div>
+</div>
+
+<script>
+const EX = {
+  "Chest":[
+    ["Barbell Bench Press",{Chest:1,"Front Delt":0.5,Triceps:0.5}],
+    ["Dumbbell Bench Press",{Chest:1,"Front Delt":0.5,Triceps:0.5}],
+    ["Incline Dumbbell Bench Press",{Chest:1,"Front Delt":0.5,Triceps:0.5}],
+    ["Dumbbell Fly",{Chest:1,"Front Delt":0.5}],
+    ["Cable Crossover",{Chest:1,"Front Delt":0.5}],
+    ["Pec Deck",{Chest:1}],
+    ["Push-Up",{Chest:1,"Front Delt":0.5,Triceps:0.5}],
+    ["Landmine Press",{Chest:1,"Front Delt":0.5,Triceps:0.5}],
+    ["Dumbbell Pullover",{Chest:0.5,Lats:1,Triceps:0.5}]
+  ],
+  "Back / Lats":[
+    ["Barbell Row",{Lats:1,Traps:1,"Rear Delt":0.5,Biceps:0.5,Erectors:0.5}],
+    ["Dumbbell Row",{Lats:1,Traps:1,"Rear Delt":0.5,Biceps:0.5}],
+    ["Underhand Barbell Row",{Lats:1,Traps:1,"Rear Delt":0.5,Biceps:0.5}],
+    ["Narrow Grip Cable Row",{Lats:1,Traps:1,"Rear Delt":0.5,Biceps:0.5}],
+    ["Wide Grip Cable Row",{Lats:1,Traps:1,"Rear Delt":0.5,Biceps:0.5}],
+    ["One Arm Cable Row",{Lats:1,Traps:1,"Rear Delt":0.5,Biceps:0.5}],
+    ["Lat Pulldown",{Lats:1,"Rear Delt":0.5,Biceps:0.5}],
+    ["One Arm Lat Pulldown",{Lats:1,"Rear Delt":0.5,Biceps:0.5}],
+    ["Pull-Ups",{Lats:1,Traps:0.5,"Rear Delt":0.5,Biceps:0.5}],
+    ["Chin-Ups",{Lats:1,Traps:0.5,"Rear Delt":0.5,Biceps:1}],
+    ["Back Fly",{Traps:0.5,"Rear Delt":1}]
+  ],
+  "Shoulders":[
+    ["Barbell Shoulder Press",{Traps:0.5,"Front Delt":1,"Side Delt":1,Triceps:0.5}],
+    ["Dumbbell Shoulder Press",{Traps:0.5,"Front Delt":1,"Side Delt":1,Triceps:0.5}],
+    ["Barbell Push Press",{Traps:0.5,"Front Delt":1,"Side Delt":1,Triceps:0.5,Quads:0.5}],
+    ["Dumbbell Lateral Raise",{Traps:0.5,"Side Delt":1}],
+    ["Upright Row",{Traps:1,"Front Delt":0.5,"Side Delt":1,Biceps:0.5}],
+    ["Clean and Press",{Traps:1,"Front Delt":1,Quads:0.5,Glutes:0.5,Erectors:0.5}],
+    ["Face Pull",{Traps:1,"Rear Delt":1}]
+  ],
+  "Traps":[
+    ["Dumbbell Shrug",{Traps:1}],
+    ["Trap Bar Shrug",{Traps:1}],
+    ["Cable Shrug",{Traps:1}],
+    ["Rack Pull",{Traps:1,Erectors:1,Hamstrings:0.5,Glutes:0.5}]
+  ],
+  "Biceps":[
+    ["Barbell Curl",{Biceps:1}],
+    ["Dumbbell Curl",{Biceps:1}],
+    ["Cable Curl",{Biceps:1}],
+    ["EZ Bar Curl",{Biceps:1}],
+    ["EZ Bar Curl Reverse Grip",{Biceps:1}],
+    ["Hammer Curl",{Biceps:1}]
+  ],
+  "Triceps":[
+    ["Dips",{Triceps:1,Chest:0.5,"Front Delt":0.5}],
+    ["EZ Bar Skullcrusher",{Triceps:1}],
+    ["Dumbbell Skullcrusher",{Triceps:1}],
+    ["Tricep Cable Pulldown",{Triceps:1}]
+  ],
+  "Legs":[
+    ["Squat",{Quads:1,Hamstrings:0.5,Glutes:1,Erectors:0.5}],
+    ["Leg Press",{Quads:1,Hamstrings:0.5,Glutes:1}],
+    ["Leg Extension",{Quads:1}],
+    ["Lunge",{Quads:1,Hamstrings:0.5,Glutes:1}],
+    ["Trap Bar Deadlift",{Traps:0.5,Quads:1,Hamstrings:0.5,Glutes:1,Erectors:1}],
+    ["Deadlift",{Lats:0.5,Traps:0.5,Quads:0.5,Hamstrings:1,Glutes:1,Erectors:1}],
+    ["Stiff Leg Deadlift",{Hamstrings:1,Glutes:0.5,Erectors:1}],
+    ["Hamstring Curl",{Hamstrings:1}],
+    ["1 Leg Kettlebell Deadlift",{Hamstrings:1,Glutes:1,Erectors:0.5}]
+  ],
+  "Core":[
+    ["Decline Sit Ups",{Abs:1,Obliques:0.5}],
+    ["Reverse Crunch",{Abs:1,Obliques:0.5}],
+    ["Cable Side Bend",{Abs:0.5,Obliques:1}],
+    ["Side Bend",{Abs:0.5,Obliques:1}],
+    ["Cable Baseball Bat Swing",{"Side Delt":0.5,Abs:0.5,Obliques:1}],
+    ["Back Bend",{Hamstrings:0.5,Glutes:0.5,Erectors:1}]
+  ]
+};
+
+const ALL_MUS = ["Chest","Lats","Traps","Front Delt","Side Delt","Rear Delt","Biceps","Triceps","Quads","Hamstrings","Glutes","Calves","Abs","Erectors","Obliques"];
+const BLOCKS = ["A","B","C"];
+const DAY_IDS = ["d1","d2","d3"];
+let curBlock = "A";
+let curTab = "d1";
+
+function makeEmptyDay(){ return {label:"", rows:Array(10).fill(null).map(()=>({ex:"",sets:0}))}; }
+function makeEmptyBlock(id){ return {id, name:"Block "+id, days:{d1:makeEmptyDay(),d2:makeEmptyDay(),d3:makeEmptyDay()}}; }
+
+const mem = {};
+BLOCKS.forEach(b => mem[b] = makeEmptyBlock(b));
+
+function storageKey(b){ return "trainblock_v4_"+b; }
+
+function syncDayTabs(){
+  DAY_IDS.forEach(d=>{
+    document.getElementById("tabsub-"+d).textContent = mem[curBlock].days[d].label;
+  });
+}
+
+function syncBlockButtons(){
+  BLOCKS.forEach(b=>{
+    const btn = document.getElementById("btn-"+b);
+    btn.textContent = mem[b].name || "Block "+b;
+    btn.classList.toggle("active", b===curBlock);
+  });
+  document.getElementById("block-name-input").value = mem[curBlock].name || "";
+  syncDayTabs();
+}
+
+function onBlockNameInput(val){
+  mem[curBlock].name = val;
+  document.getElementById("btn-"+curBlock).textContent = val || "Block "+curBlock;
+}
+
+function saveBlock(){
+  try{
+    localStorage.setItem(storageKey(curBlock), JSON.stringify(mem[curBlock]));
+    const t = document.getElementById("toast");
+    t.classList.add("show");
+    setTimeout(()=>t.classList.remove("show"),1500);
+  }catch(e){}
+}
+
+function loadBlock(){
+  try{
+    const raw = localStorage.getItem(storageKey(curBlock));
+    if(raw){
+      mem[curBlock] = JSON.parse(raw);
+      syncBlockButtons();
+      DAY_IDS.forEach(renderDay);
+      renderSummary();
+    }
+  }catch(e){}
+}
+
+function switchBlock(b){
+  curBlock = b;
+  syncBlockButtons();
+  DAY_IDS.forEach(renderDay);
+  renderSummary();
+  showTab(curTab);
+}
+
+function showTab(id){
+  curTab = id;
+  ["d1","d2","d3","sum"].forEach(tid=>{
+    const tab = document.getElementById("tab-"+tid);
+    if(tab) tab.classList.toggle("active", tid===id);
+    const panel = document.getElementById(tid);
+    if(panel) panel.classList.toggle("active", tid===id);
+  });
+  if(id==="sum") renderSummary();
+}
+
+function buildSelect(val){
+  const s = document.createElement("select");
+  const blank = document.createElement("option");
+  blank.value=""; blank.textContent="— none —";
+  if(!val) blank.selected=true;
+  s.appendChild(blank);
+  Object.entries(EX).forEach(([group,items])=>{
+    const og = document.createElement("optgroup");
+    og.label = group;
+    items.forEach(([name])=>{
+      const o = document.createElement("option");
+      o.value=name; o.textContent=name;
+      if(name===val) o.selected=true;
+      og.appendChild(o);
+    });
+    s.appendChild(og);
+  });
+  return s;
+}
+
+function renderDay(dayId){
+  const dayData = mem[curBlock].days[dayId];
+  const el = document.getElementById(dayId);
+  el.innerHTML="";
+  const labelRow = document.createElement("div");
+  labelRow.className="day-label-row";
+  const inp = document.createElement("input");
+  inp.className="editable-label";
+  inp.type="text"; inp.value=dayData.label;
+  inp.placeholder="Label (e.g. Push)";
+  inp.oninput = e => {
+    dayData.label = e.target.value;
+    document.getElementById("tabsub-"+dayId).textContent = e.target.value;
+  };
+  labelRow.appendChild(inp);
+  el.appendChild(labelRow);
+  dayData.rows.forEach((row,i)=>{
+    const div = document.createElement("div");
+    div.className="exercise-row";
+    const sel = buildSelect(row.ex);
+    sel.onchange = e => { dayData.rows[i].ex = e.target.value; renderSummary(); };
+    const ctrl = document.createElement("div");
+    ctrl.className="sets-ctrl";
+    const minus = document.createElement("button");
+    minus.className="s-btn"; minus.textContent="−";
+    const num = document.createElement("span");
+    num.className="s-num"; num.textContent=row.sets;
+    const plus = document.createElement("button");
+    plus.className="s-btn"; plus.textContent="+";
+    minus.onclick=()=>{ if(dayData.rows[i].sets>0){dayData.rows[i].sets--; num.textContent=dayData.rows[i].sets; renderSummary();} };
+    plus.onclick=()=>{ if(dayData.rows[i].sets<20){dayData.rows[i].sets++; num.textContent=dayData.rows[i].sets; renderSummary();} };
+    ctrl.appendChild(minus); ctrl.appendChild(num); ctrl.appendChild(plus);
+    div.appendChild(sel); div.appendChild(ctrl);
+    el.appendChild(div);
+  });
+}
+
+function exMuscles(name){
+  for(const items of Object.values(EX)){
+    for(const [n,m] of items){ if(n===name) return m; }
+  }
+  return {};
+}
+
+function calcDay(dayId){
+  const totals={};
+  ALL_MUS.forEach(m=>totals[m]=0);
+  mem[curBlock].days[dayId].rows.forEach(row=>{
+    const mults=exMuscles(row.ex);
+    Object.entries(mults).forEach(([m,w])=>{ totals[m]=(totals[m]||0)+row.sets*w; });
+  });
+  return totals;
+}
+
+function r05(v){ return Math.round(v*2)/2; }
+function fmt(v){ return v%1===0?v.toString():v.toFixed(1); }
+
+function renderSummary(){
+  const d1=calcDay("d1"), d2=calcDay("d2"), d3=calcDay("d3");
+  const el=document.getElementById("sum");
+  el.innerHTML=`
+    <div class="legend">
+      <span><span class="leg-dot" style="background:var(--success-text)"></span>≥15 sets</span>
+      <span><span class="leg-dot" style="background:var(--text2)"></span>10–14</span>
+      <span><span class="leg-dot" style="background:var(--danger-text)"></span>&lt;10 sets</span>
+    </div>
+    <div class="summary-grid" id="sg"></div>`;
+  const sg=document.getElementById("sg");
+  let grand=0;
+  ALL_MUS.forEach(m=>{
+    const v1=r05(d1[m]||0), v2=r05(d2[m]||0), v3=r05(d3[m]||0);
+    const tot=r05(v1+v2+v3);
+    grand+=tot;
+    const cls=tot>=15?"high":tot>0&&tot<10?"low":"neutral";
+    const card=document.createElement("div");
+    card.className="m-card "+cls;
+    card.innerHTML=`<div class="m-name">${m}</div><div class="m-vals"><span class="m-total">${fmt(tot)}</span><span class="m-days">${fmt(v1)}/${fmt(v2)}/${fmt(v3)}</span></div>`;
+    sg.appendChild(card);
+  });
+  const tc=document.createElement("div");
+  tc.className="total-card";
+  tc.innerHTML=`<span style="font-size:13px;color:var(--text2);font-weight:500">Total sets</span><span style="font-size:22px;font-weight:500">${fmt(r05(grand))}</span>`;
+  sg.appendChild(tc);
+}
+
+DAY_IDS.forEach(renderDay);
+syncBlockButtons();
+renderSummary();
+showTab("d1");
+
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js');
+}
+</script>
+</body>
+</html>
