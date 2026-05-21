@@ -11,8 +11,8 @@
 <link rel="manifest" href="manifest.json">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <style>
-:root{--bg:#ffffff;--bg2:#f5f5f4;--bg3:#eeede9;--text:#1a1a1a;--text2:#6b6b6b;--text3:#a0a0a0;--border:rgba(0,0,0,0.12);--border2:rgba(0,0,0,0.22);--radius:8px;--danger-bg:#fcebeb;--danger-text:#a32d2d;--success-bg:#eaf3de;--success-text:#3b6d11;--shadow:rgba(0,0,0,0.15);--overlay:rgba(0,0,0,0.4)}
-@media(prefers-color-scheme:dark){:root{--bg:#1c1c1e;--bg2:#2c2c2e;--bg3:#3a3a3c;--text:#f2f2f7;--text2:#aeaeb2;--text3:#636366;--border:rgba(255,255,255,0.12);--border2:rgba(255,255,255,0.22);--danger-bg:#3a1a1a;--danger-text:#f09595;--success-bg:#1a2e10;--success-text:#97c459;--shadow:rgba(0,0,0,0.6);--overlay:rgba(0,0,0,0.65)}}
+:root{--bg:#ffffff;--bg2:#f5f5f4;--bg3:#eeede9;--text:#1a1a1a;--text2:#6b6b6b;--text3:#a0a0a0;--border:rgba(0,0,0,0.12);--border2:rgba(0,0,0,0.22);--radius:8px;--danger-bg:#fcebeb;--danger-text:#a32d2d;--warn-bg:#fcf3d6;--warn-text:#8a6300;--success-bg:#eaf3de;--success-text:#3b6d11;--shadow:rgba(0,0,0,0.15);--overlay:rgba(0,0,0,0.4)}
+@media(prefers-color-scheme:dark){:root{--bg:#1c1c1e;--bg2:#2c2c2e;--bg3:#3a3a3c;--text:#f2f2f7;--text2:#aeaeb2;--text3:#636366;--border:rgba(255,255,255,0.12);--border2:rgba(255,255,255,0.22);--danger-bg:#3a1a1a;--danger-text:#f09595;--warn-bg:#3a2e0f;--warn-text:#e6c45f;--success-bg:#1a2e10;--success-text:#97c459;--shadow:rgba(0,0,0,0.6);--overlay:rgba(0,0,0,0.65)}}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
 body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
@@ -29,12 +29,22 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .block-label-row label{font-size:11px;color:var(--text2);white-space:nowrap;text-transform:uppercase;letter-spacing:0.05em}
 .editable-label{font-size:13px;font-weight:500;border:none;border-bottom:0.5px solid var(--border2);background:transparent;color:var(--text);padding:2px 0;width:100%;outline:none}
 .tabs{display:flex;border-bottom:0.5px solid var(--border);flex-shrink:0}
-.tab{flex:1;padding:8px 2px;font-size:12px;font-weight:500;text-align:center;cursor:pointer;border:none;background:none;color:var(--text2);border-bottom:2px solid transparent;margin-bottom:-1px;line-height:1.3;min-height:44px}
+.tab{flex:1;padding:8px 1px;font-size:12px;font-weight:500;text-align:center;cursor:pointer;border:none;background:none;color:var(--text2);border-bottom:2px solid transparent;margin-bottom:-1px;line-height:1.2;min-height:44px;min-width:0;overflow:hidden;font-family:inherit}
 .tab.active{color:var(--text);border-bottom-color:var(--text)}
-.tab-sub{display:block;font-size:10px;font-weight:400;color:var(--text3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* Tighter sizing when many days are present */
+.tabs.compact .tab{font-size:11px;padding:8px 0}
+.tabs.compact .tab-sub{font-size:9px}
+.tab-sub{display:block;font-size:10px;font-weight:400;color:var(--text3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 2px}
 .tab.active .tab-sub{color:var(--text2)}
-.tab-sum{flex:1;padding:8px 2px;font-size:12px;font-weight:500;text-align:center;cursor:pointer;border:none;background:none;color:var(--text2);border-bottom:2px solid transparent;margin-bottom:-1px;min-height:44px}
+.tab-sum{flex:1;padding:8px 1px;font-size:12px;font-weight:500;text-align:center;cursor:pointer;border:none;background:none;color:var(--text2);border-bottom:2px solid transparent;margin-bottom:-1px;min-height:44px;min-width:0;font-family:inherit}
+.tabs.compact .tab-sum{font-size:11px}
 .tab-sum.active{color:var(--text);border-bottom-color:var(--text)}
+.day-mgr{display:flex;align-items:center;gap:8px;padding:6px 14px;border-bottom:0.5px solid var(--border);font-size:11px;color:var(--text2);flex-shrink:0}
+.day-mgr-label{text-transform:uppercase;letter-spacing:0.05em;font-weight:500;margin-right:auto}
+.day-mgr-btn{width:30px;height:30px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit;touch-action:manipulation}
+.day-mgr-btn:active{background:var(--bg2)}
+.day-mgr-btn:disabled{opacity:0.35;cursor:not-allowed}
+.day-mgr-count{min-width:18px;text-align:center;font-size:13px;font-weight:500;color:var(--text)}
 .panels{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .panel{display:none;padding:12px 14px}
 .panel.active{display:block}
@@ -69,28 +79,34 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .m-card:active{transform:scale(0.97);opacity:0.85}
 .m-card.neutral{background:var(--bg2)}
 .m-card.low{background:var(--danger-bg)}
+.m-card.medium{background:var(--warn-bg)}
 .m-card.high{background:var(--success-bg)}
 .m-name{font-size:11px;margin-bottom:3px;display:flex;justify-content:space-between;align-items:center}
 .m-card.neutral .m-name{color:var(--text2)}
 .m-card.low .m-name{color:var(--danger-text)}
+.m-card.medium .m-name{color:var(--warn-text)}
 .m-card.high .m-name{color:var(--success-text)}
 .m-vals{display:flex;gap:5px;align-items:baseline}
 .m-total{font-size:19px;font-weight:500}
 .m-card.neutral .m-total{color:var(--text)}
 .m-card.low .m-total{color:var(--danger-text)}
+.m-card.medium .m-total{color:var(--warn-text)}
 .m-card.high .m-total{color:var(--success-text)}
-.m-days{font-size:11px;color:var(--text3)}
+.m-days{font-size:11px;color:var(--text3);word-spacing:-1px;line-height:1.3}
 .m-detail{display:none;margin-top:8px;padding-top:8px;border-top:0.5px solid rgba(0,0,0,0.1)}
 .m-card.low .m-detail{border-top-color:rgba(163,45,45,0.2)}
+.m-card.medium .m-detail{border-top-color:rgba(138,99,0,0.2)}
 .m-card.high .m-detail{border-top-color:rgba(59,109,17,0.2)}
 .m-card.open .m-detail{display:block}
 .m-detail-day{font-size:11px;font-weight:500;margin:5px 0 2px}
 .m-card.neutral .m-detail-day{color:var(--text2)}
 .m-card.low .m-detail-day{color:var(--danger-text)}
+.m-card.medium .m-detail-day{color:var(--warn-text)}
 .m-card.high .m-detail-day{color:var(--success-text)}
 .m-detail-ex{display:flex;justify-content:space-between;font-size:11px;padding:1px 0}
 .m-card.neutral .m-detail-ex{color:var(--text)}
 .m-card.low .m-detail-ex{color:var(--danger-text)}
+.m-card.medium .m-detail-ex{color:var(--warn-text)}
 .m-card.high .m-detail-ex{color:var(--success-text)}
 .chevron{font-size:11px;transition:transform 0.2s}
 .m-card.open .chevron{transform:rotate(180deg)}
@@ -155,16 +171,16 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
     <input class="editable-label" id="block-name-input" type="text" placeholder="e.g. Hypertrophy Phase" oninput="onBlockNameInput(this.value)">
   </div>
 </div>
-<div class="tabs">
-  <button class="tab active" id="tab-d1" onclick="showTab('d1')">Day 1<span class="tab-sub" id="tabsub-d1"></span></button>
-  <button class="tab" id="tab-d2" onclick="showTab('d2')">Day 2<span class="tab-sub" id="tabsub-d2"></span></button>
-  <button class="tab" id="tab-d3" onclick="showTab('d3')">Day 3<span class="tab-sub" id="tabsub-d3"></span></button>
+<div class="tabs" id="tabs-bar">
   <button class="tab-sum" id="tab-sum" onclick="showTab('sum')">Summary</button>
 </div>
-<div class="panels">
-  <div id="d1" class="panel active"></div>
-  <div id="d2" class="panel"></div>
-  <div id="d3" class="panel"></div>
+<div class="day-mgr" id="day-mgr">
+  <span class="day-mgr-label">Days</span>
+  <button class="day-mgr-btn" id="day-remove" title="Remove last day" aria-label="Remove last day">−</button>
+  <span class="day-mgr-count" id="day-count">3</span>
+  <button class="day-mgr-btn" id="day-add" title="Add a day" aria-label="Add a day">+</button>
+</div>
+<div class="panels" id="panels-container">
   <div id="sum" class="panel"></div>
 </div>
 
@@ -246,11 +262,20 @@ const BUILTIN_EX={
   "Core":[["Decline Sit Ups",{Abs:1,Obliques:0.5}],["Reverse Crunch",{Abs:1,Obliques:0.5}],["Cable Side Bend",{Abs:0.5,Obliques:1}],["Side Bend",{Abs:0.5,Obliques:1}],["Cable Baseball Bat Swing",{"Side Delt":0.5,Abs:0.5,Obliques:1}],["Back Bend",{Hamstrings:0.5,Glutes:0.5,Erectors:1}]]
 };
 const ALL_MUS=["Chest","Lats","Traps","Front Delt","Side Delt","Rear Delt","Biceps","Triceps","Quads","Hamstrings","Glutes","Calves","Abs","Erectors","Obliques"];
-const BLOCKS=["A","B","C"],DAY_IDS=["d1","d2","d3"];
+const BLOCKS=["A","B","C"];
+const MIN_DAYS=1,MAX_DAYS=7;
 const MAX_SETS=99;
 const CUSTOM_GROUP="Custom";
 const CUSTOM_KEY="trainblock_custom_v1";
 let curBlock="A",curTab="d1",activeDropdown=null;
+
+// Returns the ordered day IDs for the given block, e.g. ["d1","d2","d3","d4"]
+function dayIdsOf(blockId){
+  const days=mem[blockId]&&mem[blockId].days?mem[blockId].days:{};
+  return Object.keys(days).filter(k=>/^d\d+$/.test(k)).sort((a,b)=>parseInt(a.slice(1))-parseInt(b.slice(1)));
+}
+// Current block's day IDs
+function curDayIds(){return dayIdsOf(curBlock)}
 
 // Custom exercises: array of {name, muscles: {muscleName: 1 | 0.5}}
 let customExercises=[];
@@ -293,12 +318,17 @@ function loadAllBlocks(){
       const raw=localStorage.getItem(storageKey(b));
       if(raw){
         const parsed=JSON.parse(raw);
-        // Validate shape; fall back to empty if corrupted
-        if(parsed&&parsed.days&&parsed.days.d1&&parsed.days.d2&&parsed.days.d3){
-          mem[b]=parsed;
-          // Ensure name exists
-          if(!mem[b].name)mem[b].name="Block "+b;
-          return;
+        // Validate shape: needs at least one d<N> day with rows
+        if(parsed&&parsed.days&&typeof parsed.days==="object"){
+          const keys=Object.keys(parsed.days).filter(k=>/^d\d+$/.test(k));
+          const ok=keys.length>=MIN_DAYS&&keys.length<=MAX_DAYS&&keys.every(k=>parsed.days[k]&&Array.isArray(parsed.days[k].rows));
+          if(ok){
+            mem[b]=parsed;
+            if(!mem[b].name)mem[b].name="Block "+b;
+            // Ensure each day has a label string
+            keys.forEach(k=>{if(typeof mem[b].days[k].label!=="string")mem[b].days[k].label=""});
+            return;
+          }
         }
       }
     }catch(e){}
@@ -400,25 +430,99 @@ function makePicker(rowEx,onChange){
   updateDisplay();wrap.appendChild(display);wrap.appendChild(dropdown);return wrap;
 }
 
-function syncDayTabs(){DAY_IDS.forEach(d=>{document.getElementById("tabsub-"+d).textContent=mem[curBlock].days[d].label})}
+// Build tab buttons + panels based on the current block's day count.
+// Summary tab is always last and is a fixed element.
+function rebuildTabsAndPanels(){
+  const tabsBar=document.getElementById("tabs-bar");
+  const panels=document.getElementById("panels-container");
+  const sumTab=document.getElementById("tab-sum");
+  const sumPanel=document.getElementById("sum");
+  // Remove existing day tabs and panels (keep summary)
+  Array.from(tabsBar.querySelectorAll(".tab")).forEach(el=>el.remove());
+  Array.from(panels.querySelectorAll(".panel")).forEach(el=>{if(el.id!=="sum")el.remove()});
+  const ids=curDayIds();
+  // Add compact class when there are many tabs (4+ days + summary = 5+ buttons)
+  tabsBar.classList.toggle("compact", ids.length>=4);
+  // Insert day tabs before the summary tab
+  ids.forEach((d,i)=>{
+    const tab=document.createElement("button");
+    tab.className="tab";tab.id="tab-"+d;
+    tab.innerHTML=`Day ${i+1}<span class="tab-sub" id="tabsub-${d}"></span>`;
+    tab.onclick=()=>showTab(d);
+    tabsBar.insertBefore(tab,sumTab);
+    const panel=document.createElement("div");
+    panel.className="panel";panel.id=d;
+    panels.insertBefore(panel,sumPanel);
+  });
+}
+
+function syncDayTabs(){curDayIds().forEach(d=>{const el=document.getElementById("tabsub-"+d);if(el)el.textContent=mem[curBlock].days[d].label})}
 function syncBlockButtons(){
   BLOCKS.forEach(b=>{const btn=document.getElementById("btn-"+b);btn.textContent=mem[b].name||"Block "+b;btn.classList.toggle("active",b===curBlock)});
-  document.getElementById("block-name-input").value=mem[curBlock].name||"";syncDayTabs();
+  document.getElementById("block-name-input").value=mem[curBlock].name||"";
+  rebuildTabsAndPanels();
+  syncDayTabs();
+  syncDayMgr();
 }
 function onBlockNameInput(val){mem[curBlock].name=val;document.getElementById("btn-"+curBlock).textContent=val||"Block "+curBlock;autoSave()}
 
-function switchBlock(b){curBlock=b;syncBlockButtons();DAY_IDS.forEach(renderDay);renderSummary();showTab(curTab);
-  // Refresh save indicator to reflect this block's saved state
+function switchBlock(b){
+  curBlock=b;syncBlockButtons();
+  const ids=curDayIds();
+  curDayIds().forEach(renderDay);
+  renderSummary();
+  // Keep curTab valid for the new block
+  if(curTab!=="sum"&&!ids.includes(curTab))curTab=ids[0]||"sum";
+  showTab(curTab);
   const status=document.getElementById("save-status");status.textContent="Saved";status.classList.add("saved");
 }
 function showTab(id){
   curTab=id;closeAllDropdowns();
-  ["d1","d2","d3","sum"].forEach(tid=>{
+  const ids=[...curDayIds(),"sum"];
+  ids.forEach(tid=>{
     const tab=document.getElementById("tab-"+tid);if(tab)tab.classList.toggle("active",tid===id);
     const panel=document.getElementById(tid);if(panel)panel.classList.toggle("active",tid===id);
   });
   if(id==="sum")renderSummary();
 }
+
+// Day-manager: add/remove days
+function syncDayMgr(){
+  const n=curDayIds().length;
+  document.getElementById("day-count").textContent=n;
+  document.getElementById("day-add").disabled=(n>=MAX_DAYS);
+  document.getElementById("day-remove").disabled=(n<=MIN_DAYS);
+}
+function addDay(){
+  const ids=curDayIds();
+  if(ids.length>=MAX_DAYS)return;
+  const nextNum=ids.length?parseInt(ids[ids.length-1].slice(1))+1:1;
+  const newId="d"+nextNum;
+  mem[curBlock].days[newId]=makeEmptyDay();
+  syncBlockButtons();
+  curDayIds().forEach(renderDay);
+  renderSummary();
+  showTab(newId);
+  autoSave();
+}
+function removeDay(){
+  const ids=curDayIds();
+  if(ids.length<=MIN_DAYS)return;
+  const lastId=ids[ids.length-1];
+  const day=mem[curBlock].days[lastId];
+  const hasContent=day.label||day.rows.some(r=>r.ex||r.sets);
+  if(hasContent){
+    if(!confirm(`Remove Day ${ids.length}? Any exercises and sets on this day will be lost.`))return;
+  }
+  delete mem[curBlock].days[lastId];
+  syncBlockButtons();
+  curDayIds().forEach(renderDay);
+  renderSummary();
+  if(curTab===lastId)showTab(curDayIds()[curDayIds().length-1]||"sum");
+  autoSave();
+}
+document.getElementById("day-add").onclick=addDay;
+document.getElementById("day-remove").onclick=removeDay;
 
 // Press-and-hold helper for +/- buttons
 function attachRepeatPress(btn,action){
@@ -490,7 +594,7 @@ function doResetBlock(){
   mem[curBlock]=makeEmptyBlock(curBlock);
   closeResetModal();
   syncBlockButtons();
-  DAY_IDS.forEach(renderDay);
+  curDayIds().forEach(renderDay);
   renderSummary();
   autoSave();
 }
@@ -601,7 +705,7 @@ function saveCustomExercise(){
       // If renamed, update any rows referencing the old name
       if(oldName!==rawName){
         BLOCKS.forEach(b=>{
-          DAY_IDS.forEach(d=>{
+          dayIdsOf(b).forEach(d=>{
             mem[b].days[d].rows.forEach(row=>{
               if(row.ex===oldName)row.ex=rawName;
             });
@@ -617,7 +721,7 @@ function saveCustomExercise(){
   rebuildEX();
   closeCustomEditor();
   // Re-render the current day so any open picker reflects the new exercise
-  DAY_IDS.forEach(renderDay);
+  curDayIds().forEach(renderDay);
   renderSummary();
 }
 
@@ -627,7 +731,7 @@ function deleteCustomExercise(){
   // Find usages
   let usages=0;
   BLOCKS.forEach(b=>{
-    DAY_IDS.forEach(d=>{
+    dayIdsOf(b).forEach(d=>{
       mem[b].days[d].rows.forEach(row=>{if(row.ex===name)usages++});
     });
   });
@@ -637,7 +741,7 @@ function deleteCustomExercise(){
   if(!confirm(msg))return;
   // Clear usages
   BLOCKS.forEach(b=>{
-    DAY_IDS.forEach(d=>{
+    dayIdsOf(b).forEach(d=>{
       mem[b].days[d].rows.forEach(row=>{
         if(row.ex===name){row.ex="";row.sets=0}
       });
@@ -648,7 +752,7 @@ function deleteCustomExercise(){
   saveCustomExercises();
   rebuildEX();
   closeCustomEditor();
-  DAY_IDS.forEach(renderDay);
+  curDayIds().forEach(renderDay);
   renderSummary();
 }
 
@@ -710,20 +814,27 @@ function calcDayBreakdown(dayId,muscle){
 function r05(v){return Math.round(v*2)/2}
 function fmt(v){return v%1===0?v.toString():v.toFixed(1)}
 function renderSummary(){
-  const d1=calcDay("d1"),d2=calcDay("d2"),d3=calcDay("d3");
+  const ids=curDayIds();
+  // Per-day totals: dayTotals[i] = {muscle: sets}
+  const dayTotals=ids.map(d=>calcDay(d));
+  // Cached labels with sensible fallbacks (e.g. "Day 1")
+  const dayLabels=ids.map((d,i)=>mem[curBlock].days[d].label||("Day "+(i+1)));
   const openCards=new Set(Array.from(document.querySelectorAll(".m-card.open")).map(el=>el.dataset.muscle));
   const el=document.getElementById("sum");
-  el.innerHTML=`<div class="legend"><span><span class="leg-dot" style="background:var(--success-text)"></span>≥15 sets</span><span><span class="leg-dot" style="background:var(--text2)"></span>10–14</span><span><span class="leg-dot" style="background:var(--danger-text)"></span>&lt;10 sets</span></div><div class="summary-grid" id="sg"></div>`;
+  el.innerHTML=`<div class="legend"><span><span class="leg-dot" style="background:var(--success-text)"></span>≥15</span><span><span class="leg-dot" style="background:var(--text2)"></span>10–14</span><span><span class="leg-dot" style="background:var(--warn-text)"></span>7–9</span><span><span class="leg-dot" style="background:var(--danger-text)"></span>≤6</span></div><div class="summary-grid" id="sg"></div>`;
   const sg=document.getElementById("sg");let grand=0;
-  const dayLabels=[mem[curBlock].days.d1.label||"Day 1",mem[curBlock].days.d2.label||"Day 2",mem[curBlock].days.d3.label||"Day 3"];
   ALL_MUS.forEach(m=>{
-    const v1=r05(d1[m]||0),v2=r05(d2[m]||0),v3=r05(d3[m]||0),tot=r05(v1+v2+v3);grand+=tot;
-    const cls=tot>=15?"high":tot<10?"low":"neutral";
+    const perDay=dayTotals.map(t=>r05(t[m]||0));
+    const tot=r05(perDay.reduce((a,b)=>a+b,0));
+    grand+=tot;
+    const cls=tot>=15?"high":tot<=6?"low":tot<10?"medium":"neutral";
     const card=document.createElement("div");card.className="m-card "+cls+(openCards.has(m)?" open":"");card.dataset.muscle=m;
     const nameRow=document.createElement("div");nameRow.className="m-name";nameRow.innerHTML=`<span>${m}</span><span class="chevron">▾</span>`;
-    const valsRow=document.createElement("div");valsRow.className="m-vals";valsRow.innerHTML=`<span class="m-total">${fmt(tot)}</span><span class="m-days">${fmt(v1)}/${fmt(v2)}/${fmt(v3)}</span>`;
+    const valsRow=document.createElement("div");valsRow.className="m-vals";
+    const dayBreakdownStr=perDay.map(fmt).join("/");
+    valsRow.innerHTML=`<span class="m-total">${fmt(tot)}</span><span class="m-days">${dayBreakdownStr}</span>`;
     const detail=document.createElement("div");detail.className="m-detail";
-    [[d1,"d1"],[d2,"d2"],[d3,"d3"]].forEach(([,dayId],i)=>{
+    ids.forEach((dayId,i)=>{
       const bd=calcDayBreakdown(dayId,m);if(!bd.length)return;
       const dl=document.createElement("div");dl.className="m-detail-day";dl.textContent=dayLabels[i];detail.appendChild(dl);
       bd.forEach(({ex,sets})=>{const r=document.createElement("div");r.className="m-detail-ex";r.innerHTML=`<span>${ex}</span><span>${fmt(sets)} set${sets===1?"":"s"}</span>`;detail.appendChild(r)});
@@ -741,10 +852,11 @@ function renderSummary(){
 loadCustomExercises();
 rebuildEX();
 loadAllBlocks();
-DAY_IDS.forEach(renderDay);
-syncBlockButtons();
+syncBlockButtons();         // builds tabs + panels for the current block
+curDayIds().forEach(renderDay);
 renderSummary();
-showTab("d1");
+const initialIds=curDayIds();
+showTab(initialIds[0]||"sum");
 if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js')}
 </script>
 </body>
