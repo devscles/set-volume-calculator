@@ -93,8 +93,8 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .ex-display{font-size:12px;padding:9px 24px 9px 10px;border-radius:var(--radius);border:0.5px solid var(--border);background:var(--bg);color:var(--text);width:100%;cursor:pointer;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;position:relative;min-height:36px;font-family:inherit}
 .ex-display::after{content:"▾";position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--text3)}
 .ex-none{color:var(--text3)}
-.ex-dropdown{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--bg);border:0.5px solid var(--border2);border-radius:var(--radius);z-index:100;display:none;box-shadow:0 4px 16px var(--shadow)}
-.ex-dropdown.open{display:block}
+.ex-dropdown{position:fixed;background:var(--bg);border:0.5px solid var(--border2);border-radius:var(--radius);z-index:1000;display:none;box-shadow:0 4px 16px var(--shadow);flex-direction:column}
+.ex-dropdown.open{display:flex}
 .ex-search-wrap{padding:7px 8px;border-bottom:0.5px solid var(--border)}
 .ex-search{width:100%;font-size:12px;padding:6px 8px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg2);color:var(--text);outline:none;font-family:inherit}
 .ex-list{overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y}
@@ -247,9 +247,9 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .logset-title{font-size:15px;font-weight:600;color:var(--text);text-align:center;margin-bottom:4px}
 .logset-target{font-size:12px;color:var(--text2);text-align:center;margin-bottom:14px;min-height:16px}
 .logset-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px}
-.logset-field{display:flex;flex-direction:column;gap:5px}
-.logset-field label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.04em;font-weight:500}
-.logset-field input{padding:10px 12px;font-size:16px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg2);color:var(--text);outline:none;font-family:inherit;text-align:center;font-variant-numeric:tabular-nums;-moz-appearance:textfield}
+.logset-field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.logset-field label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.04em;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.logset-field input{box-sizing:border-box;width:100%;min-width:0;padding:10px 8px;font-size:16px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg2);color:var(--text);outline:none;font-family:inherit;text-align:center;font-variant-numeric:tabular-nums;-moz-appearance:textfield}
 .logset-field input::-webkit-outer-spin-button,.logset-field input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .logset-field input:focus{border-color:var(--accent)}
 .logset-rir-toggle{text-align:center;margin:8px 0 0}
@@ -975,19 +975,46 @@ function makePicker(rowEx,onChange){
     else{
       closeAllDropdowns();dropdown.classList.add("open");activeDropdown=dropdown;
       search.setAttribute("readonly","readonly");search.value="";buildList("");
-      const rect=wrap.getBoundingClientRect();
-      const spaceBelow=window.innerHeight-rect.bottom-12;
-      const spaceAbove=rect.top-12;
-      const openUp=spaceBelow<260 && spaceAbove>spaceBelow;
-      // Reserve ~95px for the search bar + clear/add rows; the list itself gets the rest
-      const avail=Math.max(140, (openUp?spaceAbove:spaceBelow) - 95);
-      list.style.maxHeight=avail+"px";
-      if(openUp){dropdown.style.top="auto";dropdown.style.bottom="calc(100% + 4px)"}
-      else{dropdown.style.top="calc(100% + 4px)";dropdown.style.bottom="auto"}
+      positionDropdown(wrap, dropdown, list);
     }
   };
   updateDisplay();wrap.appendChild(display);wrap.appendChild(dropdown);return wrap;
 }
+
+// Positions a position:fixed dropdown relative to its trigger element (wrap).
+// Picks the side with more space, sets list max-height to fit the viewport.
+function positionDropdown(triggerWrap, dropdown, list){
+  const PAD=12;            // margin from viewport edges
+  const RESERVED=95;       // height reserved for search bar + clear/add row inside the dropdown
+  const MIN_LIST=140;      // minimum list height (will scroll within)
+  const rect=triggerWrap.getBoundingClientRect();
+  const vh=window.innerHeight;
+  const spaceBelow=vh-rect.bottom-PAD;
+  const spaceAbove=rect.top-PAD;
+  const openUp=spaceBelow<260 && spaceAbove>spaceBelow;
+  const avail=Math.max(MIN_LIST,(openUp?spaceAbove:spaceBelow)-RESERVED);
+  list.style.maxHeight=avail+"px";
+  // Horizontal positioning: match the trigger's width/left
+  dropdown.style.left=rect.left+"px";
+  dropdown.style.width=rect.width+"px";
+  if(openUp){
+    dropdown.style.bottom=(vh-rect.top+4)+"px";
+    dropdown.style.top="auto";
+  } else {
+    dropdown.style.top=(rect.bottom+4)+"px";
+    dropdown.style.bottom="auto";
+  }
+}
+
+// Re-position any open dropdown on scroll/resize so it stays anchored
+function repositionOpenDropdown(){
+  if(!activeDropdown)return;
+  const wrap=activeDropdown.parentElement; // .ex-picker
+  const list=activeDropdown.querySelector(".ex-list");
+  if(wrap&&list)positionDropdown(wrap, activeDropdown, list);
+}
+window.addEventListener("scroll", repositionOpenDropdown, true);
+window.addEventListener("resize", repositionOpenDropdown);
 
 // Build tab buttons + panels based on the current block's day count.
 // Summary tab is always last and is a fixed element.
@@ -2313,8 +2340,6 @@ function renderSummary(){
   //   10-14 = solid (grey/neutral), >=15 = high volume (green).
   const HIGH=15*scale, LOW=6*scale, MID_HIGH=9*scale, NEUTRAL_LOW=10*scale;
   function classify(t){return t>=HIGH?"high":t<LOW?"low":t<NEUTRAL_LOW?"medium":"neutral"}
-  // For sorting we want: low < medium < neutral < high. Within a class, by total ascending.
-  const clsRank={low:0,medium:1,neutral:2,high:3};
 
   document.getElementById("sum-legend").innerHTML=
     `<span><span class="leg-dot" style="background:var(--success-text)"></span>≥${HIGH}</span>`+
@@ -2433,12 +2458,8 @@ function renderSummary(){
     });
   }
 
-  // Sort: low → medium → neutral → high. Tiebreak by total ascending (worst-first within group).
-  entries.sort((a,b)=>{
-    const r=clsRank[a.cls]-clsRank[b.cls];
-    if(r!==0)return r;
-    return a.tot-b.tot;
-  });
+  // Sort by total set volume descending — most-targeted muscle groups first.
+  entries.sort((a,b)=>b.tot-a.tot);
   entries.forEach(e=>sg.appendChild(e.build()));
 
   const tc=document.createElement("div");tc.className="total-card";
