@@ -63,7 +63,14 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .panel.active{display:block;animation:panelFadeIn 0.18s var(--ease)}
 @keyframes panelFadeIn{from{opacity:0;transform:translateY(2px)}to{opacity:1;transform:translateY(0)}}
 .day-label-row{display:flex;align-items:center;margin-bottom:10px}
-.exercise-row{display:grid;grid-template-columns:1fr 32px 100px;gap:6px;align-items:center;margin-bottom:8px;position:relative}
+.exercise-row{display:grid;grid-template-columns:1fr 32px 100px;gap:6px;align-items:center;margin-bottom:8px;position:relative;padding-left:0;transition:padding-left 0.15s var(--ease)}
+/* Superset visual grouping. We use a left bar (::before) and add a class to rows that are part of a group. */
+.exercise-row.ss-member{padding-left:8px}
+.exercise-row.ss-member::before{content:"";position:absolute;left:0;top:-2px;bottom:-2px;width:3px;background:var(--accent);opacity:0.85}
+.exercise-row.ss-first::before{top:2px;border-top-left-radius:3px;border-top-right-radius:3px}
+.exercise-row.ss-last::before{bottom:2px;border-bottom-left-radius:3px;border-bottom-right-radius:3px}
+/* The first row of a group gets a tiny "×N" badge near the exercise picker */
+.ss-badge{position:absolute;top:-8px;left:6px;background:var(--accent);color:var(--accent-text);font-size:9px;font-weight:600;padding:1px 5px;border-radius:8px;letter-spacing:0.04em;line-height:1.3;pointer-events:none;z-index:2}
 .set-type-chip{height:30px;border-radius:var(--radius);border:0.5px solid var(--border);background:var(--bg);color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit;touch-action:manipulation;letter-spacing:0.02em;transition:background-color 0.15s var(--ease),color 0.15s var(--ease),border-color 0.15s var(--ease)}
 .set-type-chip:active{background:var(--bg2)}
 .set-type-chip.intensifier{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
@@ -387,6 +394,19 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
       </details>
 
       <details class="help-section">
+        <summary>Supersets &amp; giant sets</summary>
+        <p><b>Long-press</b> any exercise row (except the first one in a day) to link it to the row above as a superset. Long-press again to unlink it. You can chain three or more rows together to create tri-sets or giant sets.</p>
+        <p>Visual cues:</p>
+        <ul>
+          <li>A coloured accent bar runs down the left edge of any rows that are linked together</li>
+          <li>The first row of each group shows a small <b>SUPERSET ×N</b> badge with the group size</li>
+          <li>The +/− buttons, the chip, and the exercise dropdown all still work normally — long-press is detected on empty parts of the row only</li>
+        </ul>
+        <p>Supersets are a purely organizational concept here. They don't change volume calculations — each exercise still counts its sets independently toward its muscle groups. The grouping just helps you remember which exercises you're pairing during execution.</p>
+        <p>Note: the Flexify export doesn't preserve superset grouping (Flexify's plan format doesn't support it). The exercises just stay in the order you have them.</p>
+      </details>
+
+      <details class="help-section">
         <summary>Exercise library</summary>
         <p>Tap an exercise dropdown to pick from grouped categories (Chest, Back/Lats, etc.). The list scrolls and has a search field at the top.</p>
         <p>Each row has a small pencil (✎) icon that opens an editor where you can:</p>
@@ -681,7 +701,7 @@ function rebuildEX(){
   }
 }
 
-function makeEmptyDay(){return{label:"",rows:Array(10).fill(null).map(()=>({ex:"",sets:0,type:"straight"}))}}
+function makeEmptyDay(){return{label:"",rows:Array(10).fill(null).map(()=>({ex:"",sets:0,type:"straight",linkedToPrev:false}))}}
 // Safe read of a row's set type (older saved rows may lack the field)
 function rowType(row){return (row&&row.type&&SET_TYPE_DEFAULTS[row.type])?row.type:"straight"}
 function makeEmptyBlock(id){return{id,name:"Block "+id,days:{d1:makeEmptyDay(),d2:makeEmptyDay(),d3:makeEmptyDay()}}}
@@ -820,6 +840,8 @@ function makePicker(rowEx,onChange){
   clearBtn.onclick=e=>{e.stopPropagation();currentVal="";onChange("",true);updateDisplay();closeAllDropdowns();renderSummary();autoSave()};
   display.onclick=e=>{
     e.stopPropagation();
+    // Close any open set-type popover so dropdowns can't coexist
+    closeSetTypePopover();
     if(dropdown.classList.contains("open")){closeAllDropdowns()}
     else{
       closeAllDropdowns();dropdown.classList.add("open");activeDropdown=dropdown;
@@ -1524,8 +1546,29 @@ function renderDay(dayId){
     el.appendChild(hint);
   }
 
+  // Compute superset group memberships before rendering: for each row index,
+  // determine if it's a "member" (in a group of 2+), and whether it's the
+  // first or last of its group. A group is a run of consecutive rows where
+  // the first has linkedToPrev=false and subsequent ones have linkedToPrev=true.
+  const groupInfo=computeSupersetGroups(dayData.rows);
+
   dayData.rows.forEach((row,i)=>{
     const div=document.createElement("div");div.className="exercise-row";
+    // Apply superset classes
+    const gi=groupInfo[i];
+    if(gi.inGroup){
+      div.classList.add("ss-member");
+      if(gi.isFirst)div.classList.add("ss-first");
+      if(gi.isLast)div.classList.add("ss-last");
+      // Add a tiny "×N" badge on the first row of each group
+      if(gi.isFirst&&gi.size>1){
+        const badge=document.createElement("span");
+        badge.className="ss-badge";
+        badge.textContent="SUPERSET ×"+gi.size;
+        div.appendChild(badge);
+      }
+    }
+
     const picker=makePicker(row.ex,(val,cleared)=>{
       dayData.rows[i].ex=val;
       // Bug fix #3: when exercise is cleared, also clear its sets
@@ -1565,8 +1608,80 @@ function renderDay(dayId){
     });
     num.onclick=()=>openNumpad(dayId,i,num);
     ctrl.appendChild(minus);ctrl.appendChild(num);ctrl.appendChild(plus);
-    div.appendChild(picker);div.appendChild(chip);div.appendChild(ctrl);el.appendChild(div);
+    div.appendChild(picker);div.appendChild(chip);div.appendChild(ctrl);
+
+    // Long-press on the row toggles linkedToPrev (superset linking with the previous row).
+    // Only valid on rows after the first (i>0). Skip if the press is on an interactive child
+    // (picker, chip, +/− buttons, the number) so we don't fight other gestures.
+    if(i>0)attachLongPress(div,()=>toggleSupersetLink(dayId,i));
+
+    el.appendChild(div);
   });
+}
+
+// Compute per-row superset group info. Returns an array same length as rows where each entry is
+// {inGroup: boolean, isFirst: boolean, isLast: boolean, size: number}.
+// "inGroup" is true only when the group has 2+ rows. Solo rows are inGroup:false even if
+// they have linkedToPrev (e.g. orphaned flag) — we only show the visual when meaningful.
+function computeSupersetGroups(rows){
+  const info=rows.map(()=>({inGroup:false,isFirst:false,isLast:false,size:1}));
+  let i=0;
+  while(i<rows.length){
+    // Find group bounds starting at i
+    let j=i+1;
+    while(j<rows.length && rows[j].linkedToPrev) j++;
+    const size=j-i;
+    if(size>=2){
+      for(let k=i;k<j;k++){
+        info[k]={inGroup:true, isFirst:k===i, isLast:k===j-1, size};
+      }
+    }
+    i=j;
+  }
+  return info;
+}
+
+// Toggle whether a row is linked to the previous row (i.e. part of a superset with it).
+function toggleSupersetLink(dayId,rowIndex){
+  if(rowIndex<=0)return;
+  const row=mem[curBlock].days[dayId].rows[rowIndex];
+  row.linkedToPrev=!row.linkedToPrev;
+  renderDay(dayId);
+  autoSave();
+}
+
+// Attach a long-press handler that fires after ~500ms held on an element.
+// Cancels if the pointer moves >10px (likely a scroll) or if a tap-targetable child is hit.
+function attachLongPress(el,action){
+  const HOLD_MS=500, MOVE_TOL=10;
+  let timer=null, startX=0, startY=0, fired=false;
+  function isInteractive(target){
+    return target.closest && (
+      target.closest(".ex-picker")||target.closest(".set-type-chip")||
+      target.closest(".set-type-popover")||target.closest(".s-btn")||
+      target.closest(".s-num")||target.closest(".ex-dropdown")
+    );
+  }
+  el.addEventListener("pointerdown",e=>{
+    if(isInteractive(e.target))return;
+    fired=false; startX=e.clientX; startY=e.clientY;
+    if(timer)clearTimeout(timer);
+    timer=setTimeout(()=>{
+      fired=true;
+      // Haptic feedback where supported
+      if(navigator.vibrate)navigator.vibrate(20);
+      action();
+    },HOLD_MS);
+  });
+  function cancel(){if(timer){clearTimeout(timer);timer=null}}
+  el.addEventListener("pointerup",e=>{cancel()});
+  el.addEventListener("pointercancel",cancel);
+  el.addEventListener("pointerleave",cancel);
+  el.addEventListener("pointermove",e=>{
+    if(timer&&(Math.abs(e.clientX-startX)>MOVE_TOL||Math.abs(e.clientY-startY)>MOVE_TOL))cancel();
+  });
+  // Prevent context menu on long-press (right-click on desktop, hold on mobile)
+  el.addEventListener("contextmenu",e=>{if(fired)e.preventDefault()});
 }
 
 // ----- Set-type popover (opens from a chip) -----
