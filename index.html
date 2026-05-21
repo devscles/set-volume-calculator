@@ -269,15 +269,116 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 <script>
 const BUILTIN_EX={
   "Chest":[["Barbell Bench Press",{Chest:1,"Front Delt":0.5,Triceps:0.5}],["Dumbbell Bench Press",{Chest:1,"Front Delt":0.5,Triceps:0.5}],["Incline Dumbbell Bench Press",{Chest:1,"Front Delt":0.5,Triceps:0.5}],["Dumbbell Fly",{Chest:1,"Front Delt":0.5}],["Cable Crossover",{Chest:1,"Front Delt":0.5}],["Pec Deck",{Chest:1}],["Push-Up",{Chest:1,"Front Delt":0.5,Triceps:0.5}],["Landmine Press",{Chest:1,"Front Delt":0.5,Triceps:0.5}],["Dumbbell Pullover",{Chest:0.5,Lats:1,Triceps:0.5}]],
-  "Back / Lats":[["Barbell Row",{Lats:1,Traps:1,"Rear Delt":0.5,Biceps:0.5,Erectors:0.5}],["Dumbbell Row",{Lats:1,Traps:1,"Rear Delt":0.5,Biceps:0.5}],["Underhand Barbell Row",{Lats:1,Traps:1,"Rear Delt":0.5,Biceps:0.5}],["Narrow Grip Cable Row",{Lats:1,Traps:1,"Rear Delt":0.5,Biceps:0.5}],["Wide Grip Cable Row",{Lats:1,Traps:1,"Rear Delt":0.5,Biceps:0.5}],["One Arm Cable Row",{Lats:1,Traps:1,"Rear Delt":0.5,Biceps:0.5}],["Lat Pulldown",{Lats:1,"Rear Delt":0.5,Biceps:0.5}],["One Arm Lat Pulldown",{Lats:1,"Rear Delt":0.5,Biceps:0.5}],["Pull-Ups",{Lats:1,Traps:0.5,"Rear Delt":0.5,Biceps:0.5}],["Chin-Ups",{Lats:1,Traps:0.5,"Rear Delt":0.5,Biceps:1}],["Back Fly",{Traps:0.5,"Rear Delt":1}]],
-  "Shoulders":[["Barbell Shoulder Press",{Traps:0.5,"Front Delt":1,"Side Delt":1,Triceps:0.5}],["Dumbbell Shoulder Press",{Traps:0.5,"Front Delt":1,"Side Delt":1,Triceps:0.5}],["Barbell Push Press",{Traps:0.5,"Front Delt":1,"Side Delt":1,Triceps:0.5,Quads:0.5}],["Dumbbell Lateral Raise",{Traps:0.5,"Side Delt":1}],["Upright Row",{Traps:1,"Front Delt":0.5,"Side Delt":1,Biceps:0.5}],["Clean and Press",{Traps:1,"Front Delt":1,Quads:0.5,Glutes:0.5,Erectors:0.5}],["Face Pull",{Traps:1,"Rear Delt":1}]],
+  "Back / Lats":[["Barbell Row",{Lats:1,Traps:1,"Rear Delt":0.5,Biceps:0.5,Erectors:0.5}],["Dumbbell Row",{Lats:1,Traps:1,"Rear Delt":0.5,Biceps:0.5}],["Underhand Barbell Row",{Lats:1,Traps:1,"Rear Delt":0.5,Biceps:0.5}],["Narrow Grip Cable Row",{Lats:1,Traps:1,"Rear Delt":0.5,Biceps:0.5}],["Wide Grip Cable Row",{Lats:1,Traps:1,"Rear Delt":0.5,Biceps:0.5}],["One Arm Cable Row",{Lats:1,Traps:1,"Rear Delt":0.5,Biceps:0.5}],["Lat Pulldown",{Lats:1,"Rear Delt":0.5,Biceps:0.5}],["One Arm Lat Pulldown",{Lats:1,"Rear Delt":0.5,Biceps:0.5}],["Straight Arm Pulldown",{Lats:1,Triceps:0.5}],["Pull-Ups",{Lats:1,Traps:0.5,"Rear Delt":0.5,Biceps:0.5}],["Chin-Ups",{Lats:1,Traps:0.5,"Rear Delt":0.5,Biceps:1}],["Bent Over Back Fly",{Traps:0.5,"Rear Delt":1}]],
+  "Shoulders":[["Barbell Shoulder Press",{Traps:0.5,"Front Delt":1,"Side Delt":1,Triceps:0.5}],["Dumbbell Shoulder Press",{Traps:0.5,"Front Delt":1,"Side Delt":1,Triceps:0.5}],["Barbell Push Press",{Traps:0.5,"Front Delt":1,"Side Delt":1,Triceps:0.5,Quads:0.5}],["Unilateral Dumbbell Push Press",{Traps:0.5,"Front Delt":1,"Side Delt":1,Triceps:0.5,Quads:0.5,Abs:0.5,Obliques:0.5}],["Dumbbell Lateral Raise",{Traps:0.5,"Side Delt":1}],["Full ROM Lateral Raise",{Traps:0.5,"Side Delt":1}],["Dumbbell Front Raise",{"Front Delt":1}],["Cable Front Raise",{"Front Delt":1}],["Upright Row",{Traps:1,"Front Delt":0.5,"Side Delt":1,Biceps:0.5}],["Power Clean",{Traps:1,"Front Delt":0.5,Hamstrings:0.5,Glutes:1,Erectors:1,Quads:0.5}],["Clean and Press",{Traps:1,"Front Delt":1,Quads:0.5,Glutes:0.5,Erectors:0.5}],["Hang Clean and Press",{Traps:1,"Front Delt":1,Quads:0.5,Glutes:0.5,Erectors:0.5}],["Face Pull",{Traps:1,"Rear Delt":1}]],
   "Traps":[["Dumbbell Shrug",{Traps:1}],["Trap Bar Shrug",{Traps:1}],["Cable Shrug",{Traps:1}],["Rack Pull",{Traps:1,Erectors:1,Hamstrings:0.5,Glutes:0.5}]],
   "Biceps":[["Barbell Curl",{Biceps:1}],["Dumbbell Curl",{Biceps:1}],["Cable Curl",{Biceps:1}],["EZ Bar Curl",{Biceps:1}],["EZ Bar Curl Reverse Grip",{Biceps:1}],["Hammer Curl",{Biceps:1}]],
-  "Triceps":[["Dips",{Triceps:1,Chest:0.5,"Front Delt":0.5}],["EZ Bar Skullcrusher",{Triceps:1}],["Dumbbell Skullcrusher",{Triceps:1}],["Tricep Cable Pulldown",{Triceps:1}]],
-  "Legs":[["Squat",{Quads:1,Hamstrings:0.5,Glutes:1,Erectors:0.5}],["Leg Press",{Quads:1,Hamstrings:0.5,Glutes:1}],["Leg Extension",{Quads:1}],["Lunge",{Quads:1,Hamstrings:0.5,Glutes:1}],["Trap Bar Deadlift",{Traps:0.5,Quads:1,Hamstrings:0.5,Glutes:1,Erectors:1}],["Deadlift",{Lats:0.5,Traps:0.5,Quads:0.5,Hamstrings:1,Glutes:1,Erectors:1}],["Stiff Leg Deadlift",{Hamstrings:1,Glutes:0.5,Erectors:1}],["Hamstring Curl",{Hamstrings:1}],["1 Leg Kettlebell Deadlift",{Hamstrings:1,Glutes:1,Erectors:0.5}]],
-  "Core":[["Decline Sit Ups",{Abs:1,Obliques:0.5}],["Reverse Crunch",{Abs:1,Obliques:0.5}],["Cable Side Bend",{Abs:0.5,Obliques:1}],["Side Bend",{Abs:0.5,Obliques:1}],["Cable Baseball Bat Swing",{"Side Delt":0.5,Abs:0.5,Obliques:1}],["Back Bend",{Hamstrings:0.5,Glutes:0.5,Erectors:1}]]
+  "Triceps":[["Dips",{Triceps:1,Chest:0.5,"Front Delt":0.5}],["EZ Bar Skullcrusher",{Triceps:1}],["Dumbbell Skullcrusher",{Triceps:1}],["Tricep Cable Pulldown",{Triceps:1}],["One Arm Dumbbell Tricep Press",{Triceps:1}],["Dumbbell Uppercut",{Triceps:0.5,"Front Delt":1,Obliques:0.5}]],
+  "Legs":[["Squat",{Quads:1,Hamstrings:0.5,Glutes:1,Erectors:0.5}],["Leg Press",{Quads:1,Hamstrings:0.5,Glutes:1}],["Leg Extension",{Quads:1}],["Dumbbell Lunge",{Quads:1,Hamstrings:0.5,Glutes:1}],["Dumbbell Split Squat",{Quads:1,Hamstrings:0.5,Glutes:1}],["Cossack Squat",{Quads:1,Hamstrings:0.5,Glutes:1,Erectors:0.5}],["Step Down Heel Tap",{Quads:1,Glutes:0.5}],["Trap Bar Deadlift",{Traps:0.5,Quads:1,Hamstrings:0.5,Glutes:1,Erectors:1}],["Deadlift",{Lats:0.5,Traps:0.5,Quads:0.5,Hamstrings:1,Glutes:1,Erectors:1}],["Stiff Leg Deadlift",{Hamstrings:1,Glutes:0.5,Erectors:1}],["Hamstring Curl",{Hamstrings:1}],["1 Leg Kettlebell Deadlift",{Hamstrings:1,Glutes:1,Erectors:0.5}],["Calf Press",{Calves:1}]],
+  "Core":[["Decline Sit Ups",{Abs:1,Obliques:0.5}],["Reverse Crunch",{Abs:1,Obliques:0.5}],["Cable Crunch",{Abs:1,Obliques:0.5}],["Crunch Machine",{Abs:1,Obliques:0.5}],["Yoga Ball Crunch",{Abs:1,Obliques:0.5}],["Yoga Ball Deadbug",{Abs:1,Obliques:0.5}],["Yoga Ball Plank Rollout",{Abs:1,Obliques:0.5,"Front Delt":0.5}],["Cable Side Bend",{Abs:0.5,Obliques:1}],["Side Bend",{Abs:0.5,Obliques:1}],["Cable Baseball Bat Swing",{"Side Delt":0.5,Abs:0.5,Obliques:1}],["Cable Axe Swing",{Abs:0.5,Obliques:1,Lats:0.5}],["Back Bend",{Hamstrings:0.5,Glutes:0.5,Erectors:1}]]
 };
 const ALL_MUS=["Chest","Lats","Traps","Front Delt","Side Delt","Rear Delt","Biceps","Triceps","Quads","Hamstrings","Glutes","Calves","Abs","Erectors","Obliques"];
+
+// Mapping from our planner's exercise names to Flexify's exact spelling/case.
+// Used for CSV export to Flexify and CSV import from Flexify history.
+// Multiple Flexify names can map to one of our exercises (aliases listed in `aliases`).
+// Where Flexify has no matching entry, the value is null and the exercise can't be exported/matched.
+const FLEXIFY_NAME_MAP={
+  // Chest
+  "Barbell Bench Press":{flexify:"Barbell bench press"},
+  "Dumbbell Bench Press":{flexify:"Dumbbell bench press"},
+  "Incline Dumbbell Bench Press":{flexify:"Dumbbell incline bench"},
+  "Dumbbell Fly":{flexify:"Dumbbell fly"},
+  "Cable Crossover":{flexify:null},
+  "Pec Deck":{flexify:null},
+  "Push-Up":{flexify:null},
+  "Landmine Press":{flexify:null},
+  "Dumbbell Pullover":{flexify:"Dumbbell pullover"},
+  // Back / Lats
+  "Barbell Row":{flexify:"Barbell bent-over row"},
+  "Dumbbell Row":{flexify:"Dumbbell bent over row"},
+  "Underhand Barbell Row":{flexify:"Barbell Underhand Bent-over row"},
+  "Narrow Grip Cable Row":{flexify:null},
+  "Wide Grip Cable Row":{flexify:null},
+  "One Arm Cable Row":{flexify:"1 arm cable row"},
+  "Lat Pulldown":{flexify:"Lat Pulldown"},
+  "One Arm Lat Pulldown":{flexify:null},
+  "Straight Arm Pulldown":{flexify:"Straight arm pull-down"},
+  "Pull-Ups":{flexify:"Pull-up"},
+  "Chin-Ups":{flexify:"Chin-up"},
+  "Bent Over Back Fly":{flexify:"Bent over back fly",aliases:["Bench back fly"]},
+  // Shoulders
+  "Barbell Shoulder Press":{flexify:"Barbell shoulder press"},
+  // User confirmed: their Dumbbell Shoulder Press and Dumbbell overhead press are the same;
+  // Seated dumbbell shoulder press is intentionally distinct.
+  "Dumbbell Shoulder Press":{flexify:"Dumbbell overhead press",aliases:["dumbbell shoulder press"]},
+  "Barbell Push Press":{flexify:"Push press"},
+  "Unilateral Dumbbell Push Press":{flexify:"unilateral dumbbell push press"},
+  "Dumbbell Lateral Raise":{flexify:"Dumbbell lateral raise"},
+  "Full ROM Lateral Raise":{flexify:"Full ROM lateral raise"},
+  // User confirmed: alternating front raise merged into Dumbbell Front Raise
+  "Dumbbell Front Raise":{flexify:"Dumbbell front raise",aliases:["alternating front raise","front raise","slightly front raise","Full ROM front raise"]},
+  "Cable Front Raise":{flexify:"Cable front raise"},
+  "Upright Row":{flexify:"Upright row",aliases:["dumbbell upright row"]},
+  "Power Clean":{flexify:"Power Clean",aliases:["Clean"]},
+  "Clean and Press":{flexify:"Clean and press"},
+  "Hang Clean and Press":{flexify:"hang clean and press"},
+  "Face Pull":{flexify:null},
+  // Traps
+  "Dumbbell Shrug":{flexify:"Dumbbell shrug"},
+  "Trap Bar Shrug":{flexify:"trap bar shrug"},
+  "Cable Shrug":{flexify:null},
+  "Rack Pull":{flexify:null},
+  // Biceps
+  "Barbell Curl":{flexify:null},
+  "Dumbbell Curl":{flexify:"Dumbbell curl"},
+  "Cable Curl":{flexify:"cable curl"},
+  "EZ Bar Curl":{flexify:"ez bar curl"},
+  "EZ Bar Curl Reverse Grip":{flexify:"Reverse ez bar curl"},
+  "Hammer Curl":{flexify:"hammer curls"},
+  // Triceps
+  "Dips":{flexify:"Dips"},
+  // User confirmed: Skullcrushers (no qualifier) = EZ Bar Skullcrusher
+  "EZ Bar Skullcrusher":{flexify:"Skullcrushers"},
+  "Dumbbell Skullcrusher":{flexify:"Dumbbell skullcrusher"},
+  "Tricep Cable Pulldown":{flexify:"Tricep cable pulldown",aliases:["1 arm tricep cable pulldown"]},
+  "One Arm Dumbbell Tricep Press":{flexify:"1 arm dumbbell tricep press"},
+  "Dumbbell Uppercut":{flexify:"Dumbbell uppercut"},
+  // Legs
+  "Squat":{flexify:"Squat"},
+  "Leg Press":{flexify:"Leg press"},
+  "Leg Extension":{flexify:"Leg extension machine"},
+  "Dumbbell Lunge":{flexify:"Dumbbell lunge"},
+  "Dumbbell Split Squat":{flexify:"Dumbbell split squat"},
+  "Cossack Squat":{flexify:"Cossack squat"},
+  "Step Down Heel Tap":{flexify:"Step down heel tap"},
+  "Trap Bar Deadlift":{flexify:"trap bar deadlift"},
+  "Deadlift":{flexify:"Deadlift"},
+  "Stiff Leg Deadlift":{flexify:"Stiff led deadlift"},
+  "Hamstring Curl":{flexify:"Hamstring curl"},
+  "1 Leg Kettlebell Deadlift":{flexify:"Kettlebell 1 leg deadlift"},
+  "Calf Press":{flexify:"calf press",aliases:["calf raise"]},
+  // Core
+  "Decline Sit Ups":{flexify:"decline sit up"},
+  "Reverse Crunch":{flexify:"Reverse crunch"},
+  "Cable Crunch":{flexify:"cable crunch"},
+  "Crunch Machine":{flexify:"crunch machine"},
+  "Yoga Ball Crunch":{flexify:"Yoga ball crunch"},
+  "Yoga Ball Deadbug":{flexify:"yoga ball deadbug"},
+  "Yoga Ball Plank Rollout":{flexify:"yoga ball plank rolly outy"},
+  "Cable Side Bend":{flexify:"Cable side bend"},
+  "Side Bend":{flexify:"Side bends"},
+  "Cable Baseball Bat Swing":{flexify:"Cable baseball bat swing"},
+  "Cable Axe Swing":{flexify:"cable axe swing"},
+  "Back Bend":{flexify:"Back bend"}
+};
+// Reverse lookup: Flexify name (lowercased) → our planner name
+const FLEXIFY_TO_OURS={};
+Object.entries(FLEXIFY_NAME_MAP).forEach(([ours,info])=>{
+  if(info.flexify)FLEXIFY_TO_OURS[info.flexify.toLowerCase().trim()]=ours;
+  if(info.aliases)info.aliases.forEach(a=>{FLEXIFY_TO_OURS[a.toLowerCase().trim()]=ours});
+});
+
 // Mutable list of block IDs; starts as ["A","B","C"] but can grow/shrink.
 let BLOCKS=["A","B","C"];
 const MIN_BLOCKS=1,MAX_BLOCKS=26;
@@ -404,6 +505,40 @@ function loadAllBlocks(){
     }catch(e){}
     mem[b]=makeEmptyBlock(b);
   });
+}
+
+// One-time migration: rename old exercise names in any stored block data.
+// Add to this map when an exercise is renamed in BUILTIN_EX.
+const RENAME_MIGRATIONS={
+  "Lunge":"Dumbbell Lunge",
+  "Back Fly":"Bent Over Back Fly"
+};
+function migrateRenamedExercises(){
+  let changed=false;
+  BLOCKS.forEach(b=>{
+    let blockChanged=false;
+    dayIdsOf(b).forEach(d=>{
+      mem[b].days[d].rows.forEach(row=>{
+        if(row.ex && RENAME_MIGRATIONS[row.ex]){
+          row.ex=RENAME_MIGRATIONS[row.ex];
+          blockChanged=true;changed=true;
+        }
+      });
+    });
+    if(blockChanged){
+      try{localStorage.setItem(storageKey(b),JSON.stringify(mem[b]))}catch(e){}
+    }
+  });
+  // Also migrate built-in overrides keyed by old name
+  let overridesChanged=false;
+  Object.keys(RENAME_MIGRATIONS).forEach(oldName=>{
+    if(builtinOverrides[oldName]){
+      builtinOverrides[RENAME_MIGRATIONS[oldName]]=builtinOverrides[oldName];
+      delete builtinOverrides[oldName];
+      overridesChanged=true;
+    }
+  });
+  if(overridesChanged)saveBuiltinOverrides();
 }
 
 // Auto-save the current block
@@ -1032,6 +1167,7 @@ loadBuiltinOverrides();
 rebuildEX();
 loadBlockList();              // load persisted block IDs (or default A,B,C)
 loadAllBlocks();              // populate mem for each block
+migrateRenamedExercises();    // rename old exercise names in stored data
 if(!BLOCKS.includes(curBlock))curBlock=BLOCKS[0];
 syncBlockButtons();           // builds tabs + panels for the current block
 curDayIds().forEach(renderDay);

@@ -1,4 +1,4 @@
-const CACHE = 'training-20260521033504';
+const CACHE = 'training-20260521081118';
 const ASSETS = [
   './',
   './index.html',
