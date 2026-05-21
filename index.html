@@ -47,6 +47,14 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .day-mgr-btn:active{background:var(--bg2)}
 .day-mgr-btn:disabled{opacity:0.35;cursor:not-allowed}
 .day-mgr-count{min-width:18px;text-align:center;font-size:13px;font-weight:500;color:var(--text)}
+.flexify-bar{display:flex;align-items:center;gap:8px;padding:6px 14px;border-bottom:0.5px solid var(--border);font-size:11px;color:var(--text2);flex-shrink:0;flex-wrap:wrap}
+.flexify-label{text-transform:uppercase;letter-spacing:0.05em;font-weight:500}
+.flexify-btn{padding:5px 10px;font-size:12px;font-weight:500;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);cursor:pointer;font-family:inherit;touch-action:manipulation}
+.flexify-btn:active{background:var(--bg2)}
+.flexify-status{font-size:11px;color:var(--text2);margin-left:auto;white-space:nowrap;max-width:60%;overflow:hidden;text-overflow:ellipsis}
+.flexify-status.success{color:var(--success-text)}
+.flexify-status.warn{color:var(--warn-text)}
+.flexify-status.error{color:var(--danger-text)}
 .panels{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .panel{display:none;padding:12px 14px}
 .panel.active{display:block}
@@ -74,7 +82,12 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .ex-clear{font-size:12px;padding:10px;border-top:0.5px solid var(--border);color:var(--danger-text);cursor:pointer;text-align:left}
 .ex-clear:active{background:var(--bg2)}
 .ex-empty{font-size:12px;padding:14px 10px;color:var(--text3);text-align:center}
-.legend{display:flex;gap:10px;margin-bottom:10px;font-size:11px;color:var(--text2)}
+.legend{display:flex;gap:10px;margin-bottom:10px;font-size:11px;color:var(--text2);align-items:center;flex-wrap:wrap}
+.sum-toggle{display:flex;gap:0;margin-bottom:10px;border-radius:var(--radius);border:0.5px solid var(--border2);overflow:hidden;width:fit-content}
+.sum-toggle button{padding:5px 12px;font-size:11px;font-weight:500;border:none;background:var(--bg);color:var(--text2);cursor:pointer;font-family:inherit;letter-spacing:0.03em}
+.sum-toggle button.active{background:var(--text);color:var(--bg)}
+.sum-toggle button:first-child{border-right:0.5px solid var(--border2)}
+.sum-meta{font-size:11px;color:var(--text2);margin-bottom:6px}
 .leg-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:3px}
 .summary-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .m-card{border-radius:var(--radius);padding:10px 12px;cursor:pointer;transition:transform 0.08s ease,opacity 0.08s ease;user-select:none;-webkit-user-select:none}
@@ -182,6 +195,13 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
   <button class="day-mgr-btn" id="day-remove" title="Remove last day" aria-label="Remove last day">−</button>
   <span class="day-mgr-count" id="day-count">3</span>
   <button class="day-mgr-btn" id="day-add" title="Add a day" aria-label="Add a day">+</button>
+</div>
+<div class="flexify-bar">
+  <span class="flexify-label">Flexify</span>
+  <button class="flexify-btn" id="flexify-export" onclick="exportToFlexify()">Export plan</button>
+  <button class="flexify-btn" id="flexify-import" onclick="document.getElementById('flexify-import-file').click()">Import history</button>
+  <input type="file" id="flexify-import-file" accept=".csv,text/csv" style="display:none" onchange="importFlexifyHistory(this.files[0])">
+  <span class="flexify-status" id="flexify-status"></span>
 </div>
 <div class="panels" id="panels-container">
   <div id="sum" class="panel"></div>
@@ -1071,6 +1091,225 @@ function deleteCustomExercise(){
 
 document.getElementById("ce-bg").addEventListener("click",e=>{if(e.target.id==="ce-bg")closeCustomEditor()});
 
+// ===== Flexify integration =====
+const FLEXIFY_HISTORY_KEY="trainblock_flexify_history_v1";
+// In-memory history: array of {date: Date, ours: string|null, flexify: string, reps: number, weight: number, unit: "kg"|"lb", bodyWeight: number}
+let flexifyHistory=[];
+let summaryMode="planned"; // "planned" or "actual"
+const ACTUAL_WINDOW_DAYS=28;
+
+function loadFlexifyHistory(){
+  try{
+    const raw=localStorage.getItem(FLEXIFY_HISTORY_KEY);
+    if(raw){
+      const parsed=JSON.parse(raw);
+      if(Array.isArray(parsed)){
+        flexifyHistory=parsed.map(r=>({...r, date:new Date(r.date)})).filter(r=>!isNaN(r.date));
+      }
+    }
+  }catch(e){flexifyHistory=[]}
+}
+function saveFlexifyHistory(){
+  try{
+    // Store ISO date strings to keep JSON clean
+    const serializable=flexifyHistory.map(r=>({...r,date:r.date.toISOString()}));
+    localStorage.setItem(FLEXIFY_HISTORY_KEY,JSON.stringify(serializable));
+  }catch(e){
+    setFlexStatus("Couldn't save history — storage may be full","error");
+  }
+}
+
+function setFlexStatus(msg, cls){
+  const el=document.getElementById("flexify-status");
+  el.textContent=msg;
+  el.className="flexify-status"+(cls?" "+cls:"");
+  if(msg){
+    clearTimeout(setFlexStatus._t);
+    setFlexStatus._t=setTimeout(()=>{el.textContent="";el.className="flexify-status"},6000);
+  }
+}
+
+// ----- Export current block to a Flexify-compatible plans.csv -----
+function exportToFlexify(){
+  const block=mem[curBlock];
+  const blockName=block.name||("Block "+curBlock);
+  const ids=curDayIds();
+  if(ids.length===0){setFlexStatus("Nothing to export","error");return}
+
+  // Build rows: id,days,title,sequence,exercises
+  const rows=[["id","days","title","sequence","exercises"]];
+  const unmapped=new Set();
+  let exportedAny=false;
+  ids.forEach((d,i)=>{
+    const day=block.days[d];
+    const dayLabel=day.label||("Day "+(i+1));
+    // Collect each exercise that has at least 1 set and a Flexify mapping
+    const flexNames=[];
+    day.rows.forEach(row=>{
+      if(!row.ex||row.sets<=0)return;
+      const info=FLEXIFY_NAME_MAP[row.ex];
+      if(info&&info.flexify){
+        flexNames.push(info.flexify);
+      } else {
+        unmapped.add(row.ex);
+      }
+    });
+    if(flexNames.length===0)return;
+    const title=`${blockName} - ${dayLabel}`;
+    // Flexify uses semicolon-separated exercise names
+    rows.push([
+      String(i+1),
+      "",
+      csvEscape(title),
+      String(i),
+      csvEscape(flexNames.join(";"))
+    ]);
+    exportedAny=true;
+  });
+
+  if(!exportedAny){
+    setFlexStatus("No exercises to export — all rows empty or unmapped","error");
+    return;
+  }
+
+  const csv=rows.map(r=>r.join(",")).join("\n")+"\n";
+  const filename=`${slugify(blockName)}-flexify.csv`;
+  downloadFile(filename,csv,"text/csv");
+
+  let msg=`Exported ${rows.length-1} day${rows.length===2?"":"s"}`;
+  if(unmapped.size>0){
+    msg+=` — skipped ${unmapped.size} unmapped exercise${unmapped.size===1?"":"s"}`;
+    setFlexStatus(msg,"warn");
+    console.warn("Skipped (no Flexify mapping):",[...unmapped]);
+  } else {
+    setFlexStatus(msg,"success");
+  }
+}
+
+// CSV cell escape: wrap in quotes if it contains comma/quote/newline
+function csvEscape(s){
+  s=String(s);
+  if(/[",\n]/.test(s))return '"'+s.replace(/"/g,'""')+'"';
+  return s;
+}
+function slugify(s){return String(s).toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"")||"block"}
+function downloadFile(name,content,mime){
+  const blob=new Blob([content],{type:mime});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;a.download=name;
+  document.body.appendChild(a);a.click();
+  setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url)},100);
+}
+
+// ----- Import Flexify history (graphs.csv) -----
+// Robust CSV parser handling quoted fields with embedded commas/quotes/newlines.
+function parseCSV(text){
+  const rows=[];
+  let row=[],cell="",inQuotes=false,i=0;
+  while(i<text.length){
+    const c=text[i];
+    if(inQuotes){
+      if(c==='"'&&text[i+1]==='"'){cell+='"';i+=2;continue}
+      if(c==='"'){inQuotes=false;i++;continue}
+      cell+=c;i++;
+    } else {
+      if(c==='"'){inQuotes=true;i++;continue}
+      if(c===','){row.push(cell);cell="";i++;continue}
+      if(c==='\n'||c==='\r'){
+        if(cell.length||row.length){row.push(cell);rows.push(row);row=[];cell=""}
+        // Skip combined \r\n
+        if(c==='\r'&&text[i+1]==='\n')i+=2;else i++;
+        continue;
+      }
+      cell+=c;i++;
+    }
+  }
+  if(cell.length||row.length){row.push(cell);rows.push(row)}
+  return rows;
+}
+
+function importFlexifyHistory(file){
+  if(!file){setFlexStatus("No file selected","error");return}
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const text=e.target.result;
+      const rows=parseCSV(text);
+      if(rows.length<2){setFlexStatus("CSV looks empty","error");return}
+      const header=rows[0].map(h=>h.trim().toLowerCase());
+      // Expected Flexify columns: id,name,reps,weight,created,unit,bodyWeight,duration,distance,cardio,hidden,incline
+      const col={
+        name:header.indexOf("name"),
+        reps:header.indexOf("reps"),
+        weight:header.indexOf("weight"),
+        created:header.indexOf("created"),
+        unit:header.indexOf("unit"),
+        bodyWeight:header.indexOf("bodyweight"),
+        hidden:header.indexOf("hidden")
+      };
+      if(col.name<0||col.created<0){
+        setFlexStatus("CSV doesn't look like Flexify history","error");
+        return;
+      }
+      const parsed=[];
+      const unmappedNames=new Set();
+      let skippedHidden=0,skippedBad=0;
+      for(let r=1;r<rows.length;r++){
+        const row=rows[r];
+        if(row.length<2)continue;
+        if(col.hidden>=0 && (row[col.hidden]||"").trim().toLowerCase()==="true"){skippedHidden++;continue}
+        const flexName=(row[col.name]||"").trim();
+        const dateStr=row[col.created]||"";
+        const d=new Date(dateStr);
+        if(!flexName||isNaN(d)){skippedBad++;continue}
+        const ours=FLEXIFY_TO_OURS[flexName.toLowerCase().trim()]||null;
+        if(!ours)unmappedNames.add(flexName);
+        const reps=parseFloat(row[col.reps])||0;
+        const weight=parseFloat(row[col.weight])||0;
+        const unit=col.unit>=0?(row[col.unit]||"").trim():"";
+        const bw=col.bodyWeight>=0?parseFloat(row[col.bodyWeight])||0:0;
+        parsed.push({date:d,ours,flexify:flexName,reps,weight,unit,bodyWeight:bw});
+      }
+      flexifyHistory=parsed;
+      saveFlexifyHistory();
+      let msg=`Loaded ${parsed.length} sets`;
+      if(unmappedNames.size>0)msg+=`, ${unmappedNames.size} unmapped exercise${unmappedNames.size===1?"":"s"}`;
+      setFlexStatus(msg,"success");
+      console.log("Flexify import:",{total:parsed.length,unmapped:[...unmappedNames],skippedHidden,skippedBad});
+      // Clear the file input so the same file can be re-imported
+      document.getElementById("flexify-import-file").value="";
+      // If on Summary, re-render so Actual mode reflects new data
+      renderSummary();
+    }catch(err){
+      console.error(err);
+      setFlexStatus("Failed to parse CSV","error");
+    }
+  };
+  reader.onerror=()=>setFlexStatus("Couldn't read file","error");
+  reader.readAsText(file);
+}
+
+// ----- Actual volume calculation -----
+// Returns {totals: {muscle: sets}, sessionsCounted: number, firstDate, lastDate}
+function calcActualVolume(){
+  const now=new Date();
+  const cutoff=new Date(now.getTime()-ACTUAL_WINDOW_DAYS*24*60*60*1000);
+  const totals={};ALL_MUS.forEach(m=>totals[m]=0);
+  let counted=0,firstDate=null,lastDate=null;
+  flexifyHistory.forEach(rec=>{
+    if(rec.date<cutoff)return;
+    if(!rec.ours)return; // unmapped — can't credit to a muscle group
+    // Each row in Flexify history is one set
+    const mults=exMuscles(rec.ours);
+    Object.entries(mults).forEach(([m,w])=>{totals[m]=(totals[m]||0)+w});
+    counted++;
+    if(!firstDate||rec.date<firstDate)firstDate=rec.date;
+    if(!lastDate||rec.date>lastDate)lastDate=rec.date;
+  });
+  return {totals, sessionsCounted:counted, firstDate, lastDate};
+}
+
 function renderDay(dayId){
   closeAllDropdowns();const dayData=mem[curBlock].days[dayId];
   const el=document.getElementById(dayId);el.innerHTML="";
@@ -1128,34 +1367,100 @@ function r05(v){return Math.round(v*2)/2}
 function fmt(v){return v%1===0?v.toString():v.toFixed(1)}
 function renderSummary(){
   const ids=curDayIds();
-  // Per-day totals: dayTotals[i] = {muscle: sets}
-  const dayTotals=ids.map(d=>calcDay(d));
-  // Cached labels with sensible fallbacks (e.g. "Day 1")
-  const dayLabels=ids.map((d,i)=>mem[curBlock].days[d].label||("Day "+(i+1)));
-  const openCards=new Set(Array.from(document.querySelectorAll(".m-card.open")).map(el=>el.dataset.muscle));
   const el=document.getElementById("sum");
-  el.innerHTML=`<div class="legend"><span><span class="leg-dot" style="background:var(--success-text)"></span>≥15</span><span><span class="leg-dot" style="background:var(--text2)"></span>10–14</span><span><span class="leg-dot" style="background:var(--warn-text)"></span>7–9</span><span><span class="leg-dot" style="background:var(--danger-text)"></span>≤6</span></div><div class="summary-grid" id="sg"></div>`;
-  const sg=document.getElementById("sg");let grand=0;
-  ALL_MUS.forEach(m=>{
-    const perDay=dayTotals.map(t=>r05(t[m]||0));
-    const tot=r05(perDay.reduce((a,b)=>a+b,0));
-    grand+=tot;
-    const cls=tot>=15?"high":tot<=6?"low":tot<10?"medium":"neutral";
-    const card=document.createElement("div");card.className="m-card "+cls+(openCards.has(m)?" open":"");card.dataset.muscle=m;
-    const nameRow=document.createElement("div");nameRow.className="m-name";nameRow.innerHTML=`<span>${m}</span><span class="chevron">▾</span>`;
-    const valsRow=document.createElement("div");valsRow.className="m-vals";
-    const dayBreakdownStr=perDay.map(fmt).join("/");
-    valsRow.innerHTML=`<span class="m-total">${fmt(tot)}</span><span class="m-days">${dayBreakdownStr}</span>`;
-    const detail=document.createElement("div");detail.className="m-detail";
-    ids.forEach((dayId,i)=>{
-      const bd=calcDayBreakdown(dayId,m);if(!bd.length)return;
-      const dl=document.createElement("div");dl.className="m-detail-day";dl.textContent=dayLabels[i];detail.appendChild(dl);
-      bd.forEach(({ex,sets})=>{const r=document.createElement("div");r.className="m-detail-ex";r.innerHTML=`<span>${ex}</span><span>${fmt(sets)} set${sets===1?"":"s"}</span>`;detail.appendChild(r)});
+  const openCards=new Set(Array.from(document.querySelectorAll(".m-card.open")).map(el2=>el2.dataset.muscle));
+
+  // Toggle header
+  const hasHistory=flexifyHistory.length>0;
+  const actualDisabled=!hasHistory;
+  el.innerHTML=`
+    <div class="sum-toggle">
+      <button id="sum-planned" class="${summaryMode==='planned'?'active':''}">Planned</button>
+      <button id="sum-actual" class="${summaryMode==='actual'?'active':''}" ${actualDisabled?'disabled style="opacity:0.4;cursor:not-allowed"':''} title="${actualDisabled?'Import Flexify history first':''}">Actual (last 4 wks)</button>
+    </div>
+    <div class="sum-meta" id="sum-meta"></div>
+    <div class="legend"><span><span class="leg-dot" style="background:var(--success-text)"></span>≥15</span><span><span class="leg-dot" style="background:var(--text2)"></span>10–14</span><span><span class="leg-dot" style="background:var(--warn-text)"></span>7–9</span><span><span class="leg-dot" style="background:var(--danger-text)"></span>≤6</span></div>
+    <div class="summary-grid" id="sg"></div>`;
+
+  document.getElementById("sum-planned").onclick=()=>{summaryMode="planned";renderSummary()};
+  document.getElementById("sum-actual").onclick=()=>{if(!actualDisabled){summaryMode="actual";renderSummary()}};
+
+  if(summaryMode==="actual"&&!hasHistory)summaryMode="planned";
+
+  const sg=document.getElementById("sg");
+  const meta=document.getElementById("sum-meta");
+  let grand=0;
+
+  if(summaryMode==="planned"){
+    const dayTotals=ids.map(d=>calcDay(d));
+    const dayLabels=ids.map((d,i)=>mem[curBlock].days[d].label||("Day "+(i+1)));
+    meta.textContent=`Planned weekly volume — ${ids.length} day${ids.length===1?"":"s"}`;
+    ALL_MUS.forEach(m=>{
+      const perDay=dayTotals.map(t=>r05(t[m]||0));
+      const tot=r05(perDay.reduce((a,b)=>a+b,0));
+      grand+=tot;
+      const cls=tot>=15?"high":tot<=6?"low":tot<10?"medium":"neutral";
+      const card=document.createElement("div");card.className="m-card "+cls+(openCards.has(m)?" open":"");card.dataset.muscle=m;
+      const nameRow=document.createElement("div");nameRow.className="m-name";nameRow.innerHTML=`<span>${m}</span><span class="chevron">▾</span>`;
+      const valsRow=document.createElement("div");valsRow.className="m-vals";
+      const dayBreakdownStr=perDay.map(fmt).join("/");
+      valsRow.innerHTML=`<span class="m-total">${fmt(tot)}</span><span class="m-days">${dayBreakdownStr}</span>`;
+      const detail=document.createElement("div");detail.className="m-detail";
+      ids.forEach((dayId,i)=>{
+        const bd=calcDayBreakdown(dayId,m);if(!bd.length)return;
+        const dl=document.createElement("div");dl.className="m-detail-day";dl.textContent=dayLabels[i];detail.appendChild(dl);
+        bd.forEach(({ex,sets})=>{const r=document.createElement("div");r.className="m-detail-ex";r.innerHTML=`<span>${ex}</span><span>${fmt(sets)} set${sets===1?"":"s"}</span>`;detail.appendChild(r)});
+      });
+      card.appendChild(nameRow);card.appendChild(valsRow);card.appendChild(detail);
+      card.onclick=()=>card.classList.toggle("open");
+      sg.appendChild(card);
     });
-    card.appendChild(nameRow);card.appendChild(valsRow);card.appendChild(detail);
-    card.onclick=()=>card.classList.toggle("open");
-    sg.appendChild(card);
-  });
+  } else {
+    // Actual mode
+    const actual=calcActualVolume();
+    const setsByMuscle=actual.totals;
+    const window=`last ${ACTUAL_WINDOW_DAYS} days`;
+    const range=(actual.firstDate&&actual.lastDate)
+      ? `${actual.firstDate.toISOString().slice(0,10)} → ${actual.lastDate.toISOString().slice(0,10)}`
+      : "no sets in window";
+    meta.textContent=`Actual volume from Flexify history — ${actual.sessionsCounted} set${actual.sessionsCounted===1?"":"s"}, ${range}`;
+    // Build per-muscle breakdown by exercise for the detail view
+    const byMuscleExercise={}; // muscle -> {exerciseOurName: setCount}
+    ALL_MUS.forEach(m=>byMuscleExercise[m]={});
+    const cutoff=new Date(Date.now()-ACTUAL_WINDOW_DAYS*24*60*60*1000);
+    flexifyHistory.forEach(rec=>{
+      if(rec.date<cutoff||!rec.ours)return;
+      const mults=exMuscles(rec.ours);
+      Object.entries(mults).forEach(([m,w])=>{
+        if(!byMuscleExercise[m][rec.ours])byMuscleExercise[m][rec.ours]={count:0,weight:w};
+        byMuscleExercise[m][rec.ours].count+=1;
+      });
+    });
+    ALL_MUS.forEach(m=>{
+      const tot=r05(setsByMuscle[m]||0);
+      grand+=tot;
+      const cls=tot>=15?"high":tot<=6?"low":tot<10?"medium":"neutral";
+      const card=document.createElement("div");card.className="m-card "+cls+(openCards.has(m)?" open":"");card.dataset.muscle=m;
+      const nameRow=document.createElement("div");nameRow.className="m-name";nameRow.innerHTML=`<span>${m}</span><span class="chevron">▾</span>`;
+      const valsRow=document.createElement("div");valsRow.className="m-vals";
+      valsRow.innerHTML=`<span class="m-total">${fmt(tot)}</span><span class="m-days">${window}</span>`;
+      const detail=document.createElement("div");detail.className="m-detail";
+      const exList=Object.entries(byMuscleExercise[m]).sort((a,b)=>b[1].count-a[1].count);
+      if(exList.length){
+        const dl=document.createElement("div");dl.className="m-detail-day";dl.textContent="Exercises";detail.appendChild(dl);
+        exList.forEach(([ex,info])=>{
+          const r=document.createElement("div");r.className="m-detail-ex";
+          const contribution=r05(info.count*info.weight);
+          r.innerHTML=`<span>${ex}</span><span>${info.count}×${info.weight===1?"":info.weight} = ${fmt(contribution)}</span>`;
+          detail.appendChild(r);
+        });
+      }
+      card.appendChild(nameRow);card.appendChild(valsRow);card.appendChild(detail);
+      card.onclick=()=>card.classList.toggle("open");
+      sg.appendChild(card);
+    });
+  }
+
   const tc=document.createElement("div");tc.className="total-card";
   tc.innerHTML=`<span style="font-size:13px;color:var(--text2);font-weight:500">Total sets</span><span style="font-size:22px;font-weight:500">${fmt(r05(grand))}</span>`;
   sg.appendChild(tc);
@@ -1168,6 +1473,7 @@ rebuildEX();
 loadBlockList();              // load persisted block IDs (or default A,B,C)
 loadAllBlocks();              // populate mem for each block
 migrateRenamedExercises();    // rename old exercise names in stored data
+loadFlexifyHistory();         // load any imported Flexify history
 if(!BLOCKS.includes(curBlock))curBlock=BLOCKS[0];
 syncBlockButtons();           // builds tabs + panels for the current block
 curDayIds().forEach(renderDay);
