@@ -204,6 +204,42 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .help-swatch.neutral{background:var(--bg2)}
 .help-swatch.high{background:var(--success-bg)}
 
+/* === History view === */
+.help-header{display:flex;align-items:center;gap:8px}
+.hist-list-empty{padding:32px 16px;text-align:center;color:var(--text2);font-size:13px}
+.hist-session{padding:12px;border-radius:var(--radius);background:var(--bg2);margin-bottom:8px;cursor:pointer;transition:background-color 0.15s var(--ease)}
+.hist-session:active{background:var(--bg3)}
+.hist-session.in-progress{border:0.5px solid var(--accent)}
+.hist-session-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:4px}
+.hist-session-title{font-size:14px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:1}
+.hist-session-date{font-size:11px;color:var(--text2);white-space:nowrap;font-variant-numeric:tabular-nums}
+.hist-session-meta{font-size:11px;color:var(--text2)}
+.hist-session-badge{display:inline-block;padding:1px 6px;border-radius:8px;background:var(--accent);color:var(--accent-text);font-size:9px;font-weight:600;letter-spacing:0.04em;margin-left:6px;vertical-align:middle}
+.hist-empty-cta{margin-top:14px;padding:12px;border-radius:var(--radius);background:var(--bg2);border:0.5px dashed var(--border2);text-align:center;font-size:12px;color:var(--text2)}
+.hist-empty-cta button{display:block;margin:8px auto 0;padding:8px 14px;font-size:12px;font-weight:500;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);cursor:pointer;font-family:inherit}
+
+/* Session detail view */
+.sess-ex{margin-bottom:12px;padding:10px 12px;border-radius:var(--radius);background:var(--bg2)}
+.sess-ex-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:6px}
+.sess-ex-name{font-size:13px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
+.sess-ex-name:active{color:var(--accent)}
+.sess-ex-sets{display:flex;flex-wrap:wrap;gap:4px;font-size:12px;color:var(--text);font-variant-numeric:tabular-nums}
+.sess-ex-set{padding:3px 8px;background:var(--bg);border-radius:6px;border:0.5px solid var(--border)}
+.sess-ex-set.miss{background:var(--warn-bg);color:var(--warn-text);border-color:var(--warn-text)}
+.sess-detail-meta{font-size:12px;color:var(--text2);margin-bottom:14px;padding:8px 10px;background:var(--bg2);border-radius:var(--radius)}
+
+/* Graph view */
+.graph-container{padding:8px 4px 16px}
+.graph-svg{width:100%;height:240px;display:block}
+.graph-meta{font-size:11px;color:var(--text2);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px}
+.graph-toggle{display:flex;gap:0;border-radius:var(--radius);border:0.5px solid var(--border2);overflow:hidden}
+.graph-toggle button{padding:4px 9px;font-size:10px;font-weight:500;border:none;background:var(--bg);color:var(--text2);cursor:pointer;font-family:inherit}
+.graph-toggle button.active{background:var(--accent);color:var(--accent-text)}
+.graph-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:10px}
+.graph-table th{font-size:10px;color:var(--text2);font-weight:500;text-align:left;padding:5px 6px;text-transform:uppercase;letter-spacing:0.04em;border-bottom:0.5px solid var(--border)}
+.graph-table td{padding:5px 6px;border-bottom:0.5px solid var(--border);font-variant-numeric:tabular-nums}
+.graph-empty{padding:24px 16px;text-align:center;color:var(--text2);font-size:13px}
+
 /* === Workout modal === */
 .workout-modal{background:var(--bg);width:100%;max-width:520px;height:100%;max-height:100vh;border-radius:0;display:flex;flex-direction:column;overflow:hidden}
 @media (min-width:520px){.workout-modal{height:92vh;max-height:760px;border-radius:14px;box-shadow:0 12px 40px var(--shadow)}}
@@ -218,6 +254,21 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .workout-timer-btn{flex:1;padding:11px 12px;font-size:13px;font-weight:500;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;touch-action:manipulation}
 .workout-timer-btn:active{background:var(--bg2)}
 .workout-timer-btn.running{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
+/* Rest-duration popover */
+.rest-duration-popover{position:fixed;bottom:60px;left:50%;transform:translateX(-50%);background:var(--bg);border:0.5px solid var(--border2);border-radius:var(--radius);padding:8px;box-shadow:0 4px 16px var(--shadow);z-index:300;display:none;flex-wrap:wrap;gap:5px;max-width:300px;justify-content:center}
+.rest-duration-popover.open{display:flex}
+.rest-dur-chip{padding:8px 12px;font-size:12px;font-weight:500;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg2);color:var(--text);cursor:pointer;font-family:inherit;font-variant-numeric:tabular-nums;min-width:50px}
+.rest-dur-chip.active{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
+.rest-dur-chip:active{background:var(--bg3)}
+
+/* Swap exercise picker modal */
+.swap-modal{background:var(--bg);border-radius:12px;width:100%;max-width:380px;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 8px 32px var(--shadow)}
+.swap-header{padding:14px 16px 8px;border-bottom:0.5px solid var(--border);flex-shrink:0}
+.swap-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:8px}
+.swap-search{width:100%;font-size:13px;padding:8px 10px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg2);color:var(--text);outline:none;font-family:inherit;box-sizing:border-box}
+.swap-list{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:4px}
+.swap-actions{padding:10px 14px;border-top:0.5px solid var(--border);display:flex;gap:8px;flex-shrink:0}
+.swap-actions button{flex:1;padding:9px;font-size:13px;font-weight:500;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);cursor:pointer;font-family:inherit}
 .workout-finish-btn{flex:1;padding:11px 12px;font-size:13px;font-weight:600;border-radius:var(--radius);border:none;background:var(--text);color:var(--bg);cursor:pointer;font-family:inherit;touch-action:manipulation}
 .workout-finish-btn:active{opacity:0.85}
 
@@ -228,7 +279,9 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .wo-ex.ss-first::before{top:2px;border-top-left-radius:3px;border-top-right-radius:3px}
 .wo-ex.ss-last::before{bottom:2px;border-bottom-left-radius:3px;border-bottom-right-radius:3px}
 .wo-ex-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:8px}
-.wo-ex-name{font-size:14px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wo-ex-name{font-size:14px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
+.wo-ex-name:active{color:var(--accent)}
+.wo-ex-name::after{content:" ✎";font-size:11px;color:var(--text3);font-weight:400}
 .wo-ex-type{font-size:11px;font-weight:600;color:var(--text3);padding:1px 6px;border:0.5px solid var(--border);border-radius:8px;flex-shrink:0;letter-spacing:0.04em}
 .wo-ex-type.intensifier{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
 .wo-set-strip{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
@@ -303,6 +356,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
       <button class="icon-btn" onclick="addBlock()" title="Add new block" aria-label="Add new block">＋</button>
       <button class="icon-btn" onclick="confirmDeleteBlock()" title="Delete this block" aria-label="Delete this block">🗑</button>
       <button class="icon-btn" onclick="confirmResetBlock()" title="Reset this block" aria-label="Reset this block"><i class="ti ti-refresh"></i></button>
+      <button class="icon-btn" onclick="openHistory()" title="History" aria-label="Open history"><i class="ti ti-chart-line"></i></button>
       <button class="icon-btn" onclick="openHelp()" title="Help" aria-label="Open help">?</button>
     </div>
     <span class="save-status saved" id="save-status">Saved</span>
@@ -426,6 +480,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
       <button class="workout-timer-btn" id="workout-timer-btn" onclick="toggleRestTimer()"><i class="ti ti-clock"></i> <span id="workout-timer-label">Rest 90s</span></button>
       <button class="workout-finish-btn" onclick="confirmFinishWorkout()">Finish</button>
     </div>
+    <div class="rest-duration-popover" id="rest-dur-popover"></div>
   </div>
 </div>
 
@@ -456,6 +511,55 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
       <button class="danger" id="logset-delete" onclick="deleteLoggedSet()" style="display:none">Delete</button>
       <button class="primary" onclick="saveLoggedSet()">Save</button>
     </div>
+  </div>
+</div>
+
+<!-- Swap-exercise modal (mid-workout: replace an exercise in the current session) -->
+<div class="modal-bg" id="swap-bg">
+  <div class="swap-modal">
+    <div class="swap-header">
+      <div class="swap-title" id="swap-title">Swap exercise</div>
+      <input type="text" class="swap-search" id="swap-search" placeholder="Search exercises…">
+    </div>
+    <div class="swap-list" id="swap-list"></div>
+    <div class="swap-actions">
+      <button onclick="closeSwapPicker()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Target editor modal (plan-time: weight/reps target per exercise row) -->
+<div class="modal-bg" id="target-bg">
+  <div class="modal target-modal">
+    <div class="logset-title" id="target-title">Target</div>
+    <div class="logset-target">Optional weight × reps target for this exercise. Pre-fills the log modal during workouts.</div>
+    <div class="logset-fields">
+      <div class="logset-field">
+        <label>Weight (<span id="target-unit">lb</span>)</label>
+        <input type="number" inputmode="decimal" id="target-weight" step="0.5" min="0" placeholder="—">
+      </div>
+      <div class="logset-field">
+        <label>Reps</label>
+        <input type="number" inputmode="numeric" id="target-reps" step="1" min="0" placeholder="—">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button onclick="closeTargetEditor()">Cancel</button>
+      <button class="danger" id="target-clear" onclick="clearTarget()" style="display:none">Clear</button>
+      <button class="primary" onclick="saveTarget()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- History modal: list, session detail, exercise progression graph -->
+<div class="modal-bg" id="history-bg">
+  <div class="help-modal" style="max-width:560px">
+    <div class="help-header">
+      <button class="help-close" id="history-back" onclick="historyBack()" aria-label="Back" style="display:none;font-size:20px">‹</button>
+      <span class="help-title" id="history-title">History</span>
+      <button class="help-close" onclick="closeHistory()" aria-label="Close">×</button>
+    </div>
+    <div class="help-body" id="history-body"></div>
   </div>
 </div>
 
@@ -519,7 +623,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
       </details>
 
       <details class="help-section">
-        <summary>Tracking workouts (new)</summary>
+        <summary>Tracking workouts</summary>
         <p>When you've planned a day, a <b>Start workout</b> button appears at the top of the day tab. Tap it to open the workout tracker — a full-screen view where each planned exercise shows a strip of set chips you can tap to log.</p>
         <ul>
           <li><b>Tap a chip</b> to log a set. Enter weight and reps; tap Save.</li>
@@ -527,12 +631,33 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
           <li><b>+ button</b> at the end of each exercise adds an unplanned set.</li>
           <li><b>Tap a logged chip</b> to edit or delete it.</li>
           <li><b>RIR</b> (Reps in Reserve) is optional — tap "+ Add RIR" in the log modal if you want to track it.</li>
-          <li><b>Rest timer</b> at the bottom auto-starts when you log a set. Default is 90 seconds. Tap to start/stop manually.</li>
+          <li><b>Tap the exercise name</b> to swap it for a different exercise mid-workout (handy when a machine is taken). Existing logged sets keep their original name; new ones use the swapped exercise.</li>
+          <li><b>Rest timer</b> at the bottom auto-starts when you log a set. Tap to start/stop manually. <b>Long-press the timer</b> to pick a different default duration (30s through 5min).</li>
           <li><b>Finish</b> closes out the workout and saves it to history.</li>
           <li><b>Close (×)</b> leaves it as "in progress" — you can resume from the day tab later.</li>
         </ul>
         <p>Only one in-progress workout at a time. Starting a new one from a different day will prompt before discarding any other in-progress session.</p>
-        <p class="help-note">Phase 1: session data is stored locally but there's no history-browsing view yet — that's coming next, along with per-exercise progression graphs and a unified "Actual" Summary mode that uses your tracked sessions instead of the Flexify CSV import.</p>
+        <p>The log modal pre-fills weight and reps with (in order): an existing logged value if you're editing, the planned target if set, your last set in this session, or your last set of this exercise from any past session. A small "last time" hint shows what you did before so you can match or progress.</p>
+      </details>
+
+      <details class="help-section">
+        <summary>Planning targets</summary>
+        <p>Optionally set a target weight × reps per exercise row in the planner. <b>Long-press the sets number</b> to open the target editor. Enter the weight and reps you're aiming for; save.</p>
+        <p>When a target is set, a small <span style="color:var(--accent);font-size:11px;font-variant-numeric:tabular-nums">@ 185lb × 8</span>-style hint appears below the row, and the workout tracker will pre-fill those numbers when you start logging. Logged sets that miss the rep target are flagged in yellow.</p>
+        <p>Targets are entirely optional — the tracker works fine without them.</p>
+      </details>
+
+      <details class="help-section">
+        <summary>History &amp; progression graphs</summary>
+        <p>Tap the <b>📈</b> icon in the top bar to open History. Three views:</p>
+        <ul>
+          <li><b>Session list</b> — every workout you've logged, most recent first. Tap a session to see its details. In-progress workouts get a highlighted border so you can resume them.</li>
+          <li><b>Session detail</b> — shows each exercise with its sets and reps as little chips. Tap an exercise name to jump to its progression graph. A red <i>Delete session</i> button removes it permanently.</li>
+          <li><b>Progression graph</b> — for any exercise, a scatter+line chart of your sets over time. Toggle between <b>Weight</b> (heaviest single set), <b>Est 1RM</b> (Epley formula), and <b>Volume</b> (weight × reps summed). Below the graph, a table breaks it down by day.</li>
+        </ul>
+        <p><b>Browse by exercise</b> from the top of the History list is the fastest way to find a graph if you remember the exercise but not the date.</p>
+        <p><b>Migrating Flexify history:</b> if you've imported a Flexify CSV but haven't yet tracked native workouts, a "Migrate" button appears at the top of the History list. It groups your imported sets into one synthetic session per calendar day, flagged "IMPORTED" so you can tell them apart. Migration is non-destructive — your original Flexify data stays available.</p>
+        <p>The Summary's <b>Actual</b> mode automatically uses native sessions if any exist, falling back to raw Flexify history only if no sessions are present.</p>
       </details>
 
       <details class="help-section">
@@ -1239,7 +1364,360 @@ function closeResetModal(){document.getElementById("reset-bg").classList.remove(
 // Help modal
 function openHelp(){document.getElementById("help-bg").classList.add("open")}
 function closeHelp(){document.getElementById("help-bg").classList.remove("open")}
-document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeHelp();closeResetModal();closeNumpad&&closeNumpad();closeDeleteBlockModal&&closeDeleteBlockModal();closeCustomEditor&&closeCustomEditor()}});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeHelp();closeHistory();closeResetModal();closeNumpad&&closeNumpad();closeDeleteBlockModal&&closeDeleteBlockModal();closeCustomEditor&&closeCustomEditor()}});
+
+// ===== History modal =====
+// Stack of views: each entry is {type:"list"|"session"|"graph", payload?}
+let historyStack=[];
+function openHistory(){
+  historyStack=[{type:"list"}];
+  document.getElementById("history-bg").classList.add("open");
+  renderHistoryView();
+}
+function closeHistory(){
+  historyStack=[];
+  document.getElementById("history-bg").classList.remove("open");
+}
+function historyBack(){
+  if(historyStack.length>1){historyStack.pop();renderHistoryView()}
+  else closeHistory();
+}
+function historyPush(view){historyStack.push(view);renderHistoryView()}
+function renderHistoryView(){
+  const cur=historyStack[historyStack.length-1];
+  const titleEl=document.getElementById("history-title");
+  const backBtn=document.getElementById("history-back");
+  backBtn.style.display=historyStack.length>1?"":"none";
+  if(cur.type==="list"){
+    titleEl.textContent="History";
+    renderHistoryList();
+  } else if(cur.type==="session"){
+    titleEl.textContent="Session";
+    renderSessionDetail(cur.payload);
+  } else if(cur.type==="graph"){
+    titleEl.textContent=cur.payload.ex;
+    renderExerciseGraph(cur.payload.ex);
+  }
+}
+
+function renderHistoryList(){
+  const body=document.getElementById("history-body");
+  body.innerHTML="";
+  // Combine native sessions (most recent first) and a "by exercise" entry point
+  const sorted=[...sessions].sort((a,b)=>new Date(b.date)-new Date(a.date));
+
+  // Quick-access: "Browse by exercise" entry at the top
+  const browseBtn=document.createElement("button");
+  browseBtn.className="hist-session";browseBtn.style.cursor="pointer";browseBtn.style.border="none";browseBtn.style.width="100%";browseBtn.style.textAlign="left";browseBtn.style.fontFamily="inherit";
+  browseBtn.innerHTML=`<div class="hist-session-head"><div class="hist-session-title">Browse by exercise →</div></div><div class="hist-session-meta">Per-exercise progression graphs across all sessions and imported Flexify history.</div>`;
+  browseBtn.onclick=()=>historyPush({type:"graph",payload:{ex:null}});
+  body.appendChild(browseBtn);
+
+  // Migrate Flexify history button (one-time)
+  if(flexifyHistory.length>0 && !prefs.flexifyMigrated){
+    const mig=document.createElement("div");
+    mig.className="hist-empty-cta";
+    mig.innerHTML=`<div>You have ${flexifyHistory.length} imported Flexify sets that aren't grouped into sessions yet.</div>`;
+    const mb=document.createElement("button");
+    mb.textContent="Migrate Flexify history into sessions";
+    mb.onclick=migrateFlexifyToSessions;
+    mig.appendChild(mb);
+    body.appendChild(mig);
+  }
+
+  if(sorted.length===0){
+    const empty=document.createElement("div");empty.className="hist-list-empty";
+    empty.textContent="No sessions logged yet. Tap a day's Start workout button to begin tracking.";
+    body.appendChild(empty);
+    return;
+  }
+  const heading=document.createElement("div");
+  heading.style.cssText="font-size:11px;text-transform:uppercase;letter-spacing:0.04em;color:var(--text2);font-weight:500;margin:14px 0 8px;padding:0 4px";
+  heading.textContent=`Sessions (${sorted.length})`;
+  body.appendChild(heading);
+  sorted.forEach(s=>{
+    const card=document.createElement("div");
+    card.className="hist-session"+(s.status==="in_progress"?" in-progress":"");
+    const titleStr=s.blockName+(s.dayLabel?` — ${s.dayLabel}`:"");
+    const dateStr=new Date(s.date).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});
+    const setCount=s.sets.length;
+    const exCount=new Set(s.sets.map(x=>x.ex)).size;
+    const meta=setCount>0?`${setCount} set${setCount===1?"":"s"} across ${exCount} exercise${exCount===1?"":"s"}`:"No sets logged";
+    const badge=s.status==="in_progress"?'<span class="hist-session-badge">IN PROGRESS</span>':(s.imported?'<span class="hist-session-badge" style="background:var(--text2)">IMPORTED</span>':'');
+    card.innerHTML=`<div class="hist-session-head"><div class="hist-session-title">${titleStr}${badge}</div><div class="hist-session-date">${dateStr}</div></div><div class="hist-session-meta">${meta}</div>`;
+    card.onclick=()=>historyPush({type:"session",payload:s.id});
+    body.appendChild(card);
+  });
+}
+
+function renderSessionDetail(sessId){
+  const body=document.getElementById("history-body");
+  body.innerHTML="";
+  const s=sessions.find(x=>x.id===sessId);
+  if(!s){body.innerHTML='<div class="hist-list-empty">Session not found.</div>';return}
+  const dateStr=new Date(s.date).toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric",year:"numeric"});
+  const meta=document.createElement("div");
+  meta.className="sess-detail-meta";
+  meta.innerHTML=`<div style="font-weight:600;color:var(--text);font-size:14px;margin-bottom:2px">${s.blockName}${s.dayLabel?` — ${s.dayLabel}`:""}</div><div>${dateStr}</div><div style="margin-top:6px">${s.sets.length} set${s.sets.length===1?"":"s"} · status: ${s.status}</div>`;
+  body.appendChild(meta);
+
+  // Group sets by exercise (in order of first appearance)
+  const byEx={};
+  const exOrder=[];
+  s.sets.forEach(st=>{
+    if(!byEx[st.ex]){byEx[st.ex]=[];exOrder.push(st.ex)}
+    byEx[st.ex].push(st);
+  });
+  if(exOrder.length===0){
+    body.innerHTML+='<div class="hist-list-empty">No sets logged in this session.</div>';
+    return;
+  }
+  // Delete-session button
+  const actions=document.createElement("div");
+  actions.style.cssText="margin:14px 0;display:flex;gap:8px";
+  if(s.status==="in_progress"){
+    const resumeBtn=document.createElement("button");
+    resumeBtn.style.cssText="flex:1;padding:9px;font-size:13px;font-weight:500;border-radius:var(--radius);border:none;background:var(--accent);color:var(--accent-text);cursor:pointer;font-family:inherit";
+    resumeBtn.textContent="Resume this workout";
+    resumeBtn.onclick=()=>{closeHistory();openWorkoutModal(s.id)};
+    actions.appendChild(resumeBtn);
+  }
+  const delBtn=document.createElement("button");
+  delBtn.style.cssText="flex:1;padding:9px;font-size:13px;font-weight:500;border-radius:var(--radius);border:0.5px solid var(--danger-text);background:var(--danger-bg);color:var(--danger-text);cursor:pointer;font-family:inherit";
+  delBtn.textContent="Delete session";
+  delBtn.onclick=()=>{
+    if(!confirm(`Delete this session? ${s.sets.length} logged set${s.sets.length===1?"":"s"} will be permanently removed.`))return;
+    sessions=sessions.filter(x=>x.id!==sessId);
+    saveSessions();
+    historyBack();
+  };
+  actions.appendChild(delBtn);
+  body.appendChild(actions);
+
+  exOrder.forEach(ex=>{
+    const card=document.createElement("div");card.className="sess-ex";
+    const head=document.createElement("div");head.className="sess-ex-head";
+    const nm=document.createElement("div");nm.className="sess-ex-name";nm.textContent=ex;nm.title="View progression graph";
+    nm.onclick=()=>historyPush({type:"graph",payload:{ex}});
+    head.appendChild(nm);
+    card.appendChild(head);
+    const sets=document.createElement("div");sets.className="sess-ex-sets";
+    byEx[ex].forEach(st=>{
+      const sp=document.createElement("span");sp.className="sess-ex-set"+(st.targetReps&&st.reps<st.targetReps?" miss":"");
+      const rir=st.rir!==undefined?` @${st.rir}R`:"";
+      sp.textContent=`${fmtNum(st.weight)}${st.unit||prefs.preferredUnit}×${st.reps}${rir}`;
+      sets.appendChild(sp);
+    });
+    card.appendChild(sets);
+    body.appendChild(card);
+  });
+}
+
+// ----- Exercise progression graph -----
+let graphMetric="weight"; // "weight" | "estimated1rm" | "volume"
+function renderExerciseGraph(exName){
+  const body=document.getElementById("history-body");
+  body.innerHTML="";
+  // If exName is null, show a search picker first
+  if(!exName){
+    renderExercisePicker();
+    return;
+  }
+  // Collect all sets for this exercise across all sessions
+  const all=[];
+  sessions.forEach(s=>{s.sets.forEach(st=>{if(st.ex===exName)all.push({...st,sessionDate:s.date})})});
+  if(all.length===0){
+    body.innerHTML='<div class="graph-empty">No logged sets for this exercise yet.</div>';
+    return;
+  }
+  all.sort((a,b)=>new Date(a.timestamp||a.sessionDate)-new Date(b.timestamp||b.sessionDate));
+
+  // Metric toggle
+  const metaRow=document.createElement("div");metaRow.className="graph-meta";
+  metaRow.innerHTML=`<span>${all.length} set${all.length===1?"":"s"} logged · first ${new Date(all[0].timestamp||all[0].sessionDate).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"})}</span>`;
+  const toggle=document.createElement("div");toggle.className="graph-toggle";
+  [["weight","Weight"],["estimated1rm","Est 1RM"],["volume","Volume"]].forEach(([key,label])=>{
+    const b=document.createElement("button");b.textContent=label;b.className=graphMetric===key?"active":"";
+    b.onclick=()=>{graphMetric=key;renderExerciseGraph(exName)};
+    toggle.appendChild(b);
+  });
+  metaRow.appendChild(toggle);
+  body.appendChild(metaRow);
+
+  // Graph container
+  const container=document.createElement("div");container.className="graph-container";
+  container.appendChild(buildSvgGraph(all));
+  body.appendChild(container);
+
+  // Data table summary by session
+  const bySession={};
+  all.forEach(st=>{const d=(st.timestamp||st.sessionDate).slice(0,10);(bySession[d]=bySession[d]||[]).push(st)});
+  const tbl=document.createElement("table");tbl.className="graph-table";
+  tbl.innerHTML=`<tr><th>Date</th><th>Best set</th><th>Volume</th><th>Sets</th></tr>`;
+  const dates=Object.keys(bySession).sort().reverse();
+  dates.forEach(d=>{
+    const sets=bySession[d];
+    const best=sets.reduce((b,s)=>est1rm(s)>est1rm(b)?s:b,sets[0]);
+    const vol=sets.reduce((sum,s)=>sum+(s.weight||0)*(s.reps||0),0);
+    const tr=document.createElement("tr");
+    tr.innerHTML=`<td>${new Date(d).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"2-digit"})}</td><td>${fmtNum(best.weight)}×${best.reps}</td><td>${fmtNum(vol)}</td><td>${sets.length}</td>`;
+    tbl.appendChild(tr);
+  });
+  body.appendChild(tbl);
+}
+
+function renderExercisePicker(){
+  const body=document.getElementById("history-body");
+  body.innerHTML="";
+  // Get unique exercises from all logged sets, with count
+  const counts={};
+  sessions.forEach(s=>s.sets.forEach(st=>{counts[st.ex]=(counts[st.ex]||0)+1}));
+  const names=Object.keys(counts).sort((a,b)=>counts[b]-counts[a]);
+  if(names.length===0){
+    body.innerHTML='<div class="graph-empty">No tracked exercises yet. Log some sets to see graphs here.</div>';
+    return;
+  }
+  const search=document.createElement("input");search.type="text";search.placeholder="Search exercises…";
+  search.className="swap-search";search.style.marginBottom="10px";
+  body.appendChild(search);
+  const list=document.createElement("div");
+  function build(q){
+    list.innerHTML="";
+    const ql=(q||"").toLowerCase().trim();
+    names.filter(n=>!ql||n.toLowerCase().includes(ql)).forEach(n=>{
+      const item=document.createElement("button");
+      item.className="hist-session";item.style.cssText="border:none;width:100%;text-align:left;font-family:inherit;cursor:pointer;display:flex;justify-content:space-between;align-items:center";
+      item.innerHTML=`<span>${n}</span><span style="font-size:11px;color:var(--text2);font-variant-numeric:tabular-nums">${counts[n]} set${counts[n]===1?"":"s"}</span>`;
+      item.onclick=()=>historyPush({type:"graph",payload:{ex:n}});
+      list.appendChild(item);
+    });
+  }
+  search.addEventListener("input",e=>build(e.target.value));
+  build("");
+  body.appendChild(list);
+}
+
+// Epley 1RM estimate
+function est1rm(set){
+  if(!set||!set.weight||!set.reps)return 0;
+  if(set.reps===1)return set.weight;
+  return set.weight*(1+set.reps/30);
+}
+
+// Build an SVG scatter/line graph from an array of logged sets.
+function buildSvgGraph(sets){
+  const W=480, H=240, P=30; // width, height, padding
+  const svg=document.createElementNS("http://www.w3.org/2000/svg","svg");
+  svg.setAttribute("viewBox",`0 0 ${W} ${H}`);
+  svg.setAttribute("class","graph-svg");
+  svg.setAttribute("preserveAspectRatio","none");
+  // Calculate x (time) and y (metric) ranges
+  const xs=sets.map(s=>new Date(s.timestamp||s.sessionDate).getTime());
+  const xMin=Math.min(...xs), xMax=Math.max(...xs);
+  function metric(s){
+    if(graphMetric==="estimated1rm")return est1rm(s);
+    if(graphMetric==="volume")return (s.weight||0)*(s.reps||0);
+    return s.weight||0;
+  }
+  const ys=sets.map(metric);
+  const yMin=Math.min(...ys), yMax=Math.max(...ys);
+  const yRange=Math.max(yMax-yMin, 1);
+  const xRange=Math.max(xMax-xMin, 1);
+  function px(x){return P + (x-xMin)/xRange * (W-2*P)}
+  function py(y){return H-P - (y-yMin)/yRange * (H-2*P)}
+  // Axes
+  const ax=document.createElementNS("http://www.w3.org/2000/svg","g");
+  ax.innerHTML=`<line x1="${P}" y1="${H-P}" x2="${W-P}" y2="${H-P}" stroke="currentColor" stroke-width="0.5" opacity="0.3"/><line x1="${P}" y1="${P}" x2="${P}" y2="${H-P}" stroke="currentColor" stroke-width="0.5" opacity="0.3"/>`;
+  svg.appendChild(ax);
+  // Y axis labels (min and max)
+  const lbl1=document.createElementNS("http://www.w3.org/2000/svg","text");
+  lbl1.setAttribute("x",P-4);lbl1.setAttribute("y",P+4);lbl1.setAttribute("text-anchor","end");lbl1.setAttribute("font-size","10");lbl1.setAttribute("fill","currentColor");lbl1.setAttribute("opacity","0.6");
+  lbl1.textContent=Math.round(yMax);
+  svg.appendChild(lbl1);
+  const lbl2=document.createElementNS("http://www.w3.org/2000/svg","text");
+  lbl2.setAttribute("x",P-4);lbl2.setAttribute("y",H-P+3);lbl2.setAttribute("text-anchor","end");lbl2.setAttribute("font-size","10");lbl2.setAttribute("fill","currentColor");lbl2.setAttribute("opacity","0.6");
+  lbl2.textContent=Math.round(yMin);
+  svg.appendChild(lbl2);
+  // X axis labels (first + last date)
+  const xlbl1=document.createElementNS("http://www.w3.org/2000/svg","text");
+  xlbl1.setAttribute("x",P);xlbl1.setAttribute("y",H-P+14);xlbl1.setAttribute("text-anchor","start");xlbl1.setAttribute("font-size","10");xlbl1.setAttribute("fill","currentColor");xlbl1.setAttribute("opacity","0.6");
+  xlbl1.textContent=new Date(xMin).toLocaleDateString(undefined,{month:"short",day:"numeric"});
+  svg.appendChild(xlbl1);
+  const xlbl2=document.createElementNS("http://www.w3.org/2000/svg","text");
+  xlbl2.setAttribute("x",W-P);xlbl2.setAttribute("y",H-P+14);xlbl2.setAttribute("text-anchor","end");xlbl2.setAttribute("font-size","10");xlbl2.setAttribute("fill","currentColor");xlbl2.setAttribute("opacity","0.6");
+  xlbl2.textContent=new Date(xMax).toLocaleDateString(undefined,{month:"short",day:"numeric"});
+  svg.appendChild(xlbl2);
+  // Scatter dots
+  sets.forEach(s=>{
+    const cx=px(new Date(s.timestamp||s.sessionDate).getTime());
+    const cy=py(metric(s));
+    const c=document.createElementNS("http://www.w3.org/2000/svg","circle");
+    c.setAttribute("cx",cx);c.setAttribute("cy",cy);c.setAttribute("r","3");c.setAttribute("fill","var(--accent)");c.setAttribute("opacity","0.5");
+    svg.appendChild(c);
+  });
+  // Trend line: best-set-per-day connecting line
+  const byDay={};
+  sets.forEach(s=>{const d=(s.timestamp||s.sessionDate).slice(0,10);const m=metric(s);if(!byDay[d]||m>byDay[d].m)byDay[d]={t:new Date(s.timestamp||s.sessionDate).getTime(),m}});
+  const dailyMax=Object.values(byDay).sort((a,b)=>a.t-b.t);
+  if(dailyMax.length>1){
+    const path=dailyMax.map((p,i)=>`${i===0?"M":"L"} ${px(p.t).toFixed(1)} ${py(p.m).toFixed(1)}`).join(" ");
+    const line=document.createElementNS("http://www.w3.org/2000/svg","path");
+    line.setAttribute("d",path);line.setAttribute("fill","none");line.setAttribute("stroke","var(--accent)");line.setAttribute("stroke-width","1.5");line.setAttribute("opacity","0.85");
+    svg.appendChild(line);
+  }
+  return svg;
+}
+
+// ===== Migrate Flexify history into native sessions =====
+function migrateFlexifyToSessions(){
+  if(flexifyHistory.length===0){alert("No Flexify history to migrate.");return}
+  if(!confirm(`Migrate ${flexifyHistory.length} Flexify sets into native sessions? They'll be grouped by day. Original Flexify history stays intact.`))return;
+  // Group sets by calendar day (using local date string)
+  const groups={};
+  flexifyHistory.forEach(rec=>{
+    if(!rec.ours)return; // skip unmapped — can't credit them
+    const d=new Date(rec.date);
+    const dayKey=d.toISOString().slice(0,10);
+    if(!groups[dayKey])groups[dayKey]=[];
+    groups[dayKey].push(rec);
+  });
+  const dayKeys=Object.keys(groups).sort();
+  let created=0;
+  dayKeys.forEach(dk=>{
+    const recs=groups[dk];
+    // Skip if a session already exists for this same date with imported flag
+    const existing=sessions.find(s=>s.imported && s.date.slice(0,10)===dk);
+    if(existing)return;
+    const sess={
+      id:"imp_"+dk.replace(/-/g,"")+"_"+Date.now()+Math.floor(Math.random()*1000),
+      date:new Date(dk+"T12:00:00").toISOString(),
+      blockId:null, dayId:null,
+      blockName:"Imported", dayLabel:dk,
+      status:"finished",
+      imported:true,
+      plannedRows:[], // imported sessions have no plan
+      sets:recs.map(r=>({
+        ex:r.ours,
+        type:"straight",
+        weight:r.weight||0,
+        reps:r.reps||0,
+        unit:r.unit||prefs.preferredUnit,
+        timestamp:new Date(r.date).toISOString()
+      }))
+    };
+    sessions.push(sess);
+    created++;
+  });
+  saveSessions();
+  prefs.flexifyMigrated=true;
+  savePrefs();
+  alert(`Migrated ${created} session${created===1?"":"s"} from Flexify history.`);
+  renderHistoryView();
+}
+
+document.getElementById("history-bg").addEventListener("click",e=>{if(e.target.id==="history-bg")closeHistory()});
+
+
 function doResetBlock(){
   mem[curBlock]=makeEmptyBlock(curBlock);
   closeResetModal();
@@ -1662,23 +2140,44 @@ function importFlexifyHistory(file){
 }
 
 // ----- Actual volume calculation -----
-// Returns {totals: {muscle: sets}, sessionsCounted: number, firstDate, lastDate}
+// Pulls from native sessions if any exist (preferred), otherwise falls back to
+// raw Flexify history (legacy). This way, once a user starts tracking natively
+// or migrates their Flexify import, the Actual view uses native sessions.
+// Returns {totals: {muscle: sets}, sessionsCounted: number, firstDate, lastDate, source}
 function calcActualVolume(){
   const now=new Date();
   const cutoff=new Date(now.getTime()-ACTUAL_WINDOW_DAYS*24*60*60*1000);
   const totals={};ALL_MUS.forEach(m=>totals[m]=0);
   let counted=0,firstDate=null,lastDate=null;
+  // Prefer sessions if any exist
+  if(sessions.length>0){
+    sessions.forEach(s=>{
+      // Skip in-progress sessions — they're not finalized data
+      if(s.status==="in_progress")return;
+      s.sets.forEach(st=>{
+        const t=new Date(st.timestamp||s.date);
+        if(t<cutoff)return;
+        const mults=exMuscles(st.ex);
+        const mult=getSetTypeMult(st.type||"straight");
+        Object.entries(mults).forEach(([m,w])=>{totals[m]=(totals[m]||0)+w*mult});
+        counted++;
+        if(!firstDate||t<firstDate)firstDate=t;
+        if(!lastDate||t>lastDate)lastDate=t;
+      });
+    });
+    return {totals, sessionsCounted:counted, firstDate, lastDate, source:"sessions"};
+  }
+  // Fallback: raw Flexify history (no native sessions yet, no migration done)
   flexifyHistory.forEach(rec=>{
     if(rec.date<cutoff)return;
-    if(!rec.ours)return; // unmapped — can't credit to a muscle group
-    // Each row in Flexify history is one set
+    if(!rec.ours)return;
     const mults=exMuscles(rec.ours);
     Object.entries(mults).forEach(([m,w])=>{totals[m]=(totals[m]||0)+w});
     counted++;
     if(!firstDate||rec.date<firstDate)firstDate=rec.date;
     if(!lastDate||rec.date>lastDate)lastDate=rec.date;
   });
-  return {totals, sessionsCounted:counted, firstDate, lastDate};
+  return {totals, sessionsCounted:counted, firstDate, lastDate, source:"flexify"};
 }
 
 // ===== Native tracking: sessions =====
@@ -1776,12 +2275,51 @@ function openWorkoutModal(sessId){
   document.getElementById("workout-sub").textContent=dateStr;
   renderWorkoutBody();
   resetRestTimerLabel();
+  // Attach long-press for rest-duration picker (once)
+  const timerBtn=document.getElementById("workout-timer-btn");
+  if(!timerBtn.dataset.longPressAttached){
+    attachLongPress(timerBtn, openRestDurationPicker, {allowOnInteractive:true});
+    timerBtn.dataset.longPressAttached="1";
+  }
   document.getElementById("workout-bg").classList.add("open");
 }
 function closeWorkoutModal(){
   document.getElementById("workout-bg").classList.remove("open");
   curWorkoutSessId=null;
   stopRestTimer(true);
+  closeRestDurationPicker();
+}
+
+// Rest-duration picker: long-press the timer button to change default duration.
+const REST_OPTIONS=[30,60,90,120,150,180,240,300];
+function openRestDurationPicker(){
+  const pop=document.getElementById("rest-dur-popover");
+  pop.innerHTML="";
+  REST_OPTIONS.forEach(sec=>{
+    const b=document.createElement("button");b.className="rest-dur-chip"+(sec===prefs.defaultRestSec?" active":"");
+    b.type="button";
+    b.textContent=sec<60?sec+"s":(sec%60===0?(sec/60)+"m":Math.floor(sec/60)+":"+String(sec%60).padStart(2,"0"));
+    b.onclick=e=>{
+      e.stopPropagation();
+      prefs.defaultRestSec=sec;savePrefs();
+      closeRestDurationPicker();
+      if(restTimer.id){
+        // Live-restart the running timer with the new duration
+        stopRestTimer(true);
+        startRestTimer(sec);
+      } else {
+        resetRestTimerLabel();
+      }
+    };
+    pop.appendChild(b);
+  });
+  pop.classList.add("open");
+  // Close on outside click
+  setTimeout(()=>document.addEventListener("click", closeRestDurationPickerOnOutside, {once:true}), 0);
+}
+function closeRestDurationPicker(){document.getElementById("rest-dur-popover")?.classList.remove("open")}
+function closeRestDurationPickerOnOutside(e){
+  if(!e.target.closest("#rest-dur-popover")&&!e.target.closest("#workout-timer-btn"))closeRestDurationPicker();
 }
 
 // Returns the array of sets logged so far for a given planned-exercise index in the current session.
@@ -1811,6 +2349,8 @@ function renderWorkoutBody(){
     }
     const head=document.createElement("div");head.className="wo-ex-head";
     const nm=document.createElement("div");nm.className="wo-ex-name";nm.textContent=pr.ex;
+    nm.title="Tap to swap exercise";
+    nm.onclick=()=>openSwapPicker(pi);
     const tinfo=getSetTypeInfo(pr.type);
     const tEl=document.createElement("span");tEl.className="wo-ex-type"+(pr.type!=="straight"?" intensifier":"");tEl.textContent=tinfo.short;tEl.title=tinfo.label;
     head.appendChild(nm);head.appendChild(tEl);
@@ -1877,6 +2417,103 @@ function confirmFinishWorkout(){
   }
 }
 
+// ===== Swap-exercise picker (mid-workout) =====
+let swapCtx=null;
+function openSwapPicker(plannedRowPosition){
+  const s=sessions.find(x=>x.id===curWorkoutSessId);
+  if(!s)return;
+  const pr=s.plannedRows[plannedRowPosition];
+  if(!pr)return;
+  swapCtx={position:plannedRowPosition, originalEx:pr.ex};
+  document.getElementById("swap-title").textContent="Swap "+pr.ex;
+  document.getElementById("swap-search").value="";
+  buildSwapList("");
+  document.getElementById("swap-bg").classList.add("open");
+  setTimeout(()=>document.getElementById("swap-search").focus(),60);
+}
+function closeSwapPicker(){
+  swapCtx=null;
+  document.getElementById("swap-bg").classList.remove("open");
+}
+function buildSwapList(query){
+  const list=document.getElementById("swap-list");
+  list.innerHTML="";
+  const q=query.toLowerCase().trim();
+  Object.entries(EX).forEach(([group,items])=>{
+    const visibleItems=items.filter(([n])=>!q||n.toLowerCase().includes(q));
+    if(!visibleItems.length)return;
+    const groupEl=document.createElement("div");groupEl.className="ex-group";groupEl.textContent=group;list.appendChild(groupEl);
+    visibleItems.forEach(([name])=>{
+      const opt=document.createElement("div");opt.className="ex-option"+(name===swapCtx?.originalEx?" selected":"");
+      opt.textContent=name;
+      opt.onclick=()=>doSwap(name);
+      list.appendChild(opt);
+    });
+  });
+}
+document.getElementById("swap-search").addEventListener("input",e=>buildSwapList(e.target.value));
+function doSwap(newEx){
+  if(!swapCtx)return;
+  const s=sessions.find(x=>x.id===curWorkoutSessId);
+  if(!s){closeSwapPicker();return}
+  const pr=s.plannedRows[swapCtx.position];
+  pr.ex=newEx;
+  // Note: we deliberately do NOT update existing logged sets (they keep their original ex name
+  // for historical accuracy). New sets logged after the swap will use the new ex name.
+  saveSessions();
+  closeSwapPicker();
+  renderWorkoutBody();
+}
+document.getElementById("swap-bg").addEventListener("click",e=>{if(e.target.id==="swap-bg")closeSwapPicker()});
+
+// ===== Target editor (plan-time per-row weight/reps target) =====
+let targetCtx=null;
+function openTargetEditor(dayId, rowIdx){
+  const row=mem[curBlock].days[dayId].rows[rowIdx];
+  if(!row.ex){return} // can't set target without an exercise
+  targetCtx={dayId, rowIdx};
+  document.getElementById("target-title").textContent=row.ex;
+  document.getElementById("target-unit").textContent=prefs.preferredUnit;
+  document.getElementById("target-weight").value=row.target?row.target.weight:"";
+  document.getElementById("target-reps").value=row.target?row.target.reps:"";
+  document.getElementById("target-clear").style.display=row.target?"":"none";
+  document.getElementById("target-bg").classList.add("open");
+  setTimeout(()=>document.getElementById("target-weight").focus(),60);
+}
+function closeTargetEditor(){
+  targetCtx=null;
+  document.getElementById("target-bg").classList.remove("open");
+}
+function saveTarget(){
+  if(!targetCtx)return;
+  const w=parseFloat(document.getElementById("target-weight").value);
+  const r=parseInt(document.getElementById("target-reps").value,10);
+  if(isNaN(w)&&isNaN(r)){
+    // Both empty — treat as clear
+    clearTarget();
+    return;
+  }
+  if(isNaN(w)||w<0||isNaN(r)||r<=0){
+    alert("Please enter a valid weight and reps (or leave both blank to clear).");
+    return;
+  }
+  const row=mem[curBlock].days[targetCtx.dayId].rows[targetCtx.rowIdx];
+  row.target={weight:w, reps:r, unit:prefs.preferredUnit};
+  closeTargetEditor();
+  renderDay(targetCtx?.dayId||curTab);
+  autoSave();
+}
+function clearTarget(){
+  if(!targetCtx)return;
+  const ctx=targetCtx;
+  const row=mem[curBlock].days[ctx.dayId].rows[ctx.rowIdx];
+  delete row.target;
+  closeTargetEditor();
+  renderDay(ctx.dayId);
+  autoSave();
+}
+document.getElementById("target-bg").addEventListener("click",e=>{if(e.target.id==="target-bg")closeTargetEditor()});
+
 // ===== Log-set modal =====
 let logSetCtx=null;
 function openLogSet(plannedRow, slotIdx, existing){
@@ -1884,15 +2521,20 @@ function openLogSet(plannedRow, slotIdx, existing){
   if(!s)return;
   logSetCtx={plannedRow, slotIdx, existing};
   document.getElementById("logset-title").textContent=plannedRow.ex;
-  // Target display
+  // Compute last-session set for this exercise (across any past session, most recent first)
+  const lastSet=findLastSetForExercise(plannedRow.ex, s.id);
+  // Target / hint display: show target if set, else last-session hint if available
   const targetEl=document.getElementById("logset-target");
   if(plannedRow.target){
-    targetEl.textContent=`target ${fmtNum(plannedRow.target.weight)}${plannedRow.target.unit||prefs.preferredUnit} × ${plannedRow.target.reps}`;
+    targetEl.innerHTML=`target <b>${fmtNum(plannedRow.target.weight)}${plannedRow.target.unit||prefs.preferredUnit} × ${plannedRow.target.reps}</b>`;
+  } else if(lastSet){
+    const ago=relativeDateText(new Date(lastSet.timestamp));
+    targetEl.innerHTML=`last time (${ago}): <b>${fmtNum(lastSet.weight)}${lastSet.unit||prefs.preferredUnit} × ${lastSet.reps}</b>`;
   } else {
     targetEl.textContent="";
   }
   document.getElementById("logset-unit").textContent=prefs.preferredUnit;
-  // Pre-fill from existing OR from target OR from last logged set of this exercise this session
+  // Pre-fill priority: existing log → target → last set in this session → last set ever
   const weightInput=document.getElementById("logset-weight");
   const repsInput=document.getElementById("logset-reps");
   if(existing){
@@ -1905,6 +2547,7 @@ function openLogSet(plannedRow, slotIdx, existing){
     // Use last set of this exercise in this session
     const prev=s.sets.filter(st=>st.rowIdx===plannedRow.idx).pop();
     if(prev){weightInput.value=prev.weight;repsInput.value=prev.reps}
+    else if(lastSet){weightInput.value=lastSet.weight;repsInput.value=lastSet.reps}
     else {weightInput.value="";repsInput.value=""}
   }
   // RIR row
@@ -1918,6 +2561,32 @@ function openLogSet(plannedRow, slotIdx, existing){
   document.getElementById("logset-delete").style.display=existing?"":"none";
   document.getElementById("logset-bg").classList.add("open");
   setTimeout(()=>weightInput.focus(),60);
+}
+
+// Find the most recent logged set for a given exercise across all past sessions, excluding
+// the active session (so we show what was done last time, not earlier this workout).
+function findLastSetForExercise(exName, excludeSessionId){
+  let best=null;
+  for(const sess of sessions){
+    if(sess.id===excludeSessionId)continue;
+    for(const st of sess.sets){
+      if(st.ex!==exName)continue;
+      if(!best||new Date(st.timestamp)>new Date(best.timestamp))best=st;
+    }
+  }
+  return best;
+}
+
+function relativeDateText(d){
+  const diffMs=Date.now()-d.getTime();
+  const diffDays=Math.floor(diffMs/(86400000));
+  if(diffDays<=0)return "today";
+  if(diffDays===1)return "yesterday";
+  if(diffDays<7)return diffDays+" days ago";
+  if(diffDays<14)return "1 week ago";
+  if(diffDays<60)return Math.floor(diffDays/7)+" weeks ago";
+  if(diffDays<365)return Math.floor(diffDays/30)+" months ago";
+  return Math.floor(diffDays/365)+" years ago";
 }
 function closeLogSet(){
   logSetCtx=null;
@@ -2155,8 +2824,19 @@ function renderDay(dayId){
       if(dayData.rows[i].sets<MAX_SETS){dayData.rows[i].sets++;num.textContent=dayData.rows[i].sets;updateDayTabLabel(dayId);renderSummary();autoSave()}
     });
     num.onclick=()=>openNumpad(dayId,i,num);
+    // Long-press the number to open the target editor (optional weight/reps target)
+    attachLongPress(num,()=>openTargetEditor(dayId,i),{allowOnInteractive:true});
     ctrl.appendChild(minus);ctrl.appendChild(num);ctrl.appendChild(plus);
     div.appendChild(picker);div.appendChild(chip);div.appendChild(ctrl);
+
+    // Target hint shown below the row if a target is set
+    if(row.target){
+      const hint=document.createElement("div");
+      hint.className="row-target-hint";
+      hint.style.gridColumn="1 / -1";
+      hint.textContent=`@ ${fmtNum(row.target.weight)}${row.target.unit||prefs.preferredUnit} × ${row.target.reps}`;
+      div.appendChild(hint);
+    }
 
     // Long-press on the row toggles linkedToPrev (superset linking with the previous row).
     // Only valid on rows after the first (i>0). Skip if the press is on an interactive child
@@ -2200,8 +2880,9 @@ function toggleSupersetLink(dayId,rowIndex){
 
 // Attach a long-press handler that fires after ~500ms held on an element.
 // Cancels if the pointer moves >10px (likely a scroll) or if a tap-targetable child is hit.
-function attachLongPress(el,action){
+function attachLongPress(el,action,opts){
   const HOLD_MS=500, MOVE_TOL=10;
+  const skipInteractiveCheck=opts&&opts.allowOnInteractive===true;
   let timer=null, startX=0, startY=0, fired=false;
   function isInteractive(target){
     return target.closest && (
@@ -2211,7 +2892,7 @@ function attachLongPress(el,action){
     );
   }
   el.addEventListener("pointerdown",e=>{
-    if(isInteractive(e.target))return;
+    if(!skipInteractiveCheck && isInteractive(e.target))return;
     fired=false; startX=e.clientX; startY=e.clientY;
     if(timer)clearTimeout(timer);
     timer=setTimeout(()=>{
@@ -2230,6 +2911,8 @@ function attachLongPress(el,action){
   });
   // Prevent context menu on long-press (right-click on desktop, hold on mobile)
   el.addEventListener("contextmenu",e=>{if(fired)e.preventDefault()});
+  // If long-press fired, suppress the subsequent click event (capture phase, before user handlers)
+  el.addEventListener("click",e=>{if(fired){e.stopPropagation();e.preventDefault();fired=false}},true);
 }
 
 // ----- Set-type popover (opens from a chip) -----
@@ -2317,12 +3000,14 @@ function renderSummary(){
   const el=document.getElementById("sum");
   const openCards=new Set(Array.from(document.querySelectorAll(".m-card.open")).map(el2=>el2.dataset.muscle));
 
-  const hasHistory=flexifyHistory.length>0;
+  // Actual mode is available if either sessions or imported Flexify history exists
+  const hasFinishedSessions=sessions.some(s=>s.status!=="in_progress"&&s.sets.length>0);
+  const hasHistory=hasFinishedSessions||flexifyHistory.length>0;
   const actualDisabled=!hasHistory;
   el.innerHTML=`
     <div class="sum-toggle">
       <button id="sum-planned" class="${summaryMode==='planned'?'active':''}">Planned</button>
-      <button id="sum-actual" class="${summaryMode==='actual'?'active':''}" ${actualDisabled?'disabled style="opacity:0.4;cursor:not-allowed"':''} title="${actualDisabled?'Import Flexify history first':''}">Actual (last 4 wks)</button>
+      <button id="sum-actual" class="${summaryMode==='actual'?'active':''}" ${actualDisabled?'disabled style="opacity:0.4;cursor:not-allowed"':''} title="${actualDisabled?'Log a workout or import Flexify history first':''}">Actual (last 4 wks)</button>
     </div>
     <div class="sum-meta" id="sum-meta"></div>
     <div class="legend" id="sum-legend"></div>
@@ -2409,13 +3094,14 @@ function renderSummary(){
     const range=(actual.firstDate&&actual.lastDate)
       ? `${actual.firstDate.toISOString().slice(0,10)} → ${actual.lastDate.toISOString().slice(0,10)}`
       : "no sets in window";
-    meta.textContent=`Actual volume from Flexify history — ${actual.sessionsCounted} set${actual.sessionsCounted===1?"":"s"}, ${range}`;
+    const sourceLabel=actual.source==="sessions"?"native sessions":"Flexify history";
+    meta.textContent=`Actual volume from ${sourceLabel} — ${actual.sessionsCounted} set${actual.sessionsCounted===1?"":"s"}, ${range}`;
 
     if(actual.sessionsCounted===0){
       sg.innerHTML=`<div class="empty-state">
         <div class="empty-state-icon"><i class="ti ti-calendar-off"></i></div>
         <div class="empty-state-title">No sets in the last 4 weeks</div>
-        <div class="empty-state-text">Re-import your Flexify history to refresh, or check that your CSV includes recent sessions.</div>
+        <div class="empty-state-text">${actual.source==="sessions"?"Log a workout to populate this view.":"Re-import your Flexify history to refresh."}</div>
       </div>`;
       return;
     }
@@ -2423,14 +3109,30 @@ function renderSummary(){
     const byMuscleExercise={};
     ALL_MUS.forEach(m=>byMuscleExercise[m]={});
     const cutoff=new Date(Date.now()-ACTUAL_WINDOW_DAYS*24*60*60*1000);
-    flexifyHistory.forEach(rec=>{
-      if(rec.date<cutoff||!rec.ours)return;
-      const mults=exMuscles(rec.ours);
-      Object.entries(mults).forEach(([m,w])=>{
-        if(!byMuscleExercise[m][rec.ours])byMuscleExercise[m][rec.ours]={count:0,weight:w};
-        byMuscleExercise[m][rec.ours].count+=1;
+    if(actual.source==="sessions"){
+      sessions.forEach(s=>{
+        if(s.status==="in_progress")return;
+        s.sets.forEach(st=>{
+          const t=new Date(st.timestamp||s.date);
+          if(t<cutoff)return;
+          const mults=exMuscles(st.ex);
+          const mult=getSetTypeMult(st.type||"straight");
+          Object.entries(mults).forEach(([m,w])=>{
+            if(!byMuscleExercise[m][st.ex])byMuscleExercise[m][st.ex]={count:0,weight:w*mult};
+            byMuscleExercise[m][st.ex].count+=1;
+          });
+        });
       });
-    });
+    } else {
+      flexifyHistory.forEach(rec=>{
+        if(rec.date<cutoff||!rec.ours)return;
+        const mults=exMuscles(rec.ours);
+        Object.entries(mults).forEach(([m,w])=>{
+          if(!byMuscleExercise[m][rec.ours])byMuscleExercise[m][rec.ours]={count:0,weight:w};
+          byMuscleExercise[m][rec.ours].count+=1;
+        });
+      });
+    }
     ALL_MUS.forEach(m=>{
       const tot=r05(setsByMuscle[m]||0);
       grand+=tot;
