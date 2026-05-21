@@ -1379,13 +1379,24 @@ function renderSummary(){
       <button id="sum-actual" class="${summaryMode==='actual'?'active':''}" ${actualDisabled?'disabled style="opacity:0.4;cursor:not-allowed"':''} title="${actualDisabled?'Import Flexify history first':''}">Actual (last 4 wks)</button>
     </div>
     <div class="sum-meta" id="sum-meta"></div>
-    <div class="legend"><span><span class="leg-dot" style="background:var(--success-text)"></span>≥15</span><span><span class="leg-dot" style="background:var(--text2)"></span>10–14</span><span><span class="leg-dot" style="background:var(--warn-text)"></span>7–9</span><span><span class="leg-dot" style="background:var(--danger-text)"></span>≤6</span></div>
+    <div class="legend" id="sum-legend"></div>
     <div class="summary-grid" id="sg"></div>`;
 
   document.getElementById("sum-planned").onclick=()=>{summaryMode="planned";renderSummary()};
   document.getElementById("sum-actual").onclick=()=>{if(!actualDisabled){summaryMode="actual";renderSummary()}};
 
   if(summaryMode==="actual"&&!hasHistory)summaryMode="planned";
+
+  // Thresholds: planned mode = weekly targets; actual mode = 4× because it's a 4-week window.
+  const scale=summaryMode==="actual"?4:1;
+  const HIGH=15*scale, LOW=6*scale, MID_HIGH=9*scale, NEUTRAL_LOW=10*scale;
+  function classify(t){return t>=HIGH?"high":t<=LOW?"low":t<NEUTRAL_LOW?"medium":"neutral"}
+
+  document.getElementById("sum-legend").innerHTML=
+    `<span><span class="leg-dot" style="background:var(--success-text)"></span>≥${HIGH}</span>`+
+    `<span><span class="leg-dot" style="background:var(--text2)"></span>${NEUTRAL_LOW}–${HIGH-1}</span>`+
+    `<span><span class="leg-dot" style="background:var(--warn-text)"></span>${LOW+1}–${MID_HIGH}</span>`+
+    `<span><span class="leg-dot" style="background:var(--danger-text)"></span>≤${LOW}</span>`;
 
   const sg=document.getElementById("sg");
   const meta=document.getElementById("sum-meta");
@@ -1399,7 +1410,7 @@ function renderSummary(){
       const perDay=dayTotals.map(t=>r05(t[m]||0));
       const tot=r05(perDay.reduce((a,b)=>a+b,0));
       grand+=tot;
-      const cls=tot>=15?"high":tot<=6?"low":tot<10?"medium":"neutral";
+      const cls=classify(tot);
       const card=document.createElement("div");card.className="m-card "+cls+(openCards.has(m)?" open":"");card.dataset.muscle=m;
       const nameRow=document.createElement("div");nameRow.className="m-name";nameRow.innerHTML=`<span>${m}</span><span class="chevron">▾</span>`;
       const valsRow=document.createElement("div");valsRow.className="m-vals";
@@ -1439,7 +1450,7 @@ function renderSummary(){
     ALL_MUS.forEach(m=>{
       const tot=r05(setsByMuscle[m]||0);
       grand+=tot;
-      const cls=tot>=15?"high":tot<=6?"low":tot<10?"medium":"neutral";
+      const cls=classify(tot);
       const card=document.createElement("div");card.className="m-card "+cls+(openCards.has(m)?" open":"");card.dataset.muscle=m;
       const nameRow=document.createElement("div");nameRow.className="m-name";nameRow.innerHTML=`<span>${m}</span><span class="chevron">▾</span>`;
       const valsRow=document.createElement("div");valsRow.className="m-vals";
