@@ -9,18 +9,21 @@
 <meta name="apple-mobile-web-app-title" content="Training">
 <title>Training Program</title>
 <link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <style>
-:root{--bg:#ffffff;--bg2:#f5f5f4;--bg3:#eeede9;--text:#1a1a1a;--text2:#6b6b6b;--text3:#a0a0a0;--border:rgba(0,0,0,0.12);--border2:rgba(0,0,0,0.22);--radius:8px;--danger-bg:#fcebeb;--danger-text:#a32d2d;--warn-bg:#fcf3d6;--warn-text:#8a6300;--success-bg:#eaf3de;--success-text:#3b6d11;--shadow:rgba(0,0,0,0.15);--overlay:rgba(0,0,0,0.4)}
-@media(prefers-color-scheme:dark){:root{--bg:#1c1c1e;--bg2:#2c2c2e;--bg3:#3a3a3c;--text:#f2f2f7;--text2:#aeaeb2;--text3:#636366;--border:rgba(255,255,255,0.12);--border2:rgba(255,255,255,0.22);--danger-bg:#3a1a1a;--danger-text:#f09595;--warn-bg:#3a2e0f;--warn-text:#e6c45f;--success-bg:#1a2e10;--success-text:#97c459;--shadow:rgba(0,0,0,0.6);--overlay:rgba(0,0,0,0.65)}}
+:root{--bg:#ffffff;--bg2:#f5f4ef;--bg3:#ecebe5;--text:#1a1a1a;--text2:#6b6b6b;--text3:#a0a0a0;--border:rgba(0,0,0,0.12);--border2:rgba(0,0,0,0.22);--radius:8px;--danger-bg:#fcebeb;--danger-text:#9a2727;--warn-bg:#fcf3d6;--warn-text:#7a5400;--success-bg:#eaf3de;--success-text:#3b6d11;--shadow:rgba(0,0,0,0.15);--overlay:rgba(0,0,0,0.4);--accent:#1d5670;--accent-text:#ffffff;--ease:cubic-bezier(0.4,0,0.2,1)}
+@media(prefers-color-scheme:dark){:root{--bg:#1c1c1e;--bg2:#2c2c2e;--bg3:#3a3a3c;--text:#f2f2f7;--text2:#aeaeb2;--text3:#636366;--border:rgba(255,255,255,0.12);--border2:rgba(255,255,255,0.22);--danger-bg:#3a1a1a;--danger-text:#f09595;--warn-bg:#3a2e0f;--warn-text:#e6c45f;--success-bg:#1a2e10;--success-text:#97c459;--shadow:rgba(0,0,0,0.6);--overlay:rgba(0,0,0,0.65);--accent:#5fb7d4;--accent-text:#0a1a22}}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-feature-settings:"cv11","ss01"}
 body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .top-bar{padding:12px 14px 0;flex-shrink:0}
 .block-bar{display:flex;gap:6px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
 .block-buttons{display:flex;gap:6px;align-items:center;flex-wrap:wrap;flex:1;min-width:0}
 .block-btn{padding:5px 11px;font-size:12px;font-weight:500;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text2);cursor:pointer;white-space:nowrap;flex-shrink:0;font-family:inherit;max-width:160px;overflow:hidden;text-overflow:ellipsis}
-.block-btn.active{background:var(--text);color:var(--bg);border-color:var(--text)}
+.block-btn.active{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
 .block-actions{display:flex;gap:6px;margin-left:auto}
 .icon-btn{padding:6px 10px;font-size:15px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text2);cursor:pointer;display:flex;align-items:center;min-height:32px;font-family:inherit}
 .icon-btn:active{background:var(--bg2)}
@@ -31,16 +34,16 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .block-label-row label{font-size:11px;color:var(--text2);white-space:nowrap;text-transform:uppercase;letter-spacing:0.05em}
 .editable-label{font-size:13px;font-weight:500;border:none;border-bottom:0.5px solid var(--border2);background:transparent;color:var(--text);padding:2px 0;width:100%;outline:none}
 .tabs{display:flex;border-bottom:0.5px solid var(--border);flex-shrink:0}
-.tab{flex:1;padding:8px 1px;font-size:12px;font-weight:500;text-align:center;cursor:pointer;border:none;background:none;color:var(--text2);border-bottom:2px solid transparent;margin-bottom:-1px;line-height:1.2;min-height:44px;min-width:0;overflow:hidden;font-family:inherit}
-.tab.active{color:var(--text);border-bottom-color:var(--text)}
+.tab{flex:1;padding:8px 1px;font-size:12px;font-weight:500;text-align:center;cursor:pointer;border:none;background:none;color:var(--text2);border-bottom:2px solid transparent;margin-bottom:-1px;line-height:1.2;min-height:44px;min-width:0;overflow:hidden;font-family:inherit;transition:color 0.15s var(--ease),border-color 0.15s var(--ease)}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
 /* Tighter sizing when many days are present */
 .tabs.compact .tab{font-size:11px;padding:8px 0}
 .tabs.compact .tab-sub{font-size:9px}
 .tab-sub{display:block;font-size:10px;font-weight:400;color:var(--text3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 2px}
 .tab.active .tab-sub{color:var(--text2)}
-.tab-sum{flex:1;padding:8px 1px;font-size:12px;font-weight:500;text-align:center;cursor:pointer;border:none;background:none;color:var(--text2);border-bottom:2px solid transparent;margin-bottom:-1px;min-height:44px;min-width:0;font-family:inherit}
+.tab-sum{flex:1;padding:8px 1px;font-size:12px;font-weight:500;text-align:center;cursor:pointer;border:none;background:none;color:var(--text2);border-bottom:2px solid transparent;margin-bottom:-1px;min-height:44px;min-width:0;font-family:inherit;transition:color 0.15s var(--ease),border-color 0.15s var(--ease)}
 .tabs.compact .tab-sum{font-size:11px}
-.tab-sum.active{color:var(--text);border-bottom-color:var(--text)}
+.tab-sum.active{color:var(--accent);border-bottom-color:var(--accent)}
 .day-mgr{display:flex;align-items:center;gap:8px;padding:6px 14px;border-bottom:0.5px solid var(--border);font-size:11px;color:var(--text2);flex-shrink:0}
 .day-mgr-label{text-transform:uppercase;letter-spacing:0.05em;font-weight:500;margin-right:auto}
 .day-mgr-btn{width:30px;height:30px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit;touch-action:manipulation}
@@ -57,9 +60,23 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .flexify-status.error{color:var(--danger-text)}
 .panels{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .panel{display:none;padding:12px 14px}
-.panel.active{display:block}
+.panel.active{display:block;animation:panelFadeIn 0.18s var(--ease)}
+@keyframes panelFadeIn{from{opacity:0;transform:translateY(2px)}to{opacity:1;transform:translateY(0)}}
 .day-label-row{display:flex;align-items:center;margin-bottom:10px}
-.exercise-row{display:grid;grid-template-columns:1fr 108px;gap:8px;align-items:center;margin-bottom:8px;position:relative}
+.exercise-row{display:grid;grid-template-columns:1fr 32px 100px;gap:6px;align-items:center;margin-bottom:8px;position:relative}
+.set-type-chip{height:30px;border-radius:var(--radius);border:0.5px solid var(--border);background:var(--bg);color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit;touch-action:manipulation;letter-spacing:0.02em;transition:background-color 0.15s var(--ease),color 0.15s var(--ease),border-color 0.15s var(--ease)}
+.set-type-chip:active{background:var(--bg2)}
+.set-type-chip.intensifier{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
+.set-type-popover{position:absolute;top:100%;right:0;margin-top:4px;background:var(--bg);border:0.5px solid var(--border2);border-radius:var(--radius);z-index:150;box-shadow:0 4px 16px var(--shadow);min-width:200px;display:none;overflow:hidden}
+.set-type-popover.open{display:block}
+.set-type-option{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 11px;font-size:13px;cursor:pointer;color:var(--text);border-bottom:0.5px solid var(--border)}
+.set-type-option:last-child{border-bottom:none}
+.set-type-option:active{background:var(--bg2)}
+.set-type-option.selected{background:var(--bg2);font-weight:500}
+.set-type-option-label{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
+.set-type-option-mult{font-size:11px;color:var(--text2);font-variant-numeric:tabular-nums}
+.set-type-option-name{font-weight:500;line-height:1.2}
+.set-type-option-sub{font-size:11px;color:var(--text2);line-height:1.2}
 .sets-ctrl{display:flex;align-items:center;gap:2px;justify-content:flex-end}
 .s-btn{width:36px;height:36px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg2);color:var(--text);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;user-select:none;-webkit-user-select:none;touch-action:manipulation}
 .s-btn:active{background:var(--bg3);transform:scale(0.95)}
@@ -85,24 +102,28 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .legend{display:flex;gap:10px;margin-bottom:10px;font-size:11px;color:var(--text2);align-items:center;flex-wrap:wrap}
 .sum-toggle{display:flex;gap:0;margin-bottom:10px;border-radius:var(--radius);border:0.5px solid var(--border2);overflow:hidden;width:fit-content}
 .sum-toggle button{padding:5px 12px;font-size:11px;font-weight:500;border:none;background:var(--bg);color:var(--text2);cursor:pointer;font-family:inherit;letter-spacing:0.03em}
-.sum-toggle button.active{background:var(--text);color:var(--bg)}
+.sum-toggle button.active{background:var(--accent);color:var(--accent-text)}
 .sum-toggle button:first-child{border-right:0.5px solid var(--border2)}
 .sum-meta{font-size:11px;color:var(--text2);margin-bottom:6px}
 .leg-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:3px}
 .summary-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-.m-card{border-radius:var(--radius);padding:10px 12px;cursor:pointer;transition:transform 0.08s ease,opacity 0.08s ease;user-select:none;-webkit-user-select:none}
+.empty-state{grid-column:1/-1;padding:36px 20px;text-align:center;border-radius:var(--radius);background:var(--bg2);border:0.5px dashed var(--border2)}
+.empty-state-icon{font-size:36px;color:var(--accent);margin-bottom:10px;opacity:0.75;line-height:1}
+.empty-state-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px}
+.empty-state-text{font-size:12px;color:var(--text2);max-width:280px;margin:0 auto;line-height:1.5}
+.m-card{border-radius:var(--radius);padding:12px 14px;cursor:pointer;transition:transform 0.08s ease,opacity 0.08s ease,background-color 0.2s var(--ease);user-select:none;-webkit-user-select:none}
 .m-card:active{transform:scale(0.97);opacity:0.85}
 .m-card.neutral{background:var(--bg2)}
 .m-card.low{background:var(--danger-bg)}
 .m-card.medium{background:var(--warn-bg)}
 .m-card.high{background:var(--success-bg)}
-.m-name{font-size:11px;margin-bottom:3px;display:flex;justify-content:space-between;align-items:center}
+.m-name{font-size:12px;margin-bottom:4px;display:flex;justify-content:space-between;align-items:center;font-weight:500;letter-spacing:0.01em}
 .m-card.neutral .m-name{color:var(--text2)}
 .m-card.low .m-name{color:var(--danger-text)}
 .m-card.medium .m-name{color:var(--warn-text)}
 .m-card.high .m-name{color:var(--success-text)}
-.m-vals{display:flex;gap:5px;align-items:baseline}
-.m-total{font-size:19px;font-weight:500}
+.m-vals{display:flex;gap:6px;align-items:baseline;flex-wrap:wrap}
+.m-total{font-size:26px;font-weight:600;line-height:1;letter-spacing:-0.02em;font-variant-numeric:tabular-nums}
 .m-card.neutral .m-total{color:var(--text)}
 .m-card.low .m-total{color:var(--danger-text)}
 .m-card.medium .m-total{color:var(--warn-text)}
@@ -112,7 +133,8 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .m-card.low .m-detail{border-top-color:rgba(163,45,45,0.2)}
 .m-card.medium .m-detail{border-top-color:rgba(138,99,0,0.2)}
 .m-card.high .m-detail{border-top-color:rgba(59,109,17,0.2)}
-.m-card.open .m-detail{display:block}
+.m-card.open .m-detail{display:block;animation:detailFadeIn 0.16s var(--ease)}
+@keyframes detailFadeIn{from{opacity:0;transform:translateY(-2px)}to{opacity:1;transform:translateY(0)}}
 .m-detail-day{font-size:11px;font-weight:500;margin:5px 0 2px}
 .m-card.neutral .m-detail-day{color:var(--text2)}
 .m-card.low .m-detail-day{color:var(--danger-text)}
@@ -123,7 +145,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .m-card.low .m-detail-ex{color:var(--danger-text)}
 .m-card.medium .m-detail-ex{color:var(--warn-text)}
 .m-card.high .m-detail-ex{color:var(--success-text)}
-.chevron{font-size:11px;transition:transform 0.2s}
+.chevron{font-size:11px;opacity:0.6;transition:transform 0.2s var(--ease)}
 .m-card.open .chevron{transform:rotate(180deg)}
 .total-card{grid-column:1/-1;background:var(--bg2);border-radius:var(--radius);padding:10px 12px;display:flex;justify-content:space-between;align-items:center;margin-top:2px}
 
@@ -143,6 +165,37 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .modal-actions .primary{background:var(--text);color:var(--bg);border-color:var(--text)}
 .modal-actions .danger{background:var(--danger-bg);color:var(--danger-text);border-color:var(--danger-text)}
 .modal-text{font-size:14px;color:var(--text);text-align:center;line-height:1.5;margin:6px 0 4px}
+
+/* Help modal */
+.help-modal{background:var(--bg);border-radius:12px;width:100%;max-width:520px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 8px 32px var(--shadow);overflow:hidden}
+.help-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:0.5px solid var(--border);flex-shrink:0}
+.help-title{font-size:15px;font-weight:600;color:var(--text)}
+.help-close{width:30px;height:30px;border-radius:50%;border:none;background:var(--bg2);color:var(--text);font-size:18px;line-height:1;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center}
+.help-close:active{background:var(--bg3)}
+.help-body{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:8px 16px 16px;flex:1;min-height:0}
+.help-section{margin:6px 0;border-bottom:0.5px solid var(--border);padding:6px 0}
+.help-section:last-child{border-bottom:none}
+.help-section summary{font-size:13px;font-weight:600;color:var(--text);cursor:pointer;padding:8px 0;list-style:none;outline:none}
+.help-section summary::-webkit-details-marker{display:none}
+.help-section summary::before{content:"›";display:inline-block;width:16px;color:var(--text3);transition:transform 0.15s var(--ease);font-weight:400;font-size:16px}
+.help-section[open] summary::before{transform:rotate(90deg)}
+.help-section summary:active{color:var(--accent)}
+.help-section p,.help-section ul,.help-section table{font-size:13px;color:var(--text);line-height:1.55;margin:6px 0 8px 16px}
+.help-section ul{padding-left:18px}
+.help-section li{margin-bottom:3px}
+.help-section b{font-weight:600}
+.help-section i{font-style:italic;color:var(--text2)}
+.help-note{font-size:12px;color:var(--text2);background:var(--bg2);padding:8px 10px;border-radius:var(--radius);margin:6px 0 8px 16px !important;border-left:3px solid var(--accent)}
+.help-table{width:calc(100% - 16px);border-collapse:collapse;font-size:12px;margin-left:16px !important}
+.help-table th,.help-table td{padding:5px 6px;border-bottom:0.5px solid var(--border);text-align:left;vertical-align:top}
+.help-table th{font-size:11px;color:var(--text2);font-weight:500;text-transform:uppercase;letter-spacing:0.03em}
+.help-table td:first-child,.help-table th:first-child{text-align:center;width:32px}
+.help-table td:nth-child(3),.help-table th:nth-child(3){text-align:right;width:36px;font-variant-numeric:tabular-nums;color:var(--text2)}
+.help-swatch{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;vertical-align:middle;border:0.5px solid var(--border)}
+.help-swatch.low{background:var(--danger-bg)}
+.help-swatch.medium{background:var(--warn-bg)}
+.help-swatch.neutral{background:var(--bg2)}
+.help-swatch.high{background:var(--success-bg)}
 
 /* Custom exercise editor */
 .ce-modal{background:var(--bg);border-radius:12px;padding:16px;width:100%;max-width:340px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 8px 32px var(--shadow)}
@@ -179,6 +232,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
       <button class="icon-btn" onclick="addBlock()" title="Add new block" aria-label="Add new block">＋</button>
       <button class="icon-btn" onclick="confirmDeleteBlock()" title="Delete this block" aria-label="Delete this block">🗑</button>
       <button class="icon-btn" onclick="confirmResetBlock()" title="Reset this block" aria-label="Reset this block"><i class="ti ti-refresh"></i></button>
+      <button class="icon-btn" onclick="openHelp()" title="Help" aria-label="Open help">?</button>
     </div>
     <span class="save-status saved" id="save-status">Saved</span>
   </div>
@@ -282,6 +336,106 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
       <button id="ce-reset" onclick="resetBuiltinOverride()" style="display:none">Reset to default</button>
       <button class="danger" id="ce-delete" onclick="deleteCustomExercise()" style="display:none">Delete</button>
       <button class="primary" onclick="saveCustomExercise()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Help modal -->
+<div class="modal-bg" id="help-bg">
+  <div class="help-modal">
+    <div class="help-header">
+      <span class="help-title">Help</span>
+      <button class="help-close" onclick="closeHelp()" aria-label="Close">×</button>
+    </div>
+    <div class="help-body" id="help-body">
+      <details open class="help-section">
+        <summary>Getting started</summary>
+        <p>This app helps you plan resistance-training programs and analyze their weekly volume per muscle group. A <b>block</b> is a multi-day training program. The <b>Summary</b> tab shows weighted sets per muscle group across the week, with colour coding to flag muscle groups that may be under- or over-trained.</p>
+        <p>Each row on a day tab is one exercise. Pick the exercise from the dropdown, then use −/+ or tap the number to set how many sets you plan to do.</p>
+      </details>
+
+      <details class="help-section">
+        <summary>Blocks (A, B, C…)</summary>
+        <p>Tap a block button to switch to it. The top-right icons let you:</p>
+        <ul>
+          <li><b>＋</b> Add a new block (up to 26 total, A–Z)</li>
+          <li><b>🗑</b> Delete the current block (asks first)</li>
+          <li><b>↻</b> Reset the current block to empty</li>
+        </ul>
+        <p>The text field below the block buttons lets you rename the current block (e.g. "Hypertrophy Phase 1"). Changes save automatically.</p>
+      </details>
+
+      <details class="help-section">
+        <summary>Days</summary>
+        <p>The Days strip below the tabs lets you add or remove days from the current block (between 1 and 7). The day tab shows your label and total physical sets in parentheses, e.g. "Day 1 — Push (24)".</p>
+        <p>Each day has a label field at the top. Set it to whatever helps you remember (e.g. "Push", "Legs/Push", "Heavy day").</p>
+      </details>
+
+      <details class="help-section">
+        <summary>Set type chips (S, A, D, C, R, M)</summary>
+        <p>Each exercise row has a small chip between the exercise dropdown and the set-count buttons. Tap it to choose how that exercise's sets should be counted toward your weekly volume. The chip turns into your accent colour when an intensifier is selected.</p>
+        <table class="help-table">
+          <tr><th>Chip</th><th>Type</th><th>×</th><th>What "1 set" means</th></tr>
+          <tr><td><b>S</b></td><td>Straight</td><td>1.0</td><td>One standard set to ~0–3 RIR</td></tr>
+          <tr><td><b>A</b></td><td>AMRAP</td><td>1.0</td><td>One set taken to failure</td></tr>
+          <tr><td><b>D</b></td><td>Drop set</td><td>1.5</td><td>One top set + 2–3 weight drops</td></tr>
+          <tr><td><b>C</b></td><td>Cluster</td><td>1.5</td><td>5×3 or similar with very short rest</td></tr>
+          <tr><td><b>R</b></td><td>Rest-pause</td><td>2.0</td><td>One set + 2–3 short-rest mini-sets</td></tr>
+          <tr><td><b>M</b></td><td>Myo-rep</td><td>2.5</td><td>Activation set + 3–5 mini-sets at short rest</td></tr>
+        </table>
+        <p class="help-note">Multipliers approximate the hypertrophy stimulus of an intensified set vs a single straight set. They're estimates from coaching literature — wide error bars apply. Importantly, <b>"1 set" of myo-rep means one full activation+mini-sets sequence</b>, not each mini-set. The number on the row is how many such sequences you're doing.</p>
+      </details>
+
+      <details class="help-section">
+        <summary>Exercise library</summary>
+        <p>Tap an exercise dropdown to pick from grouped categories (Chest, Back/Lats, etc.). The list scrolls and has a search field at the top.</p>
+        <p>Each row has a small pencil (✎) icon that opens an editor where you can:</p>
+        <ul>
+          <li><b>Built-in exercises:</b> adjust the primary/secondary muscle weights to your liking. The name is locked. If you've edited a built-in, a <i>Reset to default</i> button restores the original.</li>
+          <li><b>Custom exercises:</b> fully editable name and muscles. <i>Delete</i> removes the exercise and clears it from any row using it.</li>
+        </ul>
+        <p>Tap <b>＋ Add custom exercise</b> at the bottom of any dropdown to create a new one. Custom exercises appear in their own "Custom" group at the bottom.</p>
+        <p><b>Muscle weights:</b> primary = 1.0 (the exercise's main target), secondary = 0.5 (a meaningful contributor). The summary multiplies your sets by these weights.</p>
+      </details>
+
+      <details class="help-section">
+        <summary>Summary tab</summary>
+        <p>Shows weekly volume per muscle group. Tap any muscle card to expand a per-day exercise breakdown.</p>
+        <p><b>Colour coding (Planned mode):</b></p>
+        <ul>
+          <li><span class="help-swatch low"></span> ≤6 sets/week — likely too little</li>
+          <li><span class="help-swatch medium"></span> 7–9 sets/week — minimum effective range</li>
+          <li><span class="help-swatch neutral"></span> 10–14 sets/week — solid maintenance/growth</li>
+          <li><span class="help-swatch high"></span> ≥15 sets/week — high-volume range</li>
+        </ul>
+        <p>The <b>Planned / Actual</b> toggle at the top switches between your planned volume and your actual logged volume from imported Flexify history. Actual mode uses the last 4 weeks of history and scales the thresholds by 4× (so ≤24, 25–36, 40–59, ≥60).</p>
+      </details>
+
+      <details class="help-section">
+        <summary>Flexify integration</summary>
+        <p>The Flexify bar below the Days strip has two buttons:</p>
+        <ul>
+          <li><b>Export plan</b> — saves the current block as a Flexify-compatible CSV file. Each day becomes a Flexify plan titled <i>Block Name - Day Label</i>. Exercises without a Flexify equivalent are skipped (you'll see a count in the status line).</li>
+          <li><b>Import history</b> — opens a file picker. Choose your <i>graphs.csv</i> exported from Flexify. The app reads every logged set, maps Flexify exercise names to ours, and stores them locally. Re-importing replaces the previous data.</li>
+        </ul>
+        <p>To get the most out of Actual mode, re-export Flexify history periodically so the comparison stays fresh.</p>
+      </details>
+
+      <details class="help-section">
+        <summary>Storage &amp; privacy</summary>
+        <p>All your data lives in your phone's browser storage (localStorage). Nothing is uploaded anywhere. If you clear your browser data, your blocks and imported history are erased — there's currently no cloud backup or sync.</p>
+        <p>To move your data between devices, you'd need to re-create blocks manually or use the export feature to take them through Flexify.</p>
+      </details>
+
+      <details class="help-section">
+        <summary>Tips</summary>
+        <ul>
+          <li><b>Hold</b> the −/+ buttons to repeat-increment quickly.</li>
+          <li><b>Tap the number</b> between −/+ to enter a value directly with a numpad.</li>
+          <li>If the keyboard pops up unwantedly when you tap a dropdown, tap on the list area instead of the search field — it's read-only by default and only activates the keyboard if you explicitly tap it.</li>
+          <li>The save indicator briefly shows "Saving…" then "Saved" — every change is auto-persisted.</li>
+        </ul>
+      </details>
     </div>
   </div>
 </div>
@@ -425,6 +579,37 @@ function nextBlockId(){
 }
 const MIN_DAYS=1,MAX_DAYS=7;
 const MAX_SETS=99;
+
+// Set-type system: each exercise row has a "type" indicating straight sets vs an intensifier.
+// Multipliers convert physical sets → effective Israetel-equivalent sets for the volume model.
+// Stored separately so the user can edit them in a future settings screen.
+const SET_TYPE_DEFAULTS={
+  straight:    {label:"Straight",  short:"S", mult:1.0, sub:"Standard sets to ~0-3 RIR"},
+  amrap:       {label:"AMRAP",     short:"A", mult:1.0, sub:"To failure; same volume as a straight set"},
+  drop:        {label:"Drop set",  short:"D", mult:1.5, sub:"Top set + 2-3 drops in weight"},
+  cluster:     {label:"Cluster",   short:"C", mult:1.5, sub:"5×3 with short rest, etc."},
+  restpause:   {label:"Rest-pause",short:"R", mult:2.0, sub:"1 set + 2-3 short-rest mini-sets"},
+  myorep:      {label:"Myo-rep",   short:"M", mult:2.5, sub:"Activation set + 3-5 mini-sets"}
+};
+const SET_TYPE_KEYS=["straight","amrap","drop","cluster","restpause","myorep"];
+const SET_TYPE_OVERRIDES_KEY="trainblock_set_type_overrides_v1";
+let setTypeMultipliers={}; // overrides; merged with defaults via getSetTypeMult
+
+function loadSetTypeOverrides(){
+  try{
+    const raw=localStorage.getItem(SET_TYPE_OVERRIDES_KEY);
+    if(raw){
+      const parsed=JSON.parse(raw);
+      if(parsed&&typeof parsed==="object")setTypeMultipliers=parsed;
+    }
+  }catch(e){setTypeMultipliers={}}
+}
+function saveSetTypeOverrides(){try{localStorage.setItem(SET_TYPE_OVERRIDES_KEY,JSON.stringify(setTypeMultipliers))}catch(e){}}
+function getSetTypeMult(key){
+  if(setTypeMultipliers[key]!==undefined)return setTypeMultipliers[key];
+  return (SET_TYPE_DEFAULTS[key]||SET_TYPE_DEFAULTS.straight).mult;
+}
+function getSetTypeInfo(key){return SET_TYPE_DEFAULTS[key]||SET_TYPE_DEFAULTS.straight}
 const CUSTOM_GROUP="Custom";
 const CUSTOM_KEY="trainblock_custom_v1";
 let curBlock="A",curTab="d1",activeDropdown=null;
@@ -496,7 +681,9 @@ function rebuildEX(){
   }
 }
 
-function makeEmptyDay(){return{label:"",rows:Array(10).fill(null).map(()=>({ex:"",sets:0}))}}
+function makeEmptyDay(){return{label:"",rows:Array(10).fill(null).map(()=>({ex:"",sets:0,type:"straight"}))}}
+// Safe read of a row's set type (older saved rows may lack the field)
+function rowType(row){return (row&&row.type&&SET_TYPE_DEFAULTS[row.type])?row.type:"straight"}
 function makeEmptyBlock(id){return{id,name:"Block "+id,days:{d1:makeEmptyDay(),d2:makeEmptyDay(),d3:makeEmptyDay()}}}
 
 const mem={};
@@ -677,7 +864,7 @@ function rebuildTabsAndPanels(){
   });
 }
 
-function syncDayTabs(){curDayIds().forEach(d=>{const el=document.getElementById("tabsub-"+d);if(el)el.textContent=mem[curBlock].days[d].label})}
+function syncDayTabs(){curDayIds().forEach(d=>updateDayTabLabel(d))}
 
 // Rebuilds the block button row from the current BLOCKS array.
 function rebuildBlockButtons(){
@@ -870,6 +1057,11 @@ function confirmResetBlock(){
   document.getElementById("reset-bg").classList.add("open");
 }
 function closeResetModal(){document.getElementById("reset-bg").classList.remove("open")}
+
+// Help modal
+function openHelp(){document.getElementById("help-bg").classList.add("open")}
+function closeHelp(){document.getElementById("help-bg").classList.remove("open")}
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeHelp();closeResetModal();closeNumpad&&closeNumpad();closeDeleteBlockModal&&closeDeleteBlockModal();closeCustomEditor&&closeCustomEditor()}});
 function doResetBlock(){
   mem[curBlock]=makeEmptyBlock(curBlock);
   closeResetModal();
@@ -1090,6 +1282,7 @@ function deleteCustomExercise(){
 }
 
 document.getElementById("ce-bg").addEventListener("click",e=>{if(e.target.id==="ce-bg")closeCustomEditor()});
+document.getElementById("help-bg").addEventListener("click",e=>{if(e.target.id==="help-bg")closeHelp()});
 
 // ===== Flexify integration =====
 const FLEXIFY_HISTORY_KEY="trainblock_flexify_history_v1";
@@ -1315,8 +1508,22 @@ function renderDay(dayId){
   const el=document.getElementById(dayId);el.innerHTML="";
   const labelRow=document.createElement("div");labelRow.className="day-label-row";
   const inp=document.createElement("input");inp.className="editable-label";inp.type="text";inp.value=dayData.label;inp.placeholder="Label (e.g. Push)";
-  inp.oninput=e=>{dayData.label=e.target.value;document.getElementById("tabsub-"+dayId).textContent=e.target.value;autoSave()};
+  inp.oninput=e=>{dayData.label=e.target.value;updateDayTabLabel(dayId);autoSave()};
   labelRow.appendChild(inp);el.appendChild(labelRow);
+
+  // Show a friendly empty state when the entire day is unconfigured
+  const allEmpty=dayData.rows.every(r=>!r.ex&&!r.sets);
+  if(allEmpty){
+    const hint=document.createElement("div");
+    hint.className="empty-state";
+    hint.style.marginBottom="12px";
+    hint.innerHTML=`
+      <div class="empty-state-icon"><i class="ti ti-barbell" aria-hidden="true"></i></div>
+      <div class="empty-state-title">No exercises yet</div>
+      <div class="empty-state-text">Tap a row below to pick an exercise, then use −/+ or tap the number to set how many sets you plan to do.</div>`;
+    el.appendChild(hint);
+  }
+
   dayData.rows.forEach((row,i)=>{
     const div=document.createElement("div");div.className="exercise-row";
     const picker=makePicker(row.ex,(val,cleared)=>{
@@ -1324,24 +1531,91 @@ function renderDay(dayId){
       // Bug fix #3: when exercise is cleared, also clear its sets
       if(cleared||val===""){
         dayData.rows[i].sets=0;
-        // Find this row's num element and update it
+        dayData.rows[i].type="straight";
         const n=div.querySelector(".s-num");if(n)n.textContent="0";
       }
+      // Either selecting OR clearing an exercise may flip the empty-state visibility.
+      // Re-render the day next tick so the empty-state appears/disappears appropriately.
+      renderDay(dayId);
+      updateDayTabLabel(dayId);
     });
+    // Set-type chip
+    const chip=document.createElement("button");
+    chip.className="set-type-chip";chip.type="button";
+    chip.setAttribute("aria-label","Set type");
+    function paintChip(){
+      const t=rowType(dayData.rows[i]);
+      const info=getSetTypeInfo(t);
+      chip.textContent=info.short;
+      chip.classList.toggle("intensifier", t!=="straight");
+      chip.title=info.label+(t!=="straight"?` (×${getSetTypeMult(t)})`:"");
+    }
+    paintChip();
+    chip.onclick=e=>{e.stopPropagation();openSetTypePopover(div,dayId,i,chip,paintChip)};
+
     const ctrl=document.createElement("div");ctrl.className="sets-ctrl";
     const minus=document.createElement("button");minus.className="s-btn";minus.textContent="−";minus.type="button";
     const num=document.createElement("span");num.className="s-num";num.textContent=row.sets;
     const plus=document.createElement("button");plus.className="s-btn";plus.textContent="+";plus.type="button";
     attachRepeatPress(minus,()=>{
-      if(dayData.rows[i].sets>0){dayData.rows[i].sets--;num.textContent=dayData.rows[i].sets;renderSummary();autoSave()}
+      if(dayData.rows[i].sets>0){dayData.rows[i].sets--;num.textContent=dayData.rows[i].sets;updateDayTabLabel(dayId);renderSummary();autoSave()}
     });
     attachRepeatPress(plus,()=>{
-      if(dayData.rows[i].sets<MAX_SETS){dayData.rows[i].sets++;num.textContent=dayData.rows[i].sets;renderSummary();autoSave()}
+      if(dayData.rows[i].sets<MAX_SETS){dayData.rows[i].sets++;num.textContent=dayData.rows[i].sets;updateDayTabLabel(dayId);renderSummary();autoSave()}
     });
     num.onclick=()=>openNumpad(dayId,i,num);
     ctrl.appendChild(minus);ctrl.appendChild(num);ctrl.appendChild(plus);
-    div.appendChild(picker);div.appendChild(ctrl);el.appendChild(div);
+    div.appendChild(picker);div.appendChild(chip);div.appendChild(ctrl);el.appendChild(div);
   });
+}
+
+// ----- Set-type popover (opens from a chip) -----
+let activeSetTypePopover=null;
+function closeSetTypePopover(){if(activeSetTypePopover){activeSetTypePopover.remove();activeSetTypePopover=null}}
+document.addEventListener("click",e=>{if(activeSetTypePopover&&!e.target.closest(".set-type-popover")&&!e.target.closest(".set-type-chip"))closeSetTypePopover()});
+
+function openSetTypePopover(rowDiv,dayId,rowIndex,chipEl,onChange){
+  closeSetTypePopover();
+  closeAllDropdowns();
+  const pop=document.createElement("div");pop.className="set-type-popover open";
+  const current=rowType(mem[curBlock].days[dayId].rows[rowIndex]);
+  SET_TYPE_KEYS.forEach(key=>{
+    const info=getSetTypeInfo(key);
+    const m=getSetTypeMult(key);
+    const opt=document.createElement("div");
+    opt.className="set-type-option"+(key===current?" selected":"");
+    opt.innerHTML=`
+      <div class="set-type-option-label">
+        <span class="set-type-option-name">${info.label}</span>
+        <span class="set-type-option-sub">${info.sub}</span>
+      </div>
+      <span class="set-type-option-mult">×${m%1===0?m:m.toFixed(2).replace(/0+$/,"").replace(/\.$/,"")}</span>`;
+    opt.onclick=ev=>{
+      ev.stopPropagation();
+      mem[curBlock].days[dayId].rows[rowIndex].type=key;
+      onChange();
+      closeSetTypePopover();
+      renderSummary();
+      autoSave();
+    };
+    pop.appendChild(opt);
+  });
+  rowDiv.appendChild(pop);
+  activeSetTypePopover=pop;
+}
+
+// Compute total raw sets for a day (just the sum of set counts, no muscle weighting).
+function totalSetsForDay(dayId){
+  return mem[curBlock].days[dayId].rows.reduce((sum,r)=>sum+(r.ex&&r.sets>0?r.sets:0),0);
+}
+
+// Update a single tab's subtitle text to reflect "label (set count)".
+function updateDayTabLabel(dayId){
+  const el=document.getElementById("tabsub-"+dayId);
+  if(!el)return;
+  const label=(mem[curBlock].days[dayId].label||"").trim();
+  const n=totalSetsForDay(dayId);
+  el.textContent=label?(n>0?`${label} (${n})`:label):(n>0?`(${n})`:"");
 }
 
 function exMuscles(name){for(const items of Object.values(EX)){for(const[n,m]of items){if(n===name)return m}}return{}}
@@ -1350,7 +1624,8 @@ function calcDay(dayId){
   mem[curBlock].days[dayId].rows.forEach(row=>{
     if(!row.ex)return; // orphan-sets guard
     const mults=exMuscles(row.ex);
-    Object.entries(mults).forEach(([m,w])=>{totals[m]=(totals[m]||0)+row.sets*w});
+    const tMult=getSetTypeMult(rowType(row));
+    Object.entries(mults).forEach(([m,w])=>{totals[m]=(totals[m]||0)+row.sets*w*tMult});
   });
   return totals;
 }
@@ -1359,7 +1634,16 @@ function calcDayBreakdown(dayId,muscle){
   mem[curBlock].days[dayId].rows.forEach(row=>{
     if(!row.ex||!row.sets)return;
     const mults=exMuscles(row.ex);
-    if(mults[muscle])items.push({ex:row.ex,sets:r05(row.sets*mults[muscle])});
+    const tMult=getSetTypeMult(rowType(row));
+    if(mults[muscle]){
+      items.push({
+        ex:row.ex,
+        sets:r05(row.sets*mults[muscle]*tMult),
+        rawSets:row.sets,
+        type:rowType(row),
+        tMult
+      });
+    }
   });
   return items;
 }
@@ -1370,7 +1654,6 @@ function renderSummary(){
   const el=document.getElementById("sum");
   const openCards=new Set(Array.from(document.querySelectorAll(".m-card.open")).map(el2=>el2.dataset.muscle));
 
-  // Toggle header
   const hasHistory=flexifyHistory.length>0;
   const actualDisabled=!hasHistory;
   el.innerHTML=`
@@ -1391,6 +1674,8 @@ function renderSummary(){
   const scale=summaryMode==="actual"?4:1;
   const HIGH=15*scale, LOW=6*scale, MID_HIGH=9*scale, NEUTRAL_LOW=10*scale;
   function classify(t){return t>=HIGH?"high":t<=LOW?"low":t<NEUTRAL_LOW?"medium":"neutral"}
+  // For sorting we want: low < medium < neutral < high. Within a class, by total ascending.
+  const clsRank={low:0,medium:1,neutral:2,high:3};
 
   document.getElementById("sum-legend").innerHTML=
     `<span><span class="leg-dot" style="background:var(--success-text)"></span>≥${HIGH}</span>`+
@@ -1402,29 +1687,55 @@ function renderSummary(){
   const meta=document.getElementById("sum-meta");
   let grand=0;
 
+  // Build muscle entries first (so we can sort), then render
+  const entries=[]; // {muscle, tot, cls, render: () => HTMLElement}
+
   if(summaryMode==="planned"){
     const dayTotals=ids.map(d=>calcDay(d));
     const dayLabels=ids.map((d,i)=>mem[curBlock].days[d].label||("Day "+(i+1)));
     meta.textContent=`Planned weekly volume — ${ids.length} day${ids.length===1?"":"s"}`;
+
+    // Check whether nothing is planned across all days
+    const anyPlanned=ids.some(d=>mem[curBlock].days[d].rows.some(r=>r.ex&&r.sets>0));
+    if(!anyPlanned){
+      sg.innerHTML=`<div class="empty-state">
+        <div class="empty-state-icon"><i class="ti ti-clipboard-list"></i></div>
+        <div class="empty-state-title">Nothing planned yet</div>
+        <div class="empty-state-text">Add exercises and sets on the day tabs to see your weekly volume here.</div>
+      </div>`;
+      return;
+    }
+
     ALL_MUS.forEach(m=>{
       const perDay=dayTotals.map(t=>r05(t[m]||0));
       const tot=r05(perDay.reduce((a,b)=>a+b,0));
       grand+=tot;
       const cls=classify(tot);
-      const card=document.createElement("div");card.className="m-card "+cls+(openCards.has(m)?" open":"");card.dataset.muscle=m;
-      const nameRow=document.createElement("div");nameRow.className="m-name";nameRow.innerHTML=`<span>${m}</span><span class="chevron">▾</span>`;
-      const valsRow=document.createElement("div");valsRow.className="m-vals";
-      const dayBreakdownStr=perDay.map(fmt).join("/");
-      valsRow.innerHTML=`<span class="m-total">${fmt(tot)}</span><span class="m-days">${dayBreakdownStr}</span>`;
-      const detail=document.createElement("div");detail.className="m-detail";
-      ids.forEach((dayId,i)=>{
-        const bd=calcDayBreakdown(dayId,m);if(!bd.length)return;
-        const dl=document.createElement("div");dl.className="m-detail-day";dl.textContent=dayLabels[i];detail.appendChild(dl);
-        bd.forEach(({ex,sets})=>{const r=document.createElement("div");r.className="m-detail-ex";r.innerHTML=`<span>${ex}</span><span>${fmt(sets)} set${sets===1?"":"s"}</span>`;detail.appendChild(r)});
-      });
-      card.appendChild(nameRow);card.appendChild(valsRow);card.appendChild(detail);
-      card.onclick=()=>card.classList.toggle("open");
-      sg.appendChild(card);
+      entries.push({muscle:m,tot,cls,build:()=>{
+        const card=document.createElement("div");card.className="m-card "+cls+(openCards.has(m)?" open":"");card.dataset.muscle=m;
+        const nameRow=document.createElement("div");nameRow.className="m-name";nameRow.innerHTML=`<span>${m}</span><span class="chevron">▾</span>`;
+        const valsRow=document.createElement("div");valsRow.className="m-vals";
+        const dayBreakdownStr=perDay.map(fmt).join(" / ");
+        valsRow.innerHTML=`<span class="m-total">${fmt(tot)}</span><span class="m-days">${dayBreakdownStr}</span>`;
+        const detail=document.createElement("div");detail.className="m-detail";
+        ids.forEach((dayId,i)=>{
+          const bd=calcDayBreakdown(dayId,m);if(!bd.length)return;
+          const dl=document.createElement("div");dl.className="m-detail-day";dl.textContent=dayLabels[i];detail.appendChild(dl);
+          bd.forEach(({ex,sets,rawSets,type,tMult})=>{
+            const r=document.createElement("div");r.className="m-detail-ex";
+            // Show physical sets + type when intensified (e.g. "2×myo-rep = 5"), else just the set count
+            const typeInfo=getSetTypeInfo(type);
+            const right = type!=="straight"
+              ? `${rawSets}× ${typeInfo.label.toLowerCase()} = ${fmt(sets)}`
+              : `${fmt(sets)} set${sets===1?"":"s"}`;
+            r.innerHTML=`<span>${ex}</span><span>${right}</span>`;
+            detail.appendChild(r);
+          });
+        });
+        card.appendChild(nameRow);card.appendChild(valsRow);card.appendChild(detail);
+        card.onclick=()=>card.classList.toggle("open");
+        return card;
+      }});
     });
   } else {
     // Actual mode
@@ -1435,8 +1746,17 @@ function renderSummary(){
       ? `${actual.firstDate.toISOString().slice(0,10)} → ${actual.lastDate.toISOString().slice(0,10)}`
       : "no sets in window";
     meta.textContent=`Actual volume from Flexify history — ${actual.sessionsCounted} set${actual.sessionsCounted===1?"":"s"}, ${range}`;
-    // Build per-muscle breakdown by exercise for the detail view
-    const byMuscleExercise={}; // muscle -> {exerciseOurName: setCount}
+
+    if(actual.sessionsCounted===0){
+      sg.innerHTML=`<div class="empty-state">
+        <div class="empty-state-icon"><i class="ti ti-calendar-off"></i></div>
+        <div class="empty-state-title">No sets in the last 4 weeks</div>
+        <div class="empty-state-text">Re-import your Flexify history to refresh, or check that your CSV includes recent sessions.</div>
+      </div>`;
+      return;
+    }
+
+    const byMuscleExercise={};
     ALL_MUS.forEach(m=>byMuscleExercise[m]={});
     const cutoff=new Date(Date.now()-ACTUAL_WINDOW_DAYS*24*60*60*1000);
     flexifyHistory.forEach(rec=>{
@@ -1451,35 +1771,46 @@ function renderSummary(){
       const tot=r05(setsByMuscle[m]||0);
       grand+=tot;
       const cls=classify(tot);
-      const card=document.createElement("div");card.className="m-card "+cls+(openCards.has(m)?" open":"");card.dataset.muscle=m;
-      const nameRow=document.createElement("div");nameRow.className="m-name";nameRow.innerHTML=`<span>${m}</span><span class="chevron">▾</span>`;
-      const valsRow=document.createElement("div");valsRow.className="m-vals";
-      valsRow.innerHTML=`<span class="m-total">${fmt(tot)}</span><span class="m-days">${window}</span>`;
-      const detail=document.createElement("div");detail.className="m-detail";
-      const exList=Object.entries(byMuscleExercise[m]).sort((a,b)=>b[1].count-a[1].count);
-      if(exList.length){
-        const dl=document.createElement("div");dl.className="m-detail-day";dl.textContent="Exercises";detail.appendChild(dl);
-        exList.forEach(([ex,info])=>{
-          const r=document.createElement("div");r.className="m-detail-ex";
-          const contribution=r05(info.count*info.weight);
-          r.innerHTML=`<span>${ex}</span><span>${info.count}×${info.weight===1?"":info.weight} = ${fmt(contribution)}</span>`;
-          detail.appendChild(r);
-        });
-      }
-      card.appendChild(nameRow);card.appendChild(valsRow);card.appendChild(detail);
-      card.onclick=()=>card.classList.toggle("open");
-      sg.appendChild(card);
+      entries.push({muscle:m,tot,cls,build:()=>{
+        const card=document.createElement("div");card.className="m-card "+cls+(openCards.has(m)?" open":"");card.dataset.muscle=m;
+        const nameRow=document.createElement("div");nameRow.className="m-name";nameRow.innerHTML=`<span>${m}</span><span class="chevron">▾</span>`;
+        const valsRow=document.createElement("div");valsRow.className="m-vals";
+        valsRow.innerHTML=`<span class="m-total">${fmt(tot)}</span><span class="m-days">${window}</span>`;
+        const detail=document.createElement("div");detail.className="m-detail";
+        const exList=Object.entries(byMuscleExercise[m]).sort((a,b)=>b[1].count-a[1].count);
+        if(exList.length){
+          const dl=document.createElement("div");dl.className="m-detail-day";dl.textContent="Exercises";detail.appendChild(dl);
+          exList.forEach(([ex,info])=>{
+            const r=document.createElement("div");r.className="m-detail-ex";
+            const contribution=r05(info.count*info.weight);
+            r.innerHTML=`<span>${ex}</span><span>${info.count}×${info.weight===1?"":info.weight} = ${fmt(contribution)}</span>`;
+            detail.appendChild(r);
+          });
+        }
+        card.appendChild(nameRow);card.appendChild(valsRow);card.appendChild(detail);
+        card.onclick=()=>card.classList.toggle("open");
+        return card;
+      }});
     });
   }
 
+  // Sort: low → medium → neutral → high. Tiebreak by total ascending (worst-first within group).
+  entries.sort((a,b)=>{
+    const r=clsRank[a.cls]-clsRank[b.cls];
+    if(r!==0)return r;
+    return a.tot-b.tot;
+  });
+  entries.forEach(e=>sg.appendChild(e.build()));
+
   const tc=document.createElement("div");tc.className="total-card";
-  tc.innerHTML=`<span style="font-size:13px;color:var(--text2);font-weight:500">Total sets</span><span style="font-size:22px;font-weight:500">${fmt(r05(grand))}</span>`;
+  tc.innerHTML=`<span style="font-size:13px;color:var(--text2);font-weight:500">Total sets</span><span style="font-size:22px;font-weight:600">${fmt(r05(grand))}</span>`;
   sg.appendChild(tc);
 }
 
 // Boot
 loadCustomExercises();
 loadBuiltinOverrides();
+loadSetTypeOverrides();
 rebuildEX();
 loadBlockList();              // load persisted block IDs (or default A,B,C)
 loadAllBlocks();              // populate mem for each block
