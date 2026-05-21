@@ -17,12 +17,14 @@
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
 body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .top-bar{padding:12px 14px 0;flex-shrink:0}
-.block-bar{display:flex;gap:6px;align-items:center;margin-bottom:10px;flex-wrap:nowrap}
-.block-btn{padding:5px 11px;font-size:12px;font-weight:500;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text2);cursor:pointer;white-space:nowrap;flex-shrink:0}
+.block-bar{display:flex;gap:6px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+.block-buttons{display:flex;gap:6px;align-items:center;flex-wrap:wrap;flex:1;min-width:0}
+.block-btn{padding:5px 11px;font-size:12px;font-weight:500;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text2);cursor:pointer;white-space:nowrap;flex-shrink:0;font-family:inherit;max-width:160px;overflow:hidden;text-overflow:ellipsis}
 .block-btn.active{background:var(--text);color:var(--bg);border-color:var(--text)}
 .block-actions{display:flex;gap:6px;margin-left:auto}
-.icon-btn{padding:6px 10px;font-size:15px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text2);cursor:pointer;display:flex;align-items:center;min-height:32px}
+.icon-btn{padding:6px 10px;font-size:15px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text2);cursor:pointer;display:flex;align-items:center;min-height:32px;font-family:inherit}
 .icon-btn:active{background:var(--bg2)}
+.icon-btn:disabled{opacity:0.35;cursor:not-allowed}
 .save-status{font-size:11px;color:var(--text3);margin-left:6px;white-space:nowrap}
 .save-status.saved{color:var(--success-text)}
 .block-label-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
@@ -136,6 +138,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .ce-field{margin-bottom:12px}
 .ce-label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;font-weight:500;display:block;margin-bottom:5px}
 .ce-input{width:100%;font-size:14px;padding:8px 10px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg2);color:var(--text);outline:none;font-family:inherit}
+.ce-input:disabled{opacity:0.7;color:var(--text2)}
 .ce-muscles{display:grid;grid-template-columns:repeat(2,1fr);gap:5px}
 .ce-mus-btn{padding:7px 8px;font-size:12px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text2);cursor:pointer;text-align:center;font-family:inherit;touch-action:manipulation}
 .ce-mus-btn.primary{background:var(--text);color:var(--bg);border-color:var(--text);font-weight:500}
@@ -157,11 +160,11 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 </head>
 <body>
 <div class="top-bar">
-  <div class="block-bar">
-    <button class="block-btn active" id="btn-A" onclick="switchBlock('A')">Block A</button>
-    <button class="block-btn" id="btn-B" onclick="switchBlock('B')">Block B</button>
-    <button class="block-btn" id="btn-C" onclick="switchBlock('C')">Block C</button>
+  <div class="block-bar" id="block-bar">
+    <div class="block-buttons" id="block-buttons"></div>
     <div class="block-actions">
+      <button class="icon-btn" onclick="addBlock()" title="Add new block" aria-label="Add new block">＋</button>
+      <button class="icon-btn" onclick="confirmDeleteBlock()" title="Delete this block" aria-label="Delete this block">🗑</button>
       <button class="icon-btn" onclick="confirmResetBlock()" title="Reset this block" aria-label="Reset this block"><i class="ti ti-refresh"></i></button>
     </div>
     <span class="save-status saved" id="save-status">Saved</span>
@@ -221,6 +224,17 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
   </div>
 </div>
 
+<!-- Delete block confirm modal -->
+<div class="modal-bg" id="delblock-bg">
+  <div class="modal">
+    <div class="modal-text" id="delblock-text">Delete this block? It will be permanently removed.</div>
+    <div class="modal-actions">
+      <button onclick="closeDeleteBlockModal()">Cancel</button>
+      <button class="danger" onclick="doDeleteBlock()">Delete</button>
+    </div>
+  </div>
+</div>
+
 <!-- Custom exercise editor modal -->
 <div class="modal-bg" id="ce-bg">
   <div class="ce-modal">
@@ -229,6 +243,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
       <div class="ce-field">
         <label class="ce-label">Name</label>
         <input class="ce-input" id="ce-name" type="text" placeholder="e.g. Bulgarian Split Squat" maxlength="60">
+        <div class="ce-hint" id="ce-name-hint" style="display:none">Built-in exercise — name cannot be changed.</div>
       </div>
       <div class="ce-field">
         <label class="ce-label">Primary muscles</label>
@@ -244,6 +259,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
     </div>
     <div class="ce-actions">
       <button onclick="closeCustomEditor()">Cancel</button>
+      <button id="ce-reset" onclick="resetBuiltinOverride()" style="display:none">Reset to default</button>
       <button class="danger" id="ce-delete" onclick="deleteCustomExercise()" style="display:none">Delete</button>
       <button class="primary" onclick="saveCustomExercise()">Save</button>
     </div>
@@ -262,7 +278,30 @@ const BUILTIN_EX={
   "Core":[["Decline Sit Ups",{Abs:1,Obliques:0.5}],["Reverse Crunch",{Abs:1,Obliques:0.5}],["Cable Side Bend",{Abs:0.5,Obliques:1}],["Side Bend",{Abs:0.5,Obliques:1}],["Cable Baseball Bat Swing",{"Side Delt":0.5,Abs:0.5,Obliques:1}],["Back Bend",{Hamstrings:0.5,Glutes:0.5,Erectors:1}]]
 };
 const ALL_MUS=["Chest","Lats","Traps","Front Delt","Side Delt","Rear Delt","Biceps","Triceps","Quads","Hamstrings","Glutes","Calves","Abs","Erectors","Obliques"];
-const BLOCKS=["A","B","C"];
+// Mutable list of block IDs; starts as ["A","B","C"] but can grow/shrink.
+let BLOCKS=["A","B","C"];
+const MIN_BLOCKS=1,MAX_BLOCKS=26;
+const BLOCKS_KEY="trainblock_list_v1";
+function loadBlockList(){
+  try{
+    const raw=localStorage.getItem(BLOCKS_KEY);
+    if(raw){
+      const parsed=JSON.parse(raw);
+      if(Array.isArray(parsed)&&parsed.length>=MIN_BLOCKS&&parsed.length<=MAX_BLOCKS&&parsed.every(x=>typeof x==="string"&&/^[A-Z]$/.test(x))){
+        BLOCKS=parsed;
+      }
+    }
+  }catch(e){}
+}
+function saveBlockList(){try{localStorage.setItem(BLOCKS_KEY,JSON.stringify(BLOCKS))}catch(e){}}
+// Returns the next unused single-letter ID (A..Z), or null if all taken
+function nextBlockId(){
+  for(let i=0;i<26;i++){
+    const c=String.fromCharCode(65+i);
+    if(!BLOCKS.includes(c))return c;
+  }
+  return null;
+}
 const MIN_DAYS=1,MAX_DAYS=7;
 const MAX_SETS=99;
 const CUSTOM_GROUP="Custom";
@@ -293,12 +332,43 @@ function saveCustomExercises(){
   try{localStorage.setItem(CUSTOM_KEY,JSON.stringify(customExercises))}catch(e){}
 }
 
-// EX is a merged view of builtin + custom, rebuilt whenever custom changes
+// Overrides for built-in exercises: { "Exercise Name": {Muscle: 1|0.5, ...} }
+// Used to let the user adjust muscle weights without renaming or recategorizing.
+const OVERRIDES_KEY="trainblock_builtin_overrides_v1";
+let builtinOverrides={};
+function loadBuiltinOverrides(){
+  try{
+    const raw=localStorage.getItem(OVERRIDES_KEY);
+    if(raw){
+      const parsed=JSON.parse(raw);
+      if(parsed&&typeof parsed==="object"&&!Array.isArray(parsed))builtinOverrides=parsed;
+    }
+  }catch(e){builtinOverrides={}}
+}
+function saveBuiltinOverrides(){
+  try{localStorage.setItem(OVERRIDES_KEY,JSON.stringify(builtinOverrides))}catch(e){}
+}
+// Returns the original built-in muscle map for a name (unmodified), or null if not built-in.
+function getBuiltinOriginalMuscles(name){
+  for(const items of Object.values(BUILTIN_EX)){
+    for(const [n,m] of items)if(n===name)return m;
+  }
+  return null;
+}
+// Is this name a built-in exercise?
+function isBuiltinExercise(name){return getBuiltinOriginalMuscles(name)!==null}
+
+// EX is a merged view of builtin (with overrides applied) + custom, rebuilt whenever any of them changes.
 let EX={};
 function rebuildEX(){
   EX={};
-  // Builtin groups first, in order
-  Object.entries(BUILTIN_EX).forEach(([g,items])=>{EX[g]=items.slice()});
+  // Built-in groups first, applying any overrides in place (keeps order/grouping).
+  Object.entries(BUILTIN_EX).forEach(([g,items])=>{
+    EX[g]=items.map(([name,muscles])=>{
+      const ov=builtinOverrides[name];
+      return [name, ov?ov:muscles];
+    });
+  });
   // Custom group last, only if there are any
   if(customExercises.length){
     EX[CUSTOM_GROUP]=customExercises.map(e=>[e.name,e.muscles]);
@@ -384,18 +454,14 @@ function makePicker(rowEx,onChange){
         if(q&&!name.toLowerCase().includes(q))return;
         groupHasVisible=true;anyVisible=true;
         const opt=document.createElement("div");opt.className="ex-option"+(name===currentVal?" selected":"");
-        if(group===CUSTOM_GROUP){
-          const row=document.createElement("div");row.className="ex-option-row";
-          const nm=document.createElement("span");nm.textContent=name;nm.style.flex="1";nm.style.overflow="hidden";nm.style.textOverflow="ellipsis";nm.style.whiteSpace="nowrap";
-          nm.onclick=e=>{e.stopPropagation();currentVal=name;onChange(name,false);updateDisplay();closeAllDropdowns();renderSummary();autoSave()};
-          const edit=document.createElement("button");edit.className="ex-edit-btn";edit.type="button";edit.innerHTML='<i class="ti ti-pencil" aria-hidden="true"></i>';edit.setAttribute("aria-label","Edit exercise");
-          edit.onclick=e=>{e.stopPropagation();openCustomEditor(name)};
-          row.appendChild(nm);row.appendChild(edit);
-          opt.appendChild(row);
-        } else {
-          opt.textContent=name;
-          opt.onclick=e=>{e.stopPropagation();currentVal=name;onChange(name,false);updateDisplay();closeAllDropdowns();renderSummary();autoSave()};
-        }
+        // Every row (built-in or custom) gets a name area + edit pencil.
+        const row=document.createElement("div");row.className="ex-option-row";
+        const nm=document.createElement("span");nm.textContent=name;nm.style.flex="1";nm.style.overflow="hidden";nm.style.textOverflow="ellipsis";nm.style.whiteSpace="nowrap";
+        nm.onclick=e=>{e.stopPropagation();currentVal=name;onChange(name,false);updateDisplay();closeAllDropdowns();renderSummary();autoSave()};
+        const edit=document.createElement("button");edit.className="ex-edit-btn";edit.type="button";edit.innerHTML='<i class="ti ti-pencil" aria-hidden="true"></i>';edit.setAttribute("aria-label","Edit exercise");
+        edit.onclick=e=>{e.stopPropagation();openCustomEditor(name)};
+        row.appendChild(nm);row.appendChild(edit);
+        opt.appendChild(row);
         list.appendChild(opt);
       });
       if(!groupHasVisible)groupEl.classList.add("hidden");else groupEl.classList.remove("hidden");
@@ -457,14 +523,73 @@ function rebuildTabsAndPanels(){
 }
 
 function syncDayTabs(){curDayIds().forEach(d=>{const el=document.getElementById("tabsub-"+d);if(el)el.textContent=mem[curBlock].days[d].label})}
+
+// Rebuilds the block button row from the current BLOCKS array.
+function rebuildBlockButtons(){
+  const container=document.getElementById("block-buttons");
+  container.innerHTML="";
+  BLOCKS.forEach(b=>{
+    const btn=document.createElement("button");
+    btn.className="block-btn"+(b===curBlock?" active":"");
+    btn.id="btn-"+b;
+    btn.textContent=mem[b].name||"Block "+b;
+    btn.onclick=()=>switchBlock(b);
+    container.appendChild(btn);
+  });
+}
+
 function syncBlockButtons(){
-  BLOCKS.forEach(b=>{const btn=document.getElementById("btn-"+b);btn.textContent=mem[b].name||"Block "+b;btn.classList.toggle("active",b===curBlock)});
+  rebuildBlockButtons();
   document.getElementById("block-name-input").value=mem[curBlock].name||"";
   rebuildTabsAndPanels();
   syncDayTabs();
   syncDayMgr();
+  syncBlockActions();
 }
-function onBlockNameInput(val){mem[curBlock].name=val;document.getElementById("btn-"+curBlock).textContent=val||"Block "+curBlock;autoSave()}
+function onBlockNameInput(val){mem[curBlock].name=val;const btn=document.getElementById("btn-"+curBlock);if(btn)btn.textContent=val||"Block "+curBlock;autoSave()}
+
+// Enable/disable the add/delete-block buttons based on current state
+function syncBlockActions(){
+  const addBtn=document.querySelector('.block-actions button[title="Add new block"]');
+  const delBtn=document.querySelector('.block-actions button[title="Delete this block"]');
+  if(addBtn)addBtn.disabled=(BLOCKS.length>=MAX_BLOCKS||nextBlockId()===null);
+  if(delBtn)delBtn.disabled=(BLOCKS.length<=MIN_BLOCKS);
+}
+
+// Add a new empty block, switch to it
+function addBlock(){
+  if(BLOCKS.length>=MAX_BLOCKS)return;
+  const newId=nextBlockId();
+  if(!newId)return;
+  BLOCKS.push(newId);
+  mem[newId]=makeEmptyBlock(newId);
+  saveBlockList();
+  try{localStorage.setItem(storageKey(newId),JSON.stringify(mem[newId]))}catch(e){}
+  switchBlock(newId);
+}
+
+// Confirm + delete the current block
+function confirmDeleteBlock(){
+  if(BLOCKS.length<=MIN_BLOCKS)return;
+  const blockName=mem[curBlock].name||("Block "+curBlock);
+  document.getElementById("delblock-text").textContent=`Delete "${blockName}"? All exercises, sets, day labels, and the block name will be permanently removed.`;
+  document.getElementById("delblock-bg").classList.add("open");
+}
+function closeDeleteBlockModal(){document.getElementById("delblock-bg").classList.remove("open")}
+function doDeleteBlock(){
+  if(BLOCKS.length<=MIN_BLOCKS){closeDeleteBlockModal();return}
+  const removed=curBlock;
+  const idx=BLOCKS.indexOf(removed);
+  BLOCKS=BLOCKS.filter(b=>b!==removed);
+  delete mem[removed];
+  try{localStorage.removeItem(storageKey(removed))}catch(e){}
+  saveBlockList();
+  // Switch to neighbour (next one if available, else previous)
+  const newCur=BLOCKS[Math.min(idx,BLOCKS.length-1)];
+  closeDeleteBlockModal();
+  switchBlock(newCur);
+}
+document.getElementById("delblock-bg").addEventListener("click",e=>{if(e.target.id==="delblock-bg")closeDeleteBlockModal()});
 
 function switchBlock(b){
   curBlock=b;syncBlockButtons();
@@ -655,21 +780,41 @@ function openCustomEditor(existingName){
   }
   const selected=new Map();
   let nameVal="";
+  const isBuiltin=existingName?isBuiltinExercise(existingName):false;
+  const hasOverride=isBuiltin&&!!builtinOverrides[existingName];
+
   if(existingName){
-    const ex=customExercises.find(e=>e.name===existingName);
-    if(ex){
-      nameVal=ex.name;
-      Object.entries(ex.muscles).forEach(([m,w])=>selected.set(m,w));
+    if(isBuiltin){
+      // For built-in, populate from override if it exists, else from original.
+      const muscles=builtinOverrides[existingName]||getBuiltinOriginalMuscles(existingName);
+      nameVal=existingName;
+      Object.entries(muscles).forEach(([m,w])=>selected.set(m,w));
+    } else {
+      const ex=customExercises.find(e=>e.name===existingName);
+      if(ex){
+        nameVal=ex.name;
+        Object.entries(ex.muscles).forEach(([m,w])=>selected.set(m,w));
+      }
     }
   }
-  ceCtx={editingName:existingName, selected};
-  document.getElementById("ce-title").textContent=existingName?"Edit exercise":"New exercise";
-  document.getElementById("ce-name").value=nameVal;
-  document.getElementById("ce-delete").style.display=existingName?"":"none";
+  ceCtx={editingName:existingName, isBuiltin, selected};
+
+  // Title reflects which mode we're in.
+  const title=existingName?(isBuiltin?"Edit exercise":"Edit exercise"):"New exercise";
+  document.getElementById("ce-title").textContent=title;
+  const nameInput=document.getElementById("ce-name");
+  nameInput.value=nameVal;
+  nameInput.disabled=isBuiltin; // built-in names are locked
+  document.getElementById("ce-name-hint").style.display=isBuiltin?"":"none";
+  // Delete is only for custom exercises (built-ins can't be deleted, only reset)
+  document.getElementById("ce-delete").style.display=(existingName&&!isBuiltin)?"":"none";
+  // Reset-to-default is only for built-ins that have been overridden
+  document.getElementById("ce-reset").style.display=hasOverride?"":"none";
   setCeError("");
   refreshMuscleButtons();
   document.getElementById("ce-bg").classList.add("open");
-  setTimeout(()=>document.getElementById("ce-name").focus(),100);
+  // Don't auto-focus the name on built-ins (it's disabled anyway) or on mobile
+  if(!isBuiltin)setTimeout(()=>nameInput.focus(),100);
 }
 
 function closeCustomEditor(){
@@ -679,30 +824,46 @@ function closeCustomEditor(){
 
 function saveCustomExercise(){
   if(!ceCtx)return;
+  if(ceCtx.selected.size===0){setCeError("Select at least one muscle.");return}
+  const muscles={};
+  ceCtx.selected.forEach((w,m)=>{muscles[m]=w});
+
+  // Built-in: store or remove override based on whether weights match the original.
+  if(ceCtx.isBuiltin){
+    const original=getBuiltinOriginalMuscles(ceCtx.editingName);
+    const sameAsOriginal=musclesEqual(muscles,original);
+    if(sameAsOriginal){
+      delete builtinOverrides[ceCtx.editingName];
+    } else {
+      builtinOverrides[ceCtx.editingName]=muscles;
+    }
+    saveBuiltinOverrides();
+    rebuildEX();
+    closeCustomEditor();
+    renderSummary();
+    return;
+  }
+
+  // Custom: validate name and save/update.
   const rawName=document.getElementById("ce-name").value.trim();
   if(!rawName){setCeError("Name is required.");return}
   if(rawName.length<2){setCeError("Name is too short.");return}
-  // Check for duplicate names (against builtin + other customs)
   const lowerName=rawName.toLowerCase();
   let conflict=false;
   Object.entries(BUILTIN_EX).forEach(([,items])=>{
     items.forEach(([n])=>{if(n.toLowerCase()===lowerName)conflict=true});
   });
   customExercises.forEach(e=>{
-    if(e.name===ceCtx.editingName)return; // editing self is fine
+    if(e.name===ceCtx.editingName)return;
     if(e.name.toLowerCase()===lowerName)conflict=true;
   });
   if(conflict){setCeError("An exercise with this name already exists.");return}
-  if(ceCtx.selected.size===0){setCeError("Select at least one muscle.");return}
-  const muscles={};
-  ceCtx.selected.forEach((w,m)=>{muscles[m]=w});
+
   if(ceCtx.editingName){
-    // Update existing
     const idx=customExercises.findIndex(e=>e.name===ceCtx.editingName);
     if(idx>=0){
       const oldName=customExercises[idx].name;
       customExercises[idx]={name:rawName,muscles};
-      // If renamed, update any rows referencing the old name
       if(oldName!==rawName){
         BLOCKS.forEach(b=>{
           dayIdsOf(b).forEach(d=>{
@@ -720,15 +881,33 @@ function saveCustomExercise(){
   saveCustomExercises();
   rebuildEX();
   closeCustomEditor();
-  // Re-render the current day so any open picker reflects the new exercise
   curDayIds().forEach(renderDay);
   renderSummary();
 }
 
+// Deep-equal check for muscle maps {Chest:1, "Front Delt":0.5, ...}
+function musclesEqual(a,b){
+  if(!a||!b)return false;
+  const ka=Object.keys(a),kb=Object.keys(b);
+  if(ka.length!==kb.length)return false;
+  for(const k of ka){if(a[k]!==b[k])return false}
+  return true;
+}
+
+// Clear an override for a built-in exercise (called from the editor).
+function resetBuiltinOverride(){
+  if(!ceCtx||!ceCtx.isBuiltin||!ceCtx.editingName)return;
+  if(!confirm(`Reset "${ceCtx.editingName}" to its default muscle weights?`))return;
+  delete builtinOverrides[ceCtx.editingName];
+  saveBuiltinOverrides();
+  rebuildEX();
+  closeCustomEditor();
+  renderSummary();
+}
+
 function deleteCustomExercise(){
-  if(!ceCtx||!ceCtx.editingName)return;
+  if(!ceCtx||!ceCtx.editingName||ceCtx.isBuiltin)return;
   const name=ceCtx.editingName;
-  // Find usages
   let usages=0;
   BLOCKS.forEach(b=>{
     dayIdsOf(b).forEach(d=>{
@@ -739,7 +918,6 @@ function deleteCustomExercise(){
     ?`Delete "${name}"? It's used in ${usages} row${usages===1?"":"s"} — those will be cleared.`
     :`Delete "${name}"?`;
   if(!confirm(msg))return;
-  // Clear usages
   BLOCKS.forEach(b=>{
     dayIdsOf(b).forEach(d=>{
       mem[b].days[d].rows.forEach(row=>{
@@ -850,9 +1028,12 @@ function renderSummary(){
 
 // Boot
 loadCustomExercises();
+loadBuiltinOverrides();
 rebuildEX();
-loadAllBlocks();
-syncBlockButtons();         // builds tabs + panels for the current block
+loadBlockList();              // load persisted block IDs (or default A,B,C)
+loadAllBlocks();              // populate mem for each block
+if(!BLOCKS.includes(curBlock))curBlock=BLOCKS[0];
+syncBlockButtons();           // builds tabs + panels for the current block
 curDayIds().forEach(renderDay);
 renderSummary();
 const initialIds=curDayIds();
