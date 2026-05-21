@@ -12,20 +12,6 @@ It lives in a single HTML file. Yes, one file. It's approximately 2,500 lines of
 
 ---
 
-## Why does this exist?
-
-Because the author looked at the existing landscape of workout tracking apps and thought:
-
-- **Strong** — great tracker, planning tools are primitive
-- **Hevy** — nice UI, volume analysis is an afterthought
-- **Flexify** — open source and charming, but tracks weight × reps when we actually care about *weighted sets per muscle group per week*
-- **RP Hypertrophy** — excellent science, subscription required, Android experience is rough
-- **Spreadsheet** — technically works, spiritually exhausting
-
-The conclusion: build something that treats weekly set volume as a first-class citizen, accounts for intensification techniques (myo-reps, drop sets, rest-pause), and doesn't require a subscription to tell you your rear delts are undertrained. Again.
-
----
-
 ## Features
 
 ### Planning
