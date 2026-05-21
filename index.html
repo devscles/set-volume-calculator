@@ -204,6 +204,70 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .help-swatch.neutral{background:var(--bg2)}
 .help-swatch.high{background:var(--success-bg)}
 
+/* === Workout modal === */
+.workout-modal{background:var(--bg);width:100%;max-width:520px;height:100%;max-height:100vh;border-radius:0;display:flex;flex-direction:column;overflow:hidden}
+@media (min-width:520px){.workout-modal{height:92vh;max-height:760px;border-radius:14px;box-shadow:0 12px 40px var(--shadow)}}
+.workout-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:0.5px solid var(--border);flex-shrink:0;gap:8px}
+.workout-title-wrap{min-width:0;flex:1}
+.workout-title{font-size:15px;font-weight:600;color:var(--text);line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.workout-sub{font-size:11px;color:var(--text2);margin-top:2px;line-height:1.2}
+.workout-close{width:32px;height:32px;border-radius:50%;border:none;background:var(--bg2);color:var(--text);font-size:18px;line-height:1;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.workout-close:active{background:var(--bg3)}
+.workout-body{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 16px 100px}
+.workout-footer{position:absolute;bottom:0;left:0;right:0;background:var(--bg);border-top:0.5px solid var(--border);padding:10px 16px;display:flex;gap:8px;align-items:center;box-shadow:0 -2px 8px rgba(0,0,0,0.04)}
+.workout-timer-btn{flex:1;padding:11px 12px;font-size:13px;font-weight:500;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;touch-action:manipulation}
+.workout-timer-btn:active{background:var(--bg2)}
+.workout-timer-btn.running{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
+.workout-finish-btn{flex:1;padding:11px 12px;font-size:13px;font-weight:600;border-radius:var(--radius);border:none;background:var(--text);color:var(--bg);cursor:pointer;font-family:inherit;touch-action:manipulation}
+.workout-finish-btn:active{opacity:0.85}
+
+/* Exercise group within a workout */
+.wo-ex{margin-bottom:14px;padding:12px;border-radius:var(--radius);background:var(--bg2);position:relative;transition:background-color 0.15s var(--ease)}
+.wo-ex.ss-member{padding-left:18px}
+.wo-ex.ss-member::before{content:"";position:absolute;left:0;top:-2px;bottom:-2px;width:3px;background:var(--accent);opacity:0.85}
+.wo-ex.ss-first::before{top:2px;border-top-left-radius:3px;border-top-right-radius:3px}
+.wo-ex.ss-last::before{bottom:2px;border-bottom-left-radius:3px;border-bottom-right-radius:3px}
+.wo-ex-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:8px}
+.wo-ex-name{font-size:14px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wo-ex-type{font-size:11px;font-weight:600;color:var(--text3);padding:1px 6px;border:0.5px solid var(--border);border-radius:8px;flex-shrink:0;letter-spacing:0.04em}
+.wo-ex-type.intensifier{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
+.wo-set-strip{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.wo-set-chip{min-width:64px;padding:8px 10px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);font-size:12px;font-weight:500;color:var(--text);cursor:pointer;text-align:center;font-family:inherit;font-variant-numeric:tabular-nums;touch-action:manipulation;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.2;min-height:42px}
+.wo-set-chip:active{background:var(--bg2)}
+.wo-set-chip.empty{color:var(--text3);border-style:dashed}
+.wo-set-chip.logged{background:var(--success-bg);border-color:var(--success-text);color:var(--success-text)}
+.wo-set-chip.logged.miss{background:var(--warn-bg);border-color:var(--warn-text);color:var(--warn-text)}
+.wo-set-target{font-size:10px;color:var(--text3);margin-top:1px}
+.wo-set-chip.logged .wo-set-target{color:inherit;opacity:0.85}
+.wo-add-set{min-width:38px;padding:8px 10px;border-radius:var(--radius);border:0.5px dashed var(--border2);background:transparent;font-size:14px;color:var(--text3);cursor:pointer;font-family:inherit;min-height:42px}
+.wo-add-set:active{background:var(--bg2);color:var(--text)}
+
+/* Log-set modal */
+.logset-modal{max-width:340px}
+.logset-title{font-size:15px;font-weight:600;color:var(--text);text-align:center;margin-bottom:4px}
+.logset-target{font-size:12px;color:var(--text2);text-align:center;margin-bottom:14px;min-height:16px}
+.logset-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px}
+.logset-field{display:flex;flex-direction:column;gap:5px}
+.logset-field label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.04em;font-weight:500}
+.logset-field input{padding:10px 12px;font-size:16px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg2);color:var(--text);outline:none;font-family:inherit;text-align:center;font-variant-numeric:tabular-nums;-moz-appearance:textfield}
+.logset-field input::-webkit-outer-spin-button,.logset-field input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.logset-field input:focus{border-color:var(--accent)}
+.logset-rir-toggle{text-align:center;margin:8px 0 0}
+.logset-rir-link{background:none;border:none;color:var(--text2);font-size:12px;cursor:pointer;font-family:inherit;padding:4px}
+.logset-rir-row{display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap}
+.logset-rir-row label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.04em;font-weight:500;flex-shrink:0}
+.logset-rir-chips{display:flex;gap:4px;flex-wrap:wrap}
+.logset-rir-chip{min-width:30px;padding:5px 8px;font-size:12px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text2);cursor:pointer;font-family:inherit;font-variant-numeric:tabular-nums}
+.logset-rir-chip.active{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
+
+/* "Start workout" button on day panels */
+.start-workout{display:block;width:100%;margin:0 0 12px;padding:12px;font-size:14px;font-weight:600;border-radius:var(--radius);border:none;background:var(--accent);color:var(--accent-text);cursor:pointer;font-family:inherit;touch-action:manipulation}
+.start-workout:active{opacity:0.85}
+.start-workout-resume{background:var(--warn-text);color:var(--bg)}
+
+/* Target hint shown on planner rows */
+.row-target-hint{font-size:10px;color:var(--accent);margin-top:2px;padding-left:2px;font-variant-numeric:tabular-nums}
+
 /* Custom exercise editor */
 .ce-modal{background:var(--bg);border-radius:12px;padding:16px;width:100%;max-width:340px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 8px 32px var(--shadow)}
 .ce-title{font-size:15px;font-weight:500;color:var(--text);text-align:center;margin-bottom:12px}
@@ -347,6 +411,54 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
   </div>
 </div>
 
+<!-- Workout modal (full-screen during a session) -->
+<div class="modal-bg" id="workout-bg">
+  <div class="workout-modal">
+    <div class="workout-header">
+      <div class="workout-title-wrap">
+        <div class="workout-title" id="workout-title">Workout</div>
+        <div class="workout-sub" id="workout-sub"></div>
+      </div>
+      <button class="workout-close" onclick="confirmAbandonWorkout()" aria-label="Close workout">×</button>
+    </div>
+    <div class="workout-body" id="workout-body"></div>
+    <div class="workout-footer">
+      <button class="workout-timer-btn" id="workout-timer-btn" onclick="toggleRestTimer()"><i class="ti ti-clock"></i> <span id="workout-timer-label">Rest 90s</span></button>
+      <button class="workout-finish-btn" onclick="confirmFinishWorkout()">Finish</button>
+    </div>
+  </div>
+</div>
+
+<!-- Log-set modal -->
+<div class="modal-bg" id="logset-bg">
+  <div class="modal logset-modal">
+    <div class="logset-title" id="logset-title">Log set</div>
+    <div class="logset-target" id="logset-target"></div>
+    <div class="logset-fields">
+      <div class="logset-field">
+        <label>Weight (<span id="logset-unit">lb</span>)</label>
+        <input type="number" inputmode="decimal" id="logset-weight" step="0.5" min="0">
+      </div>
+      <div class="logset-field">
+        <label>Reps</label>
+        <input type="number" inputmode="numeric" id="logset-reps" step="1" min="0">
+      </div>
+    </div>
+    <div class="logset-rir-toggle">
+      <button class="logset-rir-link" id="logset-rir-toggle" onclick="toggleRirRow()">+ Add RIR</button>
+    </div>
+    <div class="logset-rir-row" id="logset-rir-row" style="display:none">
+      <label>Reps in reserve:</label>
+      <div class="logset-rir-chips" id="logset-rir-chips"></div>
+    </div>
+    <div class="modal-actions">
+      <button onclick="closeLogSet()">Cancel</button>
+      <button class="danger" id="logset-delete" onclick="deleteLoggedSet()" style="display:none">Delete</button>
+      <button class="primary" onclick="saveLoggedSet()">Save</button>
+    </div>
+  </div>
+</div>
+
 <!-- Help modal -->
 <div class="modal-bg" id="help-bg">
   <div class="help-modal">
@@ -407,6 +519,23 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
       </details>
 
       <details class="help-section">
+        <summary>Tracking workouts (new)</summary>
+        <p>When you've planned a day, a <b>Start workout</b> button appears at the top of the day tab. Tap it to open the workout tracker — a full-screen view where each planned exercise shows a strip of set chips you can tap to log.</p>
+        <ul>
+          <li><b>Tap a chip</b> to log a set. Enter weight and reps; tap Save.</li>
+          <li><b>Logged chips turn green</b> with your actual numbers. If you fell short of a target rep count, the chip turns yellow instead.</li>
+          <li><b>+ button</b> at the end of each exercise adds an unplanned set.</li>
+          <li><b>Tap a logged chip</b> to edit or delete it.</li>
+          <li><b>RIR</b> (Reps in Reserve) is optional — tap "+ Add RIR" in the log modal if you want to track it.</li>
+          <li><b>Rest timer</b> at the bottom auto-starts when you log a set. Default is 90 seconds. Tap to start/stop manually.</li>
+          <li><b>Finish</b> closes out the workout and saves it to history.</li>
+          <li><b>Close (×)</b> leaves it as "in progress" — you can resume from the day tab later.</li>
+        </ul>
+        <p>Only one in-progress workout at a time. Starting a new one from a different day will prompt before discarding any other in-progress session.</p>
+        <p class="help-note">Phase 1: session data is stored locally but there's no history-browsing view yet — that's coming next, along with per-exercise progression graphs and a unified "Actual" Summary mode that uses your tracked sessions instead of the Flexify CSV import.</p>
+      </details>
+
+      <details class="help-section">
         <summary>Exercise library</summary>
         <p>Tap an exercise dropdown to pick from grouped categories (Chest, Back/Lats, etc.). The list scrolls and has a search field at the top.</p>
         <p>Each row has a small pencil (✎) icon that opens an editor where you can:</p>
@@ -423,8 +552,8 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
         <p>Shows weekly volume per muscle group. Tap any muscle card to expand a per-day exercise breakdown.</p>
         <p><b>Colour coding (Planned mode):</b></p>
         <ul>
-          <li><span class="help-swatch low"></span> ≤6 sets/week — likely too little</li>
-          <li><span class="help-swatch medium"></span> 7–9 sets/week — minimum effective range</li>
+          <li><span class="help-swatch low"></span> &lt;6 sets/week — likely below minimum effective dose</li>
+          <li><span class="help-swatch medium"></span> 6–9 sets/week — minimum effective range (per Pak et al.)</li>
           <li><span class="help-swatch neutral"></span> 10–14 sets/week — solid maintenance/growth</li>
           <li><span class="help-swatch high"></span> ≥15 sets/week — high-volume range</li>
         </ul>
@@ -1525,6 +1654,371 @@ function calcActualVolume(){
   return {totals, sessionsCounted:counted, firstDate, lastDate};
 }
 
+// ===== Native tracking: sessions =====
+// A session is one completed (or in-progress) workout, immutable history.
+// Schema:
+//   { id, date (ISO), blockId, dayId, blockName, dayLabel, status, sets:[
+//       { ex, type, weight, reps, unit, rir?, timestamp, planned (bool), targetWeight?, targetReps? }
+//   ]}
+// status: "in_progress" | "finished" | "abandoned"
+const SESSIONS_KEY="trainblock_sessions_v1";
+const PREFS_KEY="trainblock_prefs_v1";
+let sessions=[];
+let prefs={preferredUnit:"lb", defaultRestSec:90};
+
+function loadPrefs(){
+  try{
+    const raw=localStorage.getItem(PREFS_KEY);
+    if(raw){
+      const p=JSON.parse(raw);
+      if(p&&typeof p==="object"){
+        if(p.preferredUnit==="lb"||p.preferredUnit==="kg")prefs.preferredUnit=p.preferredUnit;
+        if(typeof p.defaultRestSec==="number"&&p.defaultRestSec>=10&&p.defaultRestSec<=600)prefs.defaultRestSec=p.defaultRestSec;
+      }
+    }
+  }catch(e){}
+}
+function savePrefs(){try{localStorage.setItem(PREFS_KEY,JSON.stringify(prefs))}catch(e){}}
+
+function loadSessions(){
+  try{
+    const raw=localStorage.getItem(SESSIONS_KEY);
+    if(raw){
+      const parsed=JSON.parse(raw);
+      if(Array.isArray(parsed))sessions=parsed.filter(s=>s&&s.id&&Array.isArray(s.sets));
+    }
+  }catch(e){sessions=[]}
+}
+function saveSessions(){try{localStorage.setItem(SESSIONS_KEY,JSON.stringify(sessions))}catch(e){
+  console.error("Failed to save sessions; storage may be full");
+}}
+
+// Returns the currently-in-progress session, if any.
+function activeSession(){return sessions.find(s=>s.status==="in_progress")||null}
+
+// Create a new session from a block-day plan and return it.
+function createSessionFromPlan(blockId, dayId){
+  const block=mem[blockId];
+  const day=block.days[dayId];
+  const now=new Date().toISOString();
+  const sess={
+    id:"sess_"+Date.now(),
+    date:now,
+    blockId, dayId,
+    blockName:block.name||("Block "+blockId),
+    dayLabel:day.label||"",
+    status:"in_progress",
+    plannedRows: day.rows.filter(r=>r.ex&&r.sets>0).map((r,i)=>({
+      idx:i,
+      ex:r.ex,
+      type:rowType(r),
+      plannedSets:r.sets,
+      target:r.target||null,
+      linkedToPrev:!!r.linkedToPrev
+    })),
+    sets:[]
+  };
+  sessions.push(sess);
+  saveSessions();
+  return sess;
+}
+function finishSession(sessId){
+  const s=sessions.find(x=>x.id===sessId);
+  if(!s)return;
+  s.status="finished";
+  s.finishedAt=new Date().toISOString();
+  saveSessions();
+}
+function abandonSession(sessId){
+  const idx=sessions.findIndex(x=>x.id===sessId);
+  if(idx<0)return;
+  sessions.splice(idx,1); // discard rather than mark — user wanted to bail
+  saveSessions();
+}
+
+// ===== Workout modal =====
+let curWorkoutSessId=null;
+
+// Open the workout modal for a given session. Renders fresh each time.
+function openWorkoutModal(sessId){
+  curWorkoutSessId=sessId;
+  const s=sessions.find(x=>x.id===sessId);
+  if(!s)return;
+  document.getElementById("workout-title").textContent=s.blockName+(s.dayLabel?(" — "+s.dayLabel):"");
+  const dateStr=new Date(s.date).toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"});
+  document.getElementById("workout-sub").textContent=dateStr;
+  renderWorkoutBody();
+  resetRestTimerLabel();
+  document.getElementById("workout-bg").classList.add("open");
+}
+function closeWorkoutModal(){
+  document.getElementById("workout-bg").classList.remove("open");
+  curWorkoutSessId=null;
+  stopRestTimer(true);
+}
+
+// Returns the array of sets logged so far for a given planned-exercise index in the current session.
+function setsForRowIdx(sess, rowIdx){
+  return sess.sets.filter(st=>st.rowIdx===rowIdx);
+}
+
+function renderWorkoutBody(){
+  const s=sessions.find(x=>x.id===curWorkoutSessId);
+  if(!s)return;
+  const body=document.getElementById("workout-body");
+  body.innerHTML="";
+  if(s.plannedRows.length===0){
+    body.innerHTML='<div class="empty-state"><div class="empty-state-title">Nothing planned</div><div class="empty-state-text">This day has no exercises. Tap × to close.</div></div>';
+    return;
+  }
+  // Compute superset groups from the plannedRows for visual grouping
+  const groupInfo=computeSupersetGroups(s.plannedRows);
+  s.plannedRows.forEach((pr,pi)=>{
+    const wrap=document.createElement("div");
+    wrap.className="wo-ex";
+    const gi=groupInfo[pi];
+    if(gi.inGroup){
+      wrap.classList.add("ss-member");
+      if(gi.isFirst)wrap.classList.add("ss-first");
+      if(gi.isLast)wrap.classList.add("ss-last");
+    }
+    const head=document.createElement("div");head.className="wo-ex-head";
+    const nm=document.createElement("div");nm.className="wo-ex-name";nm.textContent=pr.ex;
+    const tinfo=getSetTypeInfo(pr.type);
+    const tEl=document.createElement("span");tEl.className="wo-ex-type"+(pr.type!=="straight"?" intensifier":"");tEl.textContent=tinfo.short;tEl.title=tinfo.label;
+    head.appendChild(nm);head.appendChild(tEl);
+    wrap.appendChild(head);
+
+    const strip=document.createElement("div");strip.className="wo-set-strip";
+    const logged=setsForRowIdx(s,pr.idx);
+    // Render one chip per planned set slot, in order. Filled if a logged set occupies that slot.
+    const slotCount=Math.max(pr.plannedSets,logged.length);
+    for(let k=0;k<slotCount;k++){
+      const chip=document.createElement("button");chip.className="wo-set-chip";chip.type="button";
+      const log=logged[k]||null;
+      if(log){
+        chip.classList.add("logged");
+        // Heuristic: "miss" colour if target existed and reps fell short
+        if(pr.target&&pr.target.reps&&log.reps<pr.target.reps)chip.classList.add("miss");
+        chip.innerHTML=`<div>${fmtNum(log.weight)}×${log.reps}</div>${log.rir!==undefined?`<div class="wo-set-target">@${log.rir} RIR</div>`:""}`;
+      } else {
+        chip.classList.add("empty");
+        if(pr.target){
+          chip.innerHTML=`<div>—</div><div class="wo-set-target">target ${fmtNum(pr.target.weight)}×${pr.target.reps}</div>`;
+        } else {
+          chip.innerHTML=`<div>—</div>`;
+        }
+      }
+      chip.onclick=()=>openLogSet(pr,k,log);
+      strip.appendChild(chip);
+    }
+    // Add-extra-set button
+    const addBtn=document.createElement("button");addBtn.className="wo-add-set";addBtn.type="button";addBtn.innerHTML='<i class="ti ti-plus"></i>';addBtn.title="Add an unplanned set";
+    addBtn.onclick=()=>openLogSet(pr,slotCount,null);
+    strip.appendChild(addBtn);
+    wrap.appendChild(strip);
+    body.appendChild(wrap);
+  });
+}
+function fmtNum(n){if(n==null)return "—";return (n%1===0)?String(n):n.toFixed(1).replace(/\.?0+$/,"")||"0"}
+
+function confirmAbandonWorkout(){
+  const s=sessions.find(x=>x.id===curWorkoutSessId);
+  if(!s){closeWorkoutModal();return}
+  if(s.sets.length===0){
+    // No sets logged — just discard silently
+    abandonSession(s.id);
+    closeWorkoutModal();
+    return;
+  }
+  if(confirm(`Close this workout? It has ${s.sets.length} logged set${s.sets.length===1?"":"s"} which will be kept as an in-progress session. You can return to it later.`)){
+    closeWorkoutModal();
+  }
+}
+function confirmFinishWorkout(){
+  const s=sessions.find(x=>x.id===curWorkoutSessId);
+  if(!s){closeWorkoutModal();return}
+  if(s.sets.length===0){
+    if(!confirm("No sets logged yet. Finish and discard?"))return;
+    abandonSession(s.id);
+    closeWorkoutModal();
+    return;
+  }
+  if(confirm(`Finish workout with ${s.sets.length} logged set${s.sets.length===1?"":"s"}?`)){
+    finishSession(s.id);
+    closeWorkoutModal();
+  }
+}
+
+// ===== Log-set modal =====
+let logSetCtx=null;
+function openLogSet(plannedRow, slotIdx, existing){
+  const s=sessions.find(x=>x.id===curWorkoutSessId);
+  if(!s)return;
+  logSetCtx={plannedRow, slotIdx, existing};
+  document.getElementById("logset-title").textContent=plannedRow.ex;
+  // Target display
+  const targetEl=document.getElementById("logset-target");
+  if(plannedRow.target){
+    targetEl.textContent=`target ${fmtNum(plannedRow.target.weight)}${plannedRow.target.unit||prefs.preferredUnit} × ${plannedRow.target.reps}`;
+  } else {
+    targetEl.textContent="";
+  }
+  document.getElementById("logset-unit").textContent=prefs.preferredUnit;
+  // Pre-fill from existing OR from target OR from last logged set of this exercise this session
+  const weightInput=document.getElementById("logset-weight");
+  const repsInput=document.getElementById("logset-reps");
+  if(existing){
+    weightInput.value=existing.weight;
+    repsInput.value=existing.reps;
+  } else if(plannedRow.target){
+    weightInput.value=plannedRow.target.weight;
+    repsInput.value=plannedRow.target.reps;
+  } else {
+    // Use last set of this exercise in this session
+    const prev=s.sets.filter(st=>st.rowIdx===plannedRow.idx).pop();
+    if(prev){weightInput.value=prev.weight;repsInput.value=prev.reps}
+    else {weightInput.value="";repsInput.value=""}
+  }
+  // RIR row
+  buildRirChips();
+  if(existing && existing.rir!==undefined){
+    showRirRow();
+    setActiveRir(existing.rir);
+  } else {
+    hideRirRow();
+  }
+  document.getElementById("logset-delete").style.display=existing?"":"none";
+  document.getElementById("logset-bg").classList.add("open");
+  setTimeout(()=>weightInput.focus(),60);
+}
+function closeLogSet(){
+  logSetCtx=null;
+  document.getElementById("logset-bg").classList.remove("open");
+}
+function toggleRirRow(){
+  const row=document.getElementById("logset-rir-row");
+  if(row.style.display==="none"){showRirRow()}else{hideRirRow()}
+}
+function showRirRow(){
+  document.getElementById("logset-rir-row").style.display="flex";
+  document.getElementById("logset-rir-toggle").style.display="none";
+}
+function hideRirRow(){
+  document.getElementById("logset-rir-row").style.display="none";
+  document.getElementById("logset-rir-toggle").style.display="";
+  document.getElementById("logset-rir-toggle").textContent="+ Add RIR";
+  setActiveRir(null);
+}
+function buildRirChips(){
+  const wrap=document.getElementById("logset-rir-chips");
+  wrap.innerHTML="";
+  ["0","1","2","3","4","5+"].forEach(v=>{
+    const b=document.createElement("button");
+    b.className="logset-rir-chip";b.type="button";b.textContent=v;b.dataset.val=v;
+    b.onclick=()=>setActiveRir(v==="5+"?5:parseInt(v,10));
+    wrap.appendChild(b);
+  });
+}
+function setActiveRir(val){
+  document.querySelectorAll("#logset-rir-chips .logset-rir-chip").forEach(c=>{
+    c.classList.toggle("active", val!==null && c.dataset.val===String(val) || (val===5 && c.dataset.val==="5+"));
+  });
+  if(logSetCtx)logSetCtx.rir=val;
+}
+
+function saveLoggedSet(){
+  if(!logSetCtx)return;
+  const s=sessions.find(x=>x.id===curWorkoutSessId);
+  if(!s){closeLogSet();return}
+  const w=parseFloat(document.getElementById("logset-weight").value);
+  const r=parseInt(document.getElementById("logset-reps").value,10);
+  if(isNaN(w)||w<0||isNaN(r)||r<0){
+    alert("Please enter valid weight and reps.");
+    return;
+  }
+  const pr=logSetCtx.plannedRow;
+  const setRec={
+    rowIdx:pr.idx,
+    ex:pr.ex,
+    type:pr.type,
+    weight:w,
+    reps:r,
+    unit:prefs.preferredUnit,
+    timestamp:new Date().toISOString()
+  };
+  if(logSetCtx.rir!==undefined&&logSetCtx.rir!==null)setRec.rir=logSetCtx.rir;
+  if(pr.target){setRec.targetWeight=pr.target.weight;setRec.targetReps=pr.target.reps}
+
+  if(logSetCtx.existing){
+    // Replace the existing record (find by reference within session)
+    const idx=s.sets.indexOf(logSetCtx.existing);
+    if(idx>=0)s.sets[idx]={...s.sets[idx],...setRec};
+  } else {
+    s.sets.push(setRec);
+  }
+  saveSessions();
+  closeLogSet();
+  renderWorkoutBody();
+  // Auto-start rest timer when a new set is logged
+  if(!logSetCtx?.existing&&!restTimer.id)startRestTimer();
+}
+function deleteLoggedSet(){
+  if(!logSetCtx||!logSetCtx.existing)return;
+  if(!confirm("Delete this logged set?"))return;
+  const s=sessions.find(x=>x.id===curWorkoutSessId);
+  if(!s){closeLogSet();return}
+  const idx=s.sets.indexOf(logSetCtx.existing);
+  if(idx>=0)s.sets.splice(idx,1);
+  saveSessions();
+  closeLogSet();
+  renderWorkoutBody();
+}
+
+// ===== Rest timer =====
+let restTimer={id:null, endsAt:0, durationSec:0};
+function startRestTimer(durationSec){
+  durationSec=durationSec||prefs.defaultRestSec;
+  restTimer.endsAt=Date.now()+durationSec*1000;
+  restTimer.durationSec=durationSec;
+  if(restTimer.id)clearInterval(restTimer.id);
+  restTimer.id=setInterval(updateRestTimerLabel,250);
+  document.getElementById("workout-timer-btn").classList.add("running");
+  updateRestTimerLabel();
+}
+function stopRestTimer(silent){
+  if(restTimer.id)clearInterval(restTimer.id);
+  restTimer.id=null;
+  document.getElementById("workout-timer-btn").classList.remove("running");
+  if(!silent)resetRestTimerLabel();
+}
+function resetRestTimerLabel(){
+  document.getElementById("workout-timer-label").textContent="Rest "+prefs.defaultRestSec+"s";
+}
+function updateRestTimerLabel(){
+  const left=Math.max(0,Math.round((restTimer.endsAt-Date.now())/1000));
+  if(left<=0){
+    if(navigator.vibrate)navigator.vibrate([100,50,100]);
+    document.getElementById("workout-timer-label").textContent="Done!";
+    setTimeout(()=>{stopRestTimer()},2000);
+    clearInterval(restTimer.id);restTimer.id=null;
+    return;
+  }
+  const m=Math.floor(left/60),sec=left%60;
+  document.getElementById("workout-timer-label").textContent=m>0?`${m}:${sec.toString().padStart(2,"0")}`:`${sec}s`;
+}
+function toggleRestTimer(){
+  if(restTimer.id){
+    stopRestTimer();
+  } else {
+    startRestTimer();
+  }
+}
+
+// Backdrop click + escape
+document.getElementById("logset-bg").addEventListener("click",e=>{if(e.target.id==="logset-bg")closeLogSet()});
+// Note: we deliberately don't close the workout modal on backdrop click — user could lose data accidentally
+
 function renderDay(dayId){
   closeAllDropdowns();const dayData=mem[curBlock].days[dayId];
   const el=document.getElementById(dayId);el.innerHTML="";
@@ -1544,6 +2038,33 @@ function renderDay(dayId){
       <div class="empty-state-title">No exercises yet</div>
       <div class="empty-state-text">Tap a row below to pick an exercise, then use −/+ or tap the number to set how many sets you plan to do.</div>`;
     el.appendChild(hint);
+  }
+
+  // "Start workout" button — visible only when at least one exercise is planned
+  if(!allEmpty){
+    const hasContent=dayData.rows.some(r=>r.ex&&r.sets>0);
+    if(hasContent){
+      // Check for an existing in-progress session for THIS block+day
+      const inProg=sessions.find(s=>s.status==="in_progress"&&s.blockId===curBlock&&s.dayId===dayId);
+      const btn=document.createElement("button");
+      btn.className="start-workout"+(inProg?" start-workout-resume":"");
+      btn.textContent=inProg?"Resume workout":"Start workout";
+      btn.onclick=()=>{
+        if(inProg){openWorkoutModal(inProg.id);return}
+        // Check if an in-progress session exists for any OTHER day, warn first
+        const otherActive=activeSession();
+        if(otherActive){
+          const lbl=otherActive.blockName+(otherActive.dayLabel?" — "+otherActive.dayLabel:"");
+          if(!confirm(`There's an in-progress workout for "${lbl}". Discard it and start this one?`))return;
+          abandonSession(otherActive.id);
+        }
+        const sess=createSessionFromPlan(curBlock,dayId);
+        openWorkoutModal(sess.id);
+        // Re-render this day so the button now says "Resume"
+        renderDay(dayId);
+      };
+      el.appendChild(btn);
+    }
   }
 
   // Compute superset group memberships before rendering: for each row index,
@@ -1787,16 +2308,19 @@ function renderSummary(){
 
   // Thresholds: planned mode = weekly targets; actual mode = 4× because it's a 4-week window.
   const scale=summaryMode==="actual"?4:1;
+  // Thresholds based on Pak's minimum-effective-dose research:
+  //   <6 sets/wk = below MED (red), 6-9 = MED range (yellow),
+  //   10-14 = solid (grey/neutral), >=15 = high volume (green).
   const HIGH=15*scale, LOW=6*scale, MID_HIGH=9*scale, NEUTRAL_LOW=10*scale;
-  function classify(t){return t>=HIGH?"high":t<=LOW?"low":t<NEUTRAL_LOW?"medium":"neutral"}
+  function classify(t){return t>=HIGH?"high":t<LOW?"low":t<NEUTRAL_LOW?"medium":"neutral"}
   // For sorting we want: low < medium < neutral < high. Within a class, by total ascending.
   const clsRank={low:0,medium:1,neutral:2,high:3};
 
   document.getElementById("sum-legend").innerHTML=
     `<span><span class="leg-dot" style="background:var(--success-text)"></span>≥${HIGH}</span>`+
     `<span><span class="leg-dot" style="background:var(--text2)"></span>${NEUTRAL_LOW}–${HIGH-1}</span>`+
-    `<span><span class="leg-dot" style="background:var(--warn-text)"></span>${LOW+1}–${MID_HIGH}</span>`+
-    `<span><span class="leg-dot" style="background:var(--danger-text)"></span>≤${LOW}</span>`;
+    `<span><span class="leg-dot" style="background:var(--warn-text)"></span>${LOW}–${MID_HIGH}</span>`+
+    `<span><span class="leg-dot" style="background:var(--danger-text)"></span>&lt;${LOW}</span>`;
 
   const sg=document.getElementById("sg");
   const meta=document.getElementById("sum-meta");
@@ -1926,17 +2450,22 @@ function renderSummary(){
 loadCustomExercises();
 loadBuiltinOverrides();
 loadSetTypeOverrides();
+loadPrefs();                  // user preferences (units, default rest)
+loadSessions();               // native workout history
 rebuildEX();
 loadBlockList();              // load persisted block IDs (or default A,B,C)
 loadAllBlocks();              // populate mem for each block
 migrateRenamedExercises();    // rename old exercise names in stored data
-loadFlexifyHistory();         // load any imported Flexify history
+loadFlexifyHistory();         // load any imported Flexify history (legacy import path)
 if(!BLOCKS.includes(curBlock))curBlock=BLOCKS[0];
 syncBlockButtons();           // builds tabs + panels for the current block
 curDayIds().forEach(renderDay);
 renderSummary();
 const initialIds=curDayIds();
 showTab(initialIds[0]||"sum");
+// Auto-resume an in-progress session if one exists
+const _active=activeSession();
+if(_active)openWorkoutModal(_active.id);
 if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js')}
 </script>
 </body>
