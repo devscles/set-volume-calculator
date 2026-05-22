@@ -326,6 +326,37 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .wo-add-set{min-width:38px;padding:8px 10px;border-radius:var(--radius);border:0.5px dashed var(--border2);background:transparent;font-size:14px;color:var(--text3);cursor:pointer;font-family:inherit;min-height:42px}
 .wo-add-set:active{background:var(--bg2);color:var(--text)}
 
+/* === Inline myo-rep cards (no modal, full editor on workout screen) === */
+.myo-inline-container{display:flex;flex-direction:column;gap:10px}
+.myo-card{background:var(--bg);border-radius:var(--radius);border:0.5px solid var(--border);padding:12px}
+.myo-card.logged{background:var(--success-bg);border-color:var(--success-text)}
+.myo-card.editing{background:var(--bg2);border:0.5px dashed var(--border2)}
+.myo-card-summary{display:flex;flex-direction:column;gap:3px}
+.myo-card-summary-main{font-size:14px;color:var(--success-text);font-variant-numeric:tabular-nums;font-weight:500}
+.myo-card-summary-rir{font-size:11px;color:var(--success-text);opacity:0.85}
+.myo-card-actions{display:flex;justify-content:flex-end;gap:6px;margin-top:8px}
+.myo-card-edit,.myo-card-del{padding:5px 10px;font-size:11px;font-weight:500;border-radius:var(--radius);border:0.5px solid var(--success-text);background:transparent;color:var(--success-text);cursor:pointer;font-family:inherit}
+.myo-card-del{padding:4px 10px;font-size:14px;line-height:1}
+.myo-card-label{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:0.04em;font-weight:600;margin-bottom:8px}
+.myo-card-row{display:flex;flex-direction:column;gap:4px;margin-bottom:8px}
+.myo-card-row label{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:0.04em;font-weight:500}
+.myo-card-row input{box-sizing:border-box;width:100%;padding:9px 8px;font-size:15px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);outline:none;font-family:inherit;text-align:center;font-variant-numeric:tabular-nums}
+.myo-card-row input:focus{border-color:var(--accent)}
+.myo-card-minisets-wrap{margin-top:4px;padding:8px;background:var(--bg);border-radius:var(--radius);border:0.5px solid var(--border)}
+.myo-card-minisets-label{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:0.04em;font-weight:500;margin-bottom:6px}
+.myo-card-minisets-count{font-size:10px;color:var(--text3);text-transform:none;letter-spacing:0;font-weight:400;font-variant-numeric:tabular-nums}
+.myo-card-minisets-grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(46px, 1fr));gap:4px;margin-bottom:6px}
+.myo-card-mini-input{box-sizing:border-box;width:100%;padding:6px 2px;font-size:13px;border-radius:4px;border:0.5px solid var(--border2);background:var(--bg2);color:var(--text);outline:none;font-family:inherit;text-align:center;font-variant-numeric:tabular-nums;min-width:0}
+.myo-card-mini-input:focus{border-color:var(--accent)}
+.myo-card-mini-controls{display:flex;justify-content:center;gap:5px}
+.myo-card-mini-btn{width:30px;height:26px;border-radius:4px;border:0.5px solid var(--border2);background:var(--bg2);color:var(--text);font-size:14px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;touch-action:manipulation}
+.myo-card-mini-btn:active{background:var(--bg3)}
+.myo-card-buttons{display:flex;justify-content:flex-end;gap:6px;margin-top:10px}
+.myo-card-save{padding:7px 14px;font-size:12px;font-weight:600;border-radius:var(--radius);border:none;background:var(--accent);color:var(--accent-text);cursor:pointer;font-family:inherit;touch-action:manipulation}
+.myo-card-save:active{opacity:0.85}
+.myo-card-cancel{padding:7px 12px;font-size:12px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);cursor:pointer;font-family:inherit}
+.myo-add-seq{font-size:12px;padding:8px 12px;min-height:0;color:var(--text2)}
+
 /* Log-set modal */
 .logset-modal{max-width:340px}
 .logset-title{font-size:15px;font-weight:600;color:var(--text);text-align:center;margin-bottom:4px}
@@ -2896,6 +2927,11 @@ function closeWorkoutModal(){
   curWorkoutSessId=null;
   stopRestTimer(true);
   closeRestDurationPicker();
+  // Re-render the visible day so the Start/Resume button reflects current session state.
+  // Without this, the planner UI keeps the stale button.
+  if(curTab && curTab!=="sum" && mem[curBlock] && mem[curBlock].days[curTab]){
+    renderDay(curTab);
+  }
 }
 
 // Rest-duration picker: long-press the timer button to change default duration.
@@ -2964,41 +3000,250 @@ function renderWorkoutBody(){
     head.appendChild(nm);head.appendChild(tEl);
     wrap.appendChild(head);
 
-    const strip=document.createElement("div");strip.className="wo-set-strip";
-    const logged=setsForRowIdx(s,pr.idx);
-    // Render one chip per planned set slot, in order. Filled if a logged set occupies that slot.
-    const slotCount=Math.max(pr.plannedSets,logged.length);
-    for(let k=0;k<slotCount;k++){
-      const chip=document.createElement("button");chip.className="wo-set-chip";chip.type="button";
-      const log=logged[k]||null;
-      if(log){
-        chip.classList.add("logged");
-        // Heuristic: "miss" colour if target existed and reps fell short
-        if(pr.target&&pr.target.reps&&log.reps<pr.target.reps)chip.classList.add("miss");
-        // Build the rep display: straight = "8", myo-rep = "15+5,5,5,3"
-        let repText=String(log.reps);
-        if(log.type==="myorep"&&Array.isArray(log.miniSetReps)&&log.miniSetReps.length>0){
-          repText=`${log.reps}+${log.miniSetReps.join(",")}`;
-        }
-        chip.innerHTML=`<div>${fmtNum(log.weight)}×${repText}</div>${log.rir!==undefined?`<div class="wo-set-target">@${log.rir} RIR</div>`:""}`;
-      } else {
-        chip.classList.add("empty");
-        if(pr.target){
-          chip.innerHTML=`<div>—</div><div class="wo-set-target">target ${fmtNum(pr.target.weight)}×${pr.target.reps}</div>`;
-        } else {
-          chip.innerHTML=`<div>—</div>`;
-        }
-      }
-      chip.onclick=()=>openLogSet(pr,k,log);
-      strip.appendChild(chip);
+    // Branch on set type. Myo-rep gets an inline editor per sequence (no modal).
+    // Other types still use the chip-per-set strip with the log modal.
+    if(pr.type==="myorep"){
+      renderMyorepInlineCards(wrap, s, pr);
+    } else {
+      renderChipStrip(wrap, s, pr);
     }
-    // Add-extra-set button
-    const addBtn=document.createElement("button");addBtn.className="wo-add-set";addBtn.type="button";addBtn.innerHTML='<i class="ti ti-plus"></i>';addBtn.title="Add an unplanned set";
-    addBtn.onclick=()=>openLogSet(pr,slotCount,null);
-    strip.appendChild(addBtn);
-    wrap.appendChild(strip);
     body.appendChild(wrap);
   });
+}
+
+// Renders the chip-per-set strip (for straight, AMRAP, drop, cluster, rest-pause).
+function renderChipStrip(wrap, s, pr){
+  const strip=document.createElement("div");strip.className="wo-set-strip";
+  const logged=setsForRowIdx(s,pr.idx);
+  const slotCount=Math.max(pr.plannedSets,logged.length);
+  for(let k=0;k<slotCount;k++){
+    const chip=document.createElement("button");chip.className="wo-set-chip";chip.type="button";
+    const log=logged[k]||null;
+    if(log){
+      chip.classList.add("logged");
+      if(pr.target&&pr.target.reps&&log.reps<pr.target.reps)chip.classList.add("miss");
+      let repText=String(log.reps);
+      if(log.type==="myorep"&&Array.isArray(log.miniSetReps)&&log.miniSetReps.length>0){
+        repText=`${log.reps}+${log.miniSetReps.join(",")}`;
+      }
+      chip.innerHTML=`<div>${fmtNum(log.weight)}×${repText}</div>${log.rir!==undefined?`<div class="wo-set-target">@${log.rir} RIR</div>`:""}`;
+    } else {
+      chip.classList.add("empty");
+      if(pr.target){
+        chip.innerHTML=`<div>—</div><div class="wo-set-target">target ${fmtNum(pr.target.weight)}×${pr.target.reps}</div>`;
+      } else {
+        chip.innerHTML=`<div>—</div>`;
+      }
+    }
+    chip.onclick=()=>openLogSet(pr,k,log);
+    strip.appendChild(chip);
+  }
+  // Add-extra-set button
+  const addBtn=document.createElement("button");addBtn.className="wo-add-set";addBtn.type="button";addBtn.innerHTML='<i class="ti ti-plus"></i>';addBtn.title="Add an unplanned set";
+  addBtn.onclick=()=>openLogSet(pr,logged.length,null);
+  strip.appendChild(addBtn);
+  wrap.appendChild(strip);
+}
+
+// In-memory state for inline myo-rep editors. Keyed by "rowIdx_slotIdx".
+// Survives re-renders of the workout body so users don't lose half-typed values
+// (e.g. when the body re-renders because another set was logged elsewhere).
+const myorepInlineState={};
+
+// Renders inline myo-rep editor cards: one card per planned sequence + an "Add sequence" button.
+function renderMyorepInlineCards(wrap, s, pr){
+  const logged=setsForRowIdx(s,pr.idx);
+  const slotCount=Math.max(pr.plannedSets,logged.length);
+  const container=document.createElement("div");
+  container.className="myo-inline-container";
+  for(let k=0;k<slotCount;k++){
+    const log=logged[k]||null;
+    container.appendChild(buildMyoCard(s, pr, k, log));
+  }
+  // Add-extra-sequence button
+  const addBtn=document.createElement("button");
+  addBtn.className="wo-add-set myo-add-seq";
+  addBtn.type="button";
+  addBtn.innerHTML='<i class="ti ti-plus"></i> Add sequence';
+  addBtn.onclick=()=>{
+    // Just render an empty card by extending the slotCount
+    const newSlot=Math.max(pr.plannedSets, setsForRowIdx(s,pr.idx).length)+1;
+    pr.plannedSets=newSlot; // bump so the next render shows the empty card
+    renderWorkoutBody();
+  };
+  container.appendChild(addBtn);
+  wrap.appendChild(container);
+}
+
+function myoStateKey(pr, slotIdx){return `${pr.idx}_${slotIdx}`}
+
+function buildMyoCard(s, pr, slotIdx, existing){
+  const card=document.createElement("div");
+  card.className="myo-card"+(existing?" logged":"");
+
+  // If this slot has a logged record AND we're not actively editing it, show summary view.
+  const stateKey=myoStateKey(pr,slotIdx);
+  const editing=myorepInlineState[stateKey]&&myorepInlineState[stateKey].editing;
+  if(existing && !editing){
+    // Summary view: tapping reveals the edit form
+    const summary=document.createElement("div");
+    summary.className="myo-card-summary";
+    const miniText=Array.isArray(existing.miniSetReps)&&existing.miniSetReps.length>0
+      ? `+${existing.miniSetReps.join(",")}` : "";
+    summary.innerHTML=`<div class="myo-card-summary-main">${fmtNum(existing.weight)}${existing.unit||prefs.preferredUnit} × <b>${existing.reps}</b>${miniText}</div>${existing.rir!==undefined?`<div class="myo-card-summary-rir">@${existing.rir} RIR</div>`:""}`;
+    const actions=document.createElement("div");actions.className="myo-card-actions";
+    const editBtn=document.createElement("button");editBtn.type="button";editBtn.className="myo-card-edit";editBtn.textContent="Edit";
+    editBtn.onclick=()=>{
+      myorepInlineState[stateKey]={editing:true};
+      renderWorkoutBody();
+    };
+    const delBtn=document.createElement("button");delBtn.type="button";delBtn.className="myo-card-del";delBtn.textContent="×";delBtn.title="Delete this sequence";
+    delBtn.onclick=()=>{
+      if(!confirm("Delete this myo-rep sequence?"))return;
+      const idx=s.sets.indexOf(existing);
+      if(idx>=0)s.sets.splice(idx,1);
+      saveSessions();
+      renderWorkoutBody();
+    };
+    actions.appendChild(editBtn);actions.appendChild(delBtn);
+    card.appendChild(summary);card.appendChild(actions);
+    return card;
+  }
+
+  // Editor view: inline inputs
+  card.classList.add("editing");
+
+  // Initialize state for this slot if needed
+  if(!myorepInlineState[stateKey]){
+    myorepInlineState[stateKey]={editing:true, weight:"", activation:"", miniReps:newDefaultMiniSets()};
+    // Pre-fill from existing → target → last set this session → last set ever
+    if(existing){
+      myorepInlineState[stateKey].weight=String(existing.weight);
+      myorepInlineState[stateKey].activation=String(existing.reps);
+      myorepInlineState[stateKey].miniReps = existing.miniSetReps ? [...existing.miniSetReps].concat(Array(Math.max(0,4-existing.miniSetReps.length)).fill(null)) : newDefaultMiniSets();
+      if(existing.rir!==undefined)myorepInlineState[stateKey].rir=existing.rir;
+    } else if(pr.target){
+      myorepInlineState[stateKey].weight=String(pr.target.weight);
+      myorepInlineState[stateKey].activation=String(pr.target.reps);
+    } else {
+      const lastSet=findLastSetForExercise(pr.ex, s.id);
+      const prevThisSession=s.sets.filter(st=>st.rowIdx===pr.idx).pop();
+      const seed=prevThisSession||lastSet;
+      if(seed){
+        myorepInlineState[stateKey].weight=String(seed.weight);
+        myorepInlineState[stateKey].activation=String(seed.reps);
+        if(seed.type==="myorep"&&Array.isArray(seed.miniSetReps)){
+          myorepInlineState[stateKey].miniReps=[...seed.miniSetReps].concat(Array(Math.max(0,4-seed.miniSetReps.length)).fill(null));
+        }
+      }
+    }
+  }
+  const st=myorepInlineState[stateKey];
+
+  // Header label inside card
+  const label=document.createElement("div");label.className="myo-card-label";
+  label.textContent=`Sequence ${slotIdx+1}`;
+  card.appendChild(label);
+
+  // Weight row
+  const wRow=document.createElement("div");wRow.className="myo-card-row";
+  const wLbl=document.createElement("label");wLbl.textContent=`Weight (${prefs.preferredUnit})`;
+  const wInp=document.createElement("input");wInp.type="text";wInp.inputMode="decimal";wInp.pattern="[0-9]*\\.?[0-9]*";
+  wInp.autocomplete="off";wInp.setAttribute("data-form-type","other");wInp.setAttribute("data-lpignore","true");
+  wInp.value=st.weight;wInp.placeholder=pr.target?String(pr.target.weight):"—";
+  wInp.oninput=e=>{st.weight=e.target.value};
+  wRow.appendChild(wLbl);wRow.appendChild(wInp);
+  card.appendChild(wRow);
+
+  // Activation reps row
+  const aRow=document.createElement("div");aRow.className="myo-card-row";
+  const aLbl=document.createElement("label");aLbl.textContent="Activation reps";
+  const aInp=document.createElement("input");aInp.type="text";aInp.inputMode="numeric";aInp.pattern="[0-9]*";
+  aInp.autocomplete="off";aInp.setAttribute("data-form-type","other");aInp.setAttribute("data-lpignore","true");
+  aInp.value=st.activation;aInp.placeholder=pr.target?String(pr.target.reps):"—";
+  aInp.oninput=e=>{st.activation=e.target.value};
+  aRow.appendChild(aLbl);aRow.appendChild(aInp);
+  card.appendChild(aRow);
+
+  // Mini-sets row
+  const miniWrap=document.createElement("div");miniWrap.className="myo-card-minisets-wrap";
+  const miniLbl=document.createElement("div");miniLbl.className="myo-card-minisets-label";
+  miniLbl.innerHTML=`Mini-sets <span class="myo-card-minisets-count">(${st.miniReps.length})</span>`;
+  miniWrap.appendChild(miniLbl);
+  const miniGrid=document.createElement("div");miniGrid.className="myo-card-minisets-grid";
+  st.miniReps.forEach((v,i)=>{
+    const m=document.createElement("input");m.type="text";m.inputMode="numeric";m.pattern="[0-9]*";
+    m.autocomplete="off";m.setAttribute("data-form-type","other");m.setAttribute("data-lpignore","true");
+    m.className="myo-card-mini-input";
+    m.placeholder=String(i+1);
+    if(v!==null&&v!==undefined)m.value=v;
+    m.oninput=e=>{
+      const n=parseInt(e.target.value,10);
+      st.miniReps[i]=isNaN(n)?null:n;
+    };
+    miniGrid.appendChild(m);
+  });
+  miniWrap.appendChild(miniGrid);
+  const miniCtrls=document.createElement("div");miniCtrls.className="myo-card-mini-controls";
+  const miniMinus=document.createElement("button");miniMinus.type="button";miniMinus.className="myo-card-mini-btn";miniMinus.textContent="−";
+  miniMinus.onclick=()=>{
+    if(st.miniReps.length>0){st.miniReps.pop();renderWorkoutBody()}
+  };
+  const miniPlus=document.createElement("button");miniPlus.type="button";miniPlus.className="myo-card-mini-btn";miniPlus.textContent="+";
+  miniPlus.onclick=()=>{
+    if(st.miniReps.length<8){st.miniReps.push(null);renderWorkoutBody()}
+  };
+  miniCtrls.appendChild(miniMinus);miniCtrls.appendChild(miniPlus);
+  miniWrap.appendChild(miniCtrls);
+  card.appendChild(miniWrap);
+
+  // Buttons row: Save (always) + Cancel (only if editing an existing logged sequence)
+  const btnRow=document.createElement("div");btnRow.className="myo-card-buttons";
+  if(existing){
+    const cancel=document.createElement("button");cancel.type="button";cancel.className="myo-card-cancel";cancel.textContent="Cancel";
+    cancel.onclick=()=>{
+      delete myorepInlineState[stateKey];
+      renderWorkoutBody();
+    };
+    btnRow.appendChild(cancel);
+  }
+  const save=document.createElement("button");save.type="button";save.className="myo-card-save";save.textContent=existing?"Update":"Log sequence";
+  save.onclick=()=>saveMyorepInline(s, pr, slotIdx, existing);
+  btnRow.appendChild(save);
+  card.appendChild(btnRow);
+
+  return card;
+}
+
+function saveMyorepInline(s, pr, slotIdx, existing){
+  const stateKey=myoStateKey(pr,slotIdx);
+  const st=myorepInlineState[stateKey];
+  if(!st)return;
+  const w=parseFloat(st.weight);
+  const a=parseInt(st.activation,10);
+  if(isNaN(w)||w<0){alert("Please enter a valid weight.");return}
+  if(isNaN(a)||a<=0){alert("Please enter activation reps.");return}
+  const mini=st.miniReps.map(v=>{
+    const n=parseInt(v,10);
+    return isNaN(n)||n<=0 ? null : n;
+  }).filter(v=>v!==null);
+  const rec={
+    rowIdx:pr.idx, ex:pr.ex, type:"myorep",
+    weight:w, reps:a, miniSetReps:mini,
+    unit:prefs.preferredUnit, timestamp:new Date().toISOString()
+  };
+  if(st.rir!==undefined&&st.rir!==null)rec.rir=st.rir;
+  if(pr.target){rec.targetWeight=pr.target.weight;rec.targetReps=pr.target.reps}
+  if(existing){
+    const idx=s.sets.indexOf(existing);
+    if(idx>=0)s.sets[idx]={...s.sets[idx],...rec};
+  } else {
+    s.sets.push(rec);
+  }
+  saveSessions();
+  delete myorepInlineState[stateKey];
+  renderWorkoutBody();
+  if(!existing&&!restTimer.id)startRestTimer();
 }
 function fmtNum(n){if(n==null)return "—";return (n%1===0)?String(n):n.toFixed(1).replace(/\.?0+$/,"")||"0"}
 
@@ -3502,15 +3747,18 @@ function renderDay(dayId){
     }
 
     const picker=makePicker(row.ex,(val,cleared)=>{
+      const wasEmpty=!dayData.rows[i].ex;
       dayData.rows[i].ex=val;
-      // Bug fix #3: when exercise is cleared, also clear its sets
       if(cleared||val===""){
+        // Clearing the exercise also clears its sets
         dayData.rows[i].sets=0;
         dayData.rows[i].type="straight";
         const n=div.querySelector(".s-num");if(n)n.textContent="0";
+      } else if(wasEmpty && dayData.rows[i].sets===0){
+        // First-time exercise pick: auto-bump sets to 1 so the row is immediately "active".
+        // This also makes the Start workout button show up the moment you add an exercise.
+        dayData.rows[i].sets=1;
       }
-      // Either selecting OR clearing an exercise may flip the empty-state visibility.
-      // Re-render the day next tick so the empty-state appears/disappears appropriately.
       renderDay(dayId);
       updateDayTabLabel(dayId);
     });
