@@ -251,6 +251,8 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .graph-toggle{display:flex;gap:0;border-radius:var(--radius);border:0.5px solid var(--border2);overflow:hidden;flex-wrap:wrap}
 .graph-toggle button{padding:4px 9px;font-size:10px;font-weight:500;border:none;background:var(--bg);color:var(--text2);cursor:pointer;font-family:inherit}
 .graph-toggle button.active{background:var(--accent);color:var(--accent-text)}
+.graph-show-all{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text2);cursor:pointer;user-select:none}
+.graph-show-all input{margin:0;cursor:pointer;width:13px;height:13px;accent-color:var(--accent)}
 /* Scrollable history table: keeps the graph as the focal element */
 .graph-table-wrap{max-height:200px;overflow-y:auto;-webkit-overflow-scrolling:touch;border:0.5px solid var(--border);border-radius:var(--radius);margin-top:10px}
 .graph-table-wrap-label{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:0.04em;font-weight:500;margin:10px 0 4px;padding:0 4px}
@@ -1828,13 +1830,27 @@ function renderExerciseGraph(exName){
   // Metric toggle
   const metaRow=document.createElement("div");metaRow.className="graph-meta";
   metaRow.innerHTML=`<span>${all.length} set${all.length===1?"":"s"} logged · first ${new Date(all[0].timestamp||all[0].sessionDate).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"})}</span>`;
+  const toggleWrap=document.createElement("div");toggleWrap.style.cssText="display:flex;gap:8px;align-items:center;flex-wrap:wrap";
   const toggle=document.createElement("div");toggle.className="graph-toggle";
   [["weight","Weight"],["estimated1rm","Est 1RM"],["volume","Volume"],["setCount","Sets"]].forEach(([key,label])=>{
     const b=document.createElement("button");b.textContent=label;b.className=graphMetric===key?"active":"";
     b.onclick=()=>{graphMetric=key;renderExerciseGraph(exName)};
     toggle.appendChild(b);
   });
-  metaRow.appendChild(toggle);
+  toggleWrap.appendChild(toggle);
+  // "Show all sets" toggle — only meaningful for per-set metrics, not setCount
+  if(graphMetric!=="setCount"){
+    const showAllLabel=document.createElement("label");
+    showAllLabel.className="graph-show-all";
+    showAllLabel.innerHTML=`<input type="checkbox" ${prefs.graphShowAllSets?"checked":""}> <span>Show all sets</span>`;
+    showAllLabel.querySelector("input").onchange=e=>{
+      prefs.graphShowAllSets=e.target.checked;
+      savePrefs();
+      renderExerciseGraph(exName);
+    };
+    toggleWrap.appendChild(showAllLabel);
+  }
+  metaRow.appendChild(toggleWrap);
   body.appendChild(metaRow);
 
   // Graph container
@@ -1954,8 +1970,23 @@ function buildSvgGraph(sets){
     points=sets.map(s=>({t:new Date(s.timestamp||s.sessionDate).getTime(),m:metric(s),src:s}));
   }
   if(points.length===0)return svg;
-  const xMin=Math.min(...points.map(p=>p.t)), xMax=Math.max(...points.map(p=>p.t));
-  const yMin=Math.min(...points.map(p=>p.m)), yMax=Math.max(...points.map(p=>p.m));
+
+  // Compute best-per-day points (always — used for trend line and "best only" view)
+  const byDayBest={};
+  points.forEach(p=>{
+    const d=new Date(p.t).toISOString().slice(0,10);
+    if(!byDayBest[d]||p.m>byDayBest[d].m)byDayBest[d]={t:p.t,m:p.m,src:p.src,isAggregate:p.isAggregate,daySets:p.daySets};
+  });
+  const dailyMax=Object.values(byDayBest).sort((a,b)=>a.t-b.t);
+
+  // Decide which points drive the axis range and which points to scatter:
+  //  - "Sets" mode always shows daily aggregates (no choice).
+  //  - For other metrics: if prefs.graphShowAllSets, scatter every set; otherwise only best-per-day.
+  const showAll = graphMetric!=="setCount" && prefs.graphShowAllSets;
+  const visiblePoints = (graphMetric==="setCount" || !showAll) ? dailyMax : points;
+
+  const xMin=Math.min(...visiblePoints.map(p=>p.t)), xMax=Math.max(...visiblePoints.map(p=>p.t));
+  const yMin=Math.min(...visiblePoints.map(p=>p.m)), yMax=Math.max(...visiblePoints.map(p=>p.m));
   // Use nice ticks for the y-axis (~5 ticks). Range is expanded to match the outer ticks.
   const ticks=niceTicks(yMin, yMax, 5);
   const yMinP=ticks.length?Math.min(ticks[0],yMin):yMin;
@@ -2066,29 +2097,25 @@ function buildSvgGraph(sets){
       svg.appendChild(c);
     });
   } else {
-    // Scatter of every set (tappable)
-    points.forEach(p=>{
-      const cx=px(p.t), cy=py(p.m);
-      const c=document.createElementNS("http://www.w3.org/2000/svg","circle");
-      c.setAttribute("cx",cx);c.setAttribute("cy",cy);c.setAttribute("r","5");c.setAttribute("fill","var(--accent)");c.setAttribute("opacity","0.55");
-      c.style.cursor="pointer";
-      c.addEventListener("click",e=>{e.stopPropagation();showTooltip(cx,cy,tipLines(p))});
-      svg.appendChild(c);
-    });
-    // Trend line: best-set-per-day connecting line
-    const byDay={};
-    points.forEach(p=>{
-      const d=new Date(p.t).toISOString().slice(0,10);
-      if(!byDay[d]||p.m>byDay[d].m)byDay[d]={t:p.t,m:p.m,src:p.src};
-    });
-    const dailyMax=Object.values(byDay).sort((a,b)=>a.t-b.t);
+    // If showing all sets, scatter every set as faded dots underneath the trend line
+    if(showAll){
+      points.forEach(p=>{
+        const cx=px(p.t), cy=py(p.m);
+        const c=document.createElementNS("http://www.w3.org/2000/svg","circle");
+        c.setAttribute("cx",cx);c.setAttribute("cy",cy);c.setAttribute("r","5");c.setAttribute("fill","var(--accent)");c.setAttribute("opacity","0.4");
+        c.style.cursor="pointer";
+        c.addEventListener("click",e=>{e.stopPropagation();showTooltip(cx,cy,tipLines(p))});
+        svg.appendChild(c);
+      });
+    }
+    // Trend line: best-set-per-day
     if(dailyMax.length>1){
       const path=dailyMax.map((p,i)=>`${i===0?"M":"L"} ${px(p.t).toFixed(1)} ${py(p.m).toFixed(1)}`).join(" ");
       const line=document.createElementNS("http://www.w3.org/2000/svg","path");
       line.setAttribute("d",path);line.setAttribute("fill","none");line.setAttribute("stroke","var(--accent)");line.setAttribute("stroke-width","2");line.setAttribute("opacity","0.85");
       svg.appendChild(line);
     }
-    // Highlight the best-per-day points with bigger filled dots, also tappable
+    // Best-per-day points: always shown as the prominent dots
     dailyMax.forEach(p=>{
       const cx=px(p.t), cy=py(p.m);
       const c=document.createElementNS("http://www.w3.org/2000/svg","circle");
@@ -2635,7 +2662,7 @@ function calcActualVolume(){
 const SESSIONS_KEY="trainblock_sessions_v1";
 const PREFS_KEY="trainblock_prefs_v1";
 let sessions=[];
-let prefs={preferredUnit:"lb", defaultRestSec:90, actualSource:"sessions", lastBackupAt:null, backupReminderSnoozedUntil:null, flexifyMigrated:false};
+let prefs={preferredUnit:"lb", defaultRestSec:90, actualSource:"sessions", lastBackupAt:null, backupReminderSnoozedUntil:null, flexifyMigrated:false, graphShowAllSets:false};
 
 function loadPrefs(){
   try{
@@ -2649,6 +2676,7 @@ function loadPrefs(){
         if(typeof p.lastBackupAt==="string")prefs.lastBackupAt=p.lastBackupAt;
         if(typeof p.backupReminderSnoozedUntil==="string")prefs.backupReminderSnoozedUntil=p.backupReminderSnoozedUntil;
         if(p.flexifyMigrated===true)prefs.flexifyMigrated=true;
+        if(typeof p.graphShowAllSets==="boolean")prefs.graphShowAllSets=p.graphShowAllSets;
       }
     }
   }catch(e){}
