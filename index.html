@@ -74,8 +74,8 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .flexify-status.success{color:var(--success-text)}
 .flexify-status.warn{color:var(--warn-text)}
 .flexify-status.error{color:var(--danger-text)}
-.panels{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
-.panel{display:none;padding:12px 14px}
+.panels{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+.panel{display:none;padding:12px 14px;min-width:0}
 .panel.active{display:block;animation:panelFadeIn 0.18s var(--ease)}
 @keyframes panelFadeIn{from{opacity:0;transform:translateY(2px)}to{opacity:1;transform:translateY(0)}}
 .day-label-row{display:flex;align-items:center;margin-bottom:10px}
@@ -110,8 +110,8 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .s-btn:active{background:var(--bg3);transform:scale(0.95)}
 .s-num{min-width:32px;height:36px;text-align:center;font-size:14px;font-weight:500;color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:var(--radius);background:transparent}
 .s-num:active{background:var(--bg2)}
-.ex-picker{position:relative;width:100%}
-.ex-display{font-size:12px;padding:9px 24px 9px 10px;border-radius:var(--radius);border:0.5px solid var(--border);background:var(--bg);color:var(--text);width:100%;cursor:pointer;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;position:relative;min-height:36px;font-family:inherit}
+.ex-picker{position:relative;width:100%;min-width:0;overflow:hidden}
+.ex-display{font-size:12px;padding:9px 24px 9px 10px;border-radius:var(--radius);border:0.5px solid var(--border);background:var(--bg);color:var(--text);width:100%;cursor:pointer;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;position:relative;min-height:36px;font-family:inherit;box-sizing:border-box;display:block}
 .ex-display::after{content:"▾";position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--text3)}
 .ex-none{color:var(--text3)}
 .ex-dropdown{position:fixed;background:var(--bg);border:0.5px solid var(--border2);border-radius:var(--radius);z-index:1000;display:none;box-shadow:0 4px 16px var(--shadow);flex-direction:column}
@@ -338,6 +338,10 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .myo-card-edit,.myo-card-del{padding:5px 10px;font-size:11px;font-weight:500;border-radius:var(--radius);border:0.5px solid var(--success-text);background:transparent;color:var(--success-text);cursor:pointer;font-family:inherit}
 .myo-card-del{padding:4px 10px;font-size:14px;line-height:1}
 .myo-card-label{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:0.04em;font-weight:600;margin-bottom:8px}
+.myo-card-label-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.myo-card-label-row .myo-card-label{margin-bottom:0}
+.myo-timer-toggle{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text2);cursor:pointer;user-select:none}
+.myo-timer-toggle input{margin:0;cursor:pointer;width:13px;height:13px;accent-color:var(--accent)}
 .myo-card-row{display:flex;flex-direction:column;gap:4px;margin-bottom:8px}
 .myo-card-row label{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:0.04em;font-weight:500}
 .myo-card-row input{box-sizing:border-box;width:100%;padding:9px 8px;font-size:15px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);outline:none;font-family:inherit;text-align:center;font-variant-numeric:tabular-nums}
@@ -2824,7 +2828,7 @@ function calcActualVolume(){
 const SESSIONS_KEY="trainblock_sessions_v1";
 const PREFS_KEY="trainblock_prefs_v1";
 let sessions=[];
-let prefs={preferredUnit:"lb", defaultRestSec:90, actualSource:"sessions", lastBackupAt:null, backupReminderSnoozedUntil:null, flexifyMigrated:false, graphShowAllSets:false};
+let prefs={preferredUnit:"lb", defaultRestSec:90, actualSource:"sessions", lastBackupAt:null, backupReminderSnoozedUntil:null, flexifyMigrated:false, graphShowAllSets:false, myorepTimer:true};
 
 function loadPrefs(){
   try{
@@ -2839,6 +2843,7 @@ function loadPrefs(){
         if(typeof p.backupReminderSnoozedUntil==="string")prefs.backupReminderSnoozedUntil=p.backupReminderSnoozedUntil;
         if(p.flexifyMigrated===true)prefs.flexifyMigrated=true;
         if(typeof p.graphShowAllSets==="boolean")prefs.graphShowAllSets=p.graphShowAllSets;
+        if(typeof p.myorepTimer==="boolean")prefs.myorepTimer=p.myorepTimer;
       }
     }
   }catch(e){}
@@ -3140,10 +3145,27 @@ function buildMyoCard(s, pr, slotIdx, existing){
   }
   const st=myorepInlineState[stateKey];
 
-  // Header label inside card
+  // Header label inside card + timer toggle
+  const labelRow=document.createElement("div");labelRow.className="myo-card-label-row";
   const label=document.createElement("div");label.className="myo-card-label";
   label.textContent=`Sequence ${slotIdx+1}`;
-  card.appendChild(label);
+  labelRow.appendChild(label);
+  const toggleLabel=document.createElement("label");toggleLabel.className="myo-timer-toggle";
+  const toggleInput=document.createElement("input");toggleInput.type="checkbox";
+  toggleInput.checked=!!prefs.myorepTimer;
+  toggleInput.onchange=e=>{prefs.myorepTimer=e.target.checked;savePrefs()};
+  const toggleText=document.createElement("span");toggleText.textContent="20s timer";
+  toggleLabel.appendChild(toggleInput);toggleLabel.appendChild(toggleText);
+  labelRow.appendChild(toggleLabel);
+  card.appendChild(labelRow);
+
+  // Helper: fire short rest timer if toggle is on and input has a valid positive value
+  function maybeStartShortTimer(input){
+    if(!prefs.myorepTimer)return;
+    const n=parseInt(input.value,10);
+    if(isNaN(n)||n<=0)return;
+    startRestTimer(20);
+  }
 
   // Weight row
   const wRow=document.createElement("div");wRow.className="myo-card-row";
@@ -3155,13 +3177,14 @@ function buildMyoCard(s, pr, slotIdx, existing){
   wRow.appendChild(wLbl);wRow.appendChild(wInp);
   card.appendChild(wRow);
 
-  // Activation reps row
+  // Activation reps row — change event also fires the short rest timer
   const aRow=document.createElement("div");aRow.className="myo-card-row";
   const aLbl=document.createElement("label");aLbl.textContent="Activation reps";
   const aInp=document.createElement("input");aInp.type="text";aInp.inputMode="numeric";aInp.pattern="[0-9]*";
   aInp.autocomplete="off";aInp.setAttribute("data-form-type","other");aInp.setAttribute("data-lpignore","true");
   aInp.value=st.activation;aInp.placeholder=pr.target?String(pr.target.reps):"—";
   aInp.oninput=e=>{st.activation=e.target.value};
+  aInp.onchange=e=>maybeStartShortTimer(e.target);
   aRow.appendChild(aLbl);aRow.appendChild(aInp);
   card.appendChild(aRow);
 
@@ -3175,12 +3198,15 @@ function buildMyoCard(s, pr, slotIdx, existing){
     const m=document.createElement("input");m.type="text";m.inputMode="numeric";m.pattern="[0-9]*";
     m.autocomplete="off";m.setAttribute("data-form-type","other");m.setAttribute("data-lpignore","true");
     m.className="myo-card-mini-input";
-    m.placeholder=String(i+1);
+    m.placeholder="—";
     if(v!==null&&v!==undefined)m.value=v;
     m.oninput=e=>{
       const n=parseInt(e.target.value,10);
       st.miniReps[i]=isNaN(n)?null:n;
     };
+    // 'change' fires after the user confirms (taps Enter/Done on keypad or blurs the field).
+    // Treat this as "I just completed that mini-set" → kick off the short rest timer.
+    m.onchange=e=>maybeStartShortTimer(e.target);
     miniGrid.appendChild(m);
   });
   miniWrap.appendChild(miniGrid);
@@ -3468,7 +3494,7 @@ function renderMiniSetInputs(){
     const inp=document.createElement("input");
     inp.type="text";inp.inputMode="numeric";inp.pattern="[0-9]*";
     inp.className="logset-mini-input";
-    inp.placeholder=String(i+1);
+    inp.placeholder="—";
     inp.autocomplete="off";inp.dataset.idx=i;
     if(v!==null&&v!==undefined)inp.value=v;
     inp.addEventListener("input",e=>{
@@ -3654,9 +3680,11 @@ function resetRestTimerLabel(){
 function updateRestTimerLabel(){
   const left=Math.max(0,Math.round((restTimer.endsAt-Date.now())/1000));
   if(left<=0){
-    if(navigator.vibrate)navigator.vibrate([100,50,100]);
+    // Four substantial pulses (~600ms each) separated by short gaps. Total ~3s.
+    // Catches attention in a noisy gym even when phone is in a pocket.
+    if(navigator.vibrate)navigator.vibrate([600,150,600,150,600,150,600]);
     document.getElementById("workout-timer-label").textContent="Done!";
-    setTimeout(()=>{stopRestTimer()},2000);
+    setTimeout(()=>{stopRestTimer()},3500);
     clearInterval(restTimer.id);restTimer.id=null;
     return;
   }
