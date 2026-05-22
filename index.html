@@ -50,6 +50,18 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .day-mgr-btn:active{background:var(--bg2)}
 .day-mgr-btn:disabled{opacity:0.35;cursor:not-allowed}
 .day-mgr-count{min-width:18px;text-align:center;font-size:13px;font-weight:500;color:var(--text)}
+
+/* Backup reminder banner */
+.backup-banner{background:var(--warn-bg);color:var(--warn-text);padding:8px 14px;display:flex;align-items:center;gap:8px;font-size:12px;flex-shrink:0;border-bottom:0.5px solid var(--border)}
+.backup-banner span{flex:1;min-width:0}
+.backup-banner button{padding:5px 10px;font-size:11px;font-weight:500;border-radius:var(--radius);border:0.5px solid var(--warn-text);background:transparent;color:var(--warn-text);cursor:pointer;font-family:inherit;flex-shrink:0}
+.backup-banner button:first-of-type{background:var(--warn-text);color:var(--warn-bg);font-weight:600}
+
+/* Settings buttons */
+.settings-btn{padding:8px 14px;font-size:13px;font-weight:500;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);cursor:pointer;font-family:inherit;touch-action:manipulation}
+.settings-btn:active{background:var(--bg2)}
+.settings-btn.primary{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
+.settings-btn.primary:active{opacity:0.85}
 .flexify-bar{display:flex;align-items:center;gap:8px;padding:6px 14px;border-bottom:0.5px solid var(--border);font-size:11px;color:var(--text2);flex-shrink:0;flex-wrap:wrap}
 .flexify-label{text-transform:uppercase;letter-spacing:0.05em;font-weight:500}
 .flexify-btn{padding:5px 10px;font-size:12px;font-weight:500;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);cursor:pointer;font-family:inherit;touch-action:manipulation}
@@ -357,7 +369,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
       <button class="icon-btn" onclick="confirmDeleteBlock()" title="Delete this block" aria-label="Delete this block">🗑</button>
       <button class="icon-btn" onclick="confirmResetBlock()" title="Reset this block" aria-label="Reset this block"><i class="ti ti-refresh"></i></button>
       <button class="icon-btn" onclick="openHistory()" title="History" aria-label="Open history"><i class="ti ti-chart-line"></i></button>
-      <button class="icon-btn" onclick="openHelp()" title="Help" aria-label="Open help">?</button>
+      <button class="icon-btn" onclick="openSettings()" title="Settings" aria-label="Open settings"><i class="ti ti-settings"></i></button>
     </div>
     <span class="save-status saved" id="save-status">Saved</span>
   </div>
@@ -375,13 +387,15 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
   <span class="day-mgr-count" id="day-count">3</span>
   <button class="day-mgr-btn" id="day-add" title="Add a day" aria-label="Add a day">+</button>
 </div>
-<div class="flexify-bar">
-  <span class="flexify-label">Flexify</span>
-  <button class="flexify-btn" id="flexify-export" onclick="exportToFlexify()">Export plan</button>
-  <button class="flexify-btn" id="flexify-import" onclick="document.getElementById('flexify-import-file').click()">Import history</button>
-  <input type="file" id="flexify-import-file" accept=".csv,text/csv" style="display:none" onchange="importFlexifyHistory(this.files[0])">
-  <span class="flexify-status" id="flexify-status"></span>
+<!-- Backup reminder banner (shown if it's been >14 days since last backup) -->
+<div class="backup-banner" id="backup-banner" style="display:none">
+  <span id="backup-banner-text"></span>
+  <button onclick="openSettingsToBackup()">Back up</button>
+  <button onclick="snoozeBackupReminder()">Later</button>
 </div>
+<!-- Hidden file inputs used by Settings (Flexify import + backup import) -->
+<input type="file" id="flexify-import-file" accept=".csv,text/csv" style="display:none" onchange="importFlexifyHistory(this.files[0])">
+<input type="file" id="backup-import-file" accept=".json,application/json" style="display:none" onchange="importBackup(this.files[0])">
 <div class="panels" id="panels-container">
   <div id="sum" class="panel"></div>
 </div>
@@ -563,6 +577,94 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
   </div>
 </div>
 
+<!-- Settings modal -->
+<div class="modal-bg" id="settings-bg">
+  <div class="help-modal">
+    <div class="help-header">
+      <span class="help-title">Settings</span>
+      <button class="help-close" onclick="closeSettings()" aria-label="Close">×</button>
+    </div>
+    <div class="help-body" id="settings-body">
+      <details open class="help-section" id="settings-backup">
+        <summary>Backup &amp; restore</summary>
+        <p>Your data lives in your phone's browser storage. Back up regularly so you can restore if you clear browser data or switch devices.</p>
+        <p id="settings-backup-status" style="font-size:11px;color:var(--text2);margin:6px 0 8px 16px"></p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin:0 0 8px 16px">
+          <button class="settings-btn primary" onclick="exportBackup()">Export backup</button>
+          <button class="settings-btn" onclick="document.getElementById('backup-import-file').click()">Import backup…</button>
+        </div>
+        <p class="help-note">Exports a single JSON file containing all blocks, sessions, custom exercises, edited muscle weights, set-type multipliers, Flexify history, and preferences. Importing replaces everything.</p>
+      </details>
+
+      <details class="help-section">
+        <summary>Summary data source</summary>
+        <p>Choose what feeds the <b>Actual</b> mode of the Summary tab. Native sessions are workouts you've logged directly in this app. Flexify history is the legacy CSV import.</p>
+        <div style="margin:8px 0 0 16px">
+          <label style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:13px;color:var(--text);cursor:pointer">
+            <input type="radio" name="actual-source" value="sessions" onchange="setActualSource(this.value)"> Native sessions
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:13px;color:var(--text);cursor:pointer">
+            <input type="radio" name="actual-source" value="flexify" onchange="setActualSource(this.value)"> Flexify history
+          </label>
+        </div>
+        <p class="help-note">If you migrated Flexify history into sessions, "Native sessions" includes both. Switch to "Flexify history" only if you want to compare the raw imported data.</p>
+      </details>
+
+      <details class="help-section">
+        <summary>Rest timer default</summary>
+        <p>The default duration used by the workout's rest timer when no other value is set.</p>
+        <p id="settings-rest-current" style="font-size:13px;color:var(--text);margin:6px 0 8px 16px;font-weight:500"></p>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;margin:0 0 8px 16px">
+          <button class="rest-dur-chip" onclick="setDefaultRest(30)">30s</button>
+          <button class="rest-dur-chip" onclick="setDefaultRest(60)">60s</button>
+          <button class="rest-dur-chip" onclick="setDefaultRest(90)">90s</button>
+          <button class="rest-dur-chip" onclick="setDefaultRest(120)">2m</button>
+          <button class="rest-dur-chip" onclick="setDefaultRest(150)">2:30</button>
+          <button class="rest-dur-chip" onclick="setDefaultRest(180)">3m</button>
+          <button class="rest-dur-chip" onclick="setDefaultRest(240)">4m</button>
+          <button class="rest-dur-chip" onclick="setDefaultRest(300)">5m</button>
+        </div>
+      </details>
+
+      <details class="help-section">
+        <summary>Preferred weight unit</summary>
+        <p>The unit used when logging new sets.</p>
+        <div style="margin:8px 0 0 16px">
+          <label style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:13px;color:var(--text);cursor:pointer">
+            <input type="radio" name="weight-unit" value="lb" onchange="setPreferredUnit(this.value)"> Pounds (lb)
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:13px;color:var(--text);cursor:pointer">
+            <input type="radio" name="weight-unit" value="kg" onchange="setPreferredUnit(this.value)"> Kilograms (kg)
+          </label>
+        </div>
+      </details>
+
+      <details class="help-section">
+        <summary>Flexify integration</summary>
+        <p>Export the current block as a Flexify-compatible plan CSV, or import your Flexify history CSV to populate the Actual summary view.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 0 16px">
+          <button class="settings-btn" onclick="exportToFlexify()">Export current block</button>
+          <button class="settings-btn" onclick="document.getElementById('flexify-import-file').click()">Import history CSV…</button>
+        </div>
+        <p id="settings-flexify-status" style="font-size:11px;color:var(--text2);margin:8px 0 0 16px"></p>
+      </details>
+
+      <details class="help-section">
+        <summary>Help &amp; documentation</summary>
+        <p>Open the full help guide explaining every feature in detail.</p>
+        <div style="margin:8px 0 0 16px">
+          <button class="settings-btn primary" onclick="closeSettings();openHelp()">Open help</button>
+        </div>
+      </details>
+
+      <details class="help-section">
+        <summary>About</summary>
+        <p>TrainBlock is a hypertrophy planning and workout tracking app, built collaboratively with Claude (Anthropic). All data is stored locally on your device.</p>
+      </details>
+    </div>
+  </div>
+</div>
+
 <!-- Help modal -->
 <div class="modal-bg" id="help-bg">
   <div class="help-modal">
@@ -686,19 +788,45 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
       </details>
 
       <details class="help-section">
-        <summary>Flexify integration</summary>
-        <p>The Flexify bar below the Days strip has two buttons:</p>
+        <summary>History &amp; progression graphs</summary>
+        <p>The <b>📈 History</b> button in the top bar opens a chronological list of every logged session. Tap a session to see its sets, or use <b>Browse by exercise</b> to pick an exercise and see its progression graph.</p>
+        <p>Graphs offer three metrics:</p>
         <ul>
-          <li><b>Export plan</b> — saves the current block as a Flexify-compatible CSV file. Each day becomes a Flexify plan titled <i>Block Name - Day Label</i>. Exercises without a Flexify equivalent are skipped (you'll see a count in the status line).</li>
-          <li><b>Import history</b> — opens a file picker. Choose your <i>graphs.csv</i> exported from Flexify. The app reads every logged set, maps Flexify exercise names to ours, and stores them locally. Re-importing replaces the previous data.</li>
+          <li><b>Weight</b> — the load lifted per set</li>
+          <li><b>Est 1RM</b> — Epley-formula estimated one-rep max from your actual sets (useful for trending strength when you're not maxing out)</li>
+          <li><b>Volume</b> — weight × reps per set</li>
         </ul>
-        <p>To get the most out of Actual mode, re-export Flexify history periodically so the comparison stays fresh.</p>
+        <p>The trend line connects your best set per day. Scatter dots show every individual logged set. Below the graph, a table summarizes each session with the best set, total volume, and set count.</p>
+        <p>Imported Flexify history (after migration) shows up in graphs alongside native sessions. Looks the same to the analytics.</p>
+      </details>
+
+      <details class="help-section">
+        <summary>Settings &amp; backup</summary>
+        <p>The <b>⚙ Settings</b> button in the top bar opens a panel with:</p>
+        <ul>
+          <li><b>Backup &amp; restore</b> — export a single JSON file containing everything (blocks, sessions, custom exercises, edited muscle weights, set-type multipliers, Flexify history, preferences). Import to restore on the same or a different device.</li>
+          <li><b>Summary data source</b> — choose whether the Summary's Actual mode reads from native sessions or raw Flexify history.</li>
+          <li><b>Rest timer default</b> — pick a default duration for the workout rest timer (30s–5m).</li>
+          <li><b>Preferred weight unit</b> — lb or kg, used for new logged sets.</li>
+          <li><b>Flexify integration</b> — export current block as a Flexify plan CSV, or import Flexify history.</li>
+        </ul>
+        <p class="help-note">If it's been more than 14 days since your last backup and you have logged data, a yellow banner appears asking you to back up. Tap <b>Back up</b> to do it immediately, or <b>Later</b> to snooze for another 14 days.</p>
+      </details>
+
+      <details class="help-section">
+        <summary>Flexify integration (legacy)</summary>
+        <p>Now lives in the Settings panel. Two operations:</p>
+        <ul>
+          <li><b>Export current block</b> — saves the current block as a Flexify-compatible CSV file. Each day becomes a Flexify plan titled <i>Block Name - Day Label</i>. Exercises without a Flexify equivalent are skipped (a count appears in the status line).</li>
+          <li><b>Import history CSV</b> — opens a file picker. Choose your <i>graphs.csv</i> from Flexify. The app reads every logged set, maps Flexify exercise names to ours, and stores them locally. Re-importing replaces the previous import.</li>
+        </ul>
+        <p>From the History view, you can <b>migrate Flexify history into native sessions</b> as a one-time operation. After that, Flexify becomes optional — all your data lives in native sessions.</p>
       </details>
 
       <details class="help-section">
         <summary>Storage &amp; privacy</summary>
-        <p>All your data lives in your phone's browser storage (localStorage). Nothing is uploaded anywhere. If you clear your browser data, your blocks and imported history are erased — there's currently no cloud backup or sync.</p>
-        <p>To move your data between devices, you'd need to re-create blocks manually or use the export feature to take them through Flexify.</p>
+        <p>All your data lives in your phone's browser storage (localStorage). Nothing is uploaded anywhere. If you clear your browser data, blocks, sessions, custom exercises, and history are erased.</p>
+        <p>Use the <b>Backup &amp; restore</b> feature in Settings to keep a JSON export safe. That's your insurance policy against data loss.</p>
       </details>
 
       <details class="help-section">
@@ -1364,7 +1492,155 @@ function closeResetModal(){document.getElementById("reset-bg").classList.remove(
 // Help modal
 function openHelp(){document.getElementById("help-bg").classList.add("open")}
 function closeHelp(){document.getElementById("help-bg").classList.remove("open")}
-document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeHelp();closeHistory();closeResetModal();closeNumpad&&closeNumpad();closeDeleteBlockModal&&closeDeleteBlockModal();closeCustomEditor&&closeCustomEditor()}});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeHelp();closeHistory();closeSettings();closeResetModal();closeNumpad&&closeNumpad();closeDeleteBlockModal&&closeDeleteBlockModal();closeCustomEditor&&closeCustomEditor()}});
+
+// ===== Settings modal =====
+function openSettings(){
+  refreshSettingsUI();
+  document.getElementById("settings-bg").classList.add("open");
+}
+function closeSettings(){document.getElementById("settings-bg").classList.remove("open")}
+function openSettingsToBackup(){
+  openSettings();
+  // Make sure the backup section is open
+  document.getElementById("settings-backup").setAttribute("open","");
+  hideBackupBanner();
+}
+function refreshSettingsUI(){
+  // Backup status
+  const last=prefs.lastBackupAt?new Date(prefs.lastBackupAt):null;
+  document.getElementById("settings-backup-status").textContent=last
+    ?`Last backup: ${last.toLocaleDateString()} (${relativeDateText(last)})`
+    :"Never backed up.";
+  // Source radio
+  const cur=prefs.actualSource||"sessions";
+  document.querySelectorAll('input[name="actual-source"]').forEach(r=>{r.checked=(r.value===cur)});
+  // Rest duration current
+  document.getElementById("settings-rest-current").textContent=`Currently: ${fmtRestDuration(prefs.defaultRestSec)}`;
+  // Unit
+  document.querySelectorAll('input[name="weight-unit"]').forEach(r=>{r.checked=(r.value===prefs.preferredUnit)});
+}
+function fmtRestDuration(sec){
+  if(sec<60)return sec+"s";
+  if(sec%60===0)return (sec/60)+(sec===60?" minute":" minutes");
+  return Math.floor(sec/60)+":"+String(sec%60).padStart(2,"0");
+}
+function setActualSource(val){
+  prefs.actualSource=val;
+  savePrefs();
+  renderSummary();
+}
+function setDefaultRest(sec){
+  prefs.defaultRestSec=sec;
+  savePrefs();
+  refreshSettingsUI();
+  resetRestTimerLabel&&resetRestTimerLabel();
+}
+function setPreferredUnit(val){
+  prefs.preferredUnit=val;
+  savePrefs();
+  refreshSettingsUI();
+}
+document.getElementById("settings-bg").addEventListener("click",e=>{if(e.target.id==="settings-bg")closeSettings()});
+
+// ===== Backup / restore =====
+const BACKUP_KEYS=[
+  "trainblock_list_v1",
+  "trainblock_custom_v1",
+  "trainblock_builtin_overrides_v1",
+  "trainblock_set_type_overrides_v1",
+  "trainblock_flexify_history_v1",
+  "trainblock_sessions_v1",
+  "trainblock_prefs_v1"
+];
+function exportBackup(){
+  const payload={
+    version:1,
+    exportedAt:new Date().toISOString(),
+    data:{}
+  };
+  // Include block storage too (each block is keyed individually)
+  BLOCKS.forEach(b=>{
+    const k="trainblock_v4_"+b;
+    const v=localStorage.getItem(k);
+    if(v!==null)payload.data[k]=v;
+  });
+  BACKUP_KEYS.forEach(k=>{
+    const v=localStorage.getItem(k);
+    if(v!==null)payload.data[k]=v;
+  });
+  const json=JSON.stringify(payload,null,2);
+  const stamp=new Date().toISOString().slice(0,10);
+  downloadFile(`trainblock-backup-${stamp}.json`, json, "application/json");
+  prefs.lastBackupAt=new Date().toISOString();
+  savePrefs();
+  refreshSettingsUI();
+  hideBackupBanner();
+}
+function importBackup(file){
+  if(!file)return;
+  if(!confirm("Importing will replace ALL existing data: blocks, sessions, custom exercises, preferences. Continue?"))return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const parsed=JSON.parse(e.target.result);
+      if(!parsed||!parsed.data||typeof parsed.data!=="object")throw new Error("Backup format not recognized");
+      // Wipe existing keys
+      BACKUP_KEYS.forEach(k=>{try{localStorage.removeItem(k)}catch(_){}});
+      // Wipe any existing block keys we know about
+      const all=Object.keys(localStorage).filter(k=>k.startsWith("trainblock_v4_"));
+      all.forEach(k=>{try{localStorage.removeItem(k)}catch(_){}});
+      // Restore from the payload
+      Object.entries(parsed.data).forEach(([k,v])=>{
+        try{localStorage.setItem(k,v)}catch(_){}
+      });
+      // Reload everything
+      alert("Backup imported. Reloading…");
+      location.reload();
+    }catch(err){
+      alert("Import failed: "+(err.message||"unknown error"));
+    }
+  };
+  reader.onerror=()=>alert("Couldn't read file");
+  reader.readAsText(file);
+  // Reset the file input so the same file can be re-imported
+  document.getElementById("backup-import-file").value="";
+}
+
+// ===== Backup reminder =====
+const BACKUP_REMINDER_DAYS=14;
+function checkBackupReminder(){
+  // Don't show if user has snoozed
+  if(prefs.backupReminderSnoozedUntil){
+    const until=new Date(prefs.backupReminderSnoozedUntil);
+    if(Date.now()<until.getTime())return;
+  }
+  // Don't show if app has no meaningful data yet
+  const hasData=sessions.length>0||BLOCKS.some(b=>{const d=mem[b]&&mem[b].days;if(!d)return false;return Object.values(d).some(day=>day.rows.some(r=>r.ex&&r.sets>0))});
+  if(!hasData)return;
+  // Show if never backed up, or last backup is older than threshold
+  const last=prefs.lastBackupAt?new Date(prefs.lastBackupAt):null;
+  const now=Date.now();
+  if(!last||(now-last.getTime())>BACKUP_REMINDER_DAYS*86400000){
+    showBackupBanner(last);
+  }
+}
+function showBackupBanner(lastDate){
+  const el=document.getElementById("backup-banner");
+  const txt=document.getElementById("backup-banner-text");
+  txt.textContent=lastDate
+    ? `Last backup: ${relativeDateText(lastDate)}. Time for another?`
+    : "You haven't backed up your data yet. A quick export keeps your training history safe.";
+  el.style.display="flex";
+}
+function hideBackupBanner(){document.getElementById("backup-banner").style.display="none"}
+function snoozeBackupReminder(){
+  // Snooze 14 days
+  const until=new Date(Date.now()+BACKUP_REMINDER_DAYS*86400000);
+  prefs.backupReminderSnoozedUntil=until.toISOString();
+  savePrefs();
+  hideBackupBanner();
+}
 
 // ===== History modal =====
 // Stack of views: each entry is {type:"list"|"session"|"graph", payload?}
@@ -2149,11 +2425,11 @@ function calcActualVolume(){
   const cutoff=new Date(now.getTime()-ACTUAL_WINDOW_DAYS*24*60*60*1000);
   const totals={};ALL_MUS.forEach(m=>totals[m]=0);
   let counted=0,firstDate=null,lastDate=null;
-  // Prefer sessions if any exist
-  if(sessions.length>0){
+  const source=prefs.actualSource||"sessions";
+  // === Sessions source (default) ===
+  if(source==="sessions"){
     sessions.forEach(s=>{
-      // Skip in-progress sessions — they're not finalized data
-      if(s.status==="in_progress")return;
+      if(s.status==="in_progress")return; // skip in-progress sessions
       s.sets.forEach(st=>{
         const t=new Date(st.timestamp||s.date);
         if(t<cutoff)return;
@@ -2167,7 +2443,7 @@ function calcActualVolume(){
     });
     return {totals, sessionsCounted:counted, firstDate, lastDate, source:"sessions"};
   }
-  // Fallback: raw Flexify history (no native sessions yet, no migration done)
+  // === Flexify source ===
   flexifyHistory.forEach(rec=>{
     if(rec.date<cutoff)return;
     if(!rec.ours)return;
@@ -2190,7 +2466,7 @@ function calcActualVolume(){
 const SESSIONS_KEY="trainblock_sessions_v1";
 const PREFS_KEY="trainblock_prefs_v1";
 let sessions=[];
-let prefs={preferredUnit:"lb", defaultRestSec:90};
+let prefs={preferredUnit:"lb", defaultRestSec:90, actualSource:"sessions", lastBackupAt:null, backupReminderSnoozedUntil:null, flexifyMigrated:false};
 
 function loadPrefs(){
   try{
@@ -2200,6 +2476,10 @@ function loadPrefs(){
       if(p&&typeof p==="object"){
         if(p.preferredUnit==="lb"||p.preferredUnit==="kg")prefs.preferredUnit=p.preferredUnit;
         if(typeof p.defaultRestSec==="number"&&p.defaultRestSec>=10&&p.defaultRestSec<=600)prefs.defaultRestSec=p.defaultRestSec;
+        if(p.actualSource==="sessions"||p.actualSource==="flexify")prefs.actualSource=p.actualSource;
+        if(typeof p.lastBackupAt==="string")prefs.lastBackupAt=p.lastBackupAt;
+        if(typeof p.backupReminderSnoozedUntil==="string")prefs.backupReminderSnoozedUntil=p.backupReminderSnoozedUntil;
+        if(p.flexifyMigrated===true)prefs.flexifyMigrated=true;
       }
     }
   }catch(e){}
@@ -3189,6 +3469,8 @@ showTab(initialIds[0]||"sum");
 // Auto-resume an in-progress session if one exists
 const _active=activeSession();
 if(_active)openWorkoutModal(_active.id);
+// Check if a backup reminder should be shown (after sessions and prefs are loaded)
+checkBackupReminder();
 if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js')}
 </script>
 </body>
