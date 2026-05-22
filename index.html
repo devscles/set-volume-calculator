@@ -20,15 +20,15 @@
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-feature-settings:"cv11","ss01"}
 body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .top-bar{padding:12px 14px 0;flex-shrink:0}
-.block-bar{display:flex;gap:6px;align-items:center;margin-bottom:10px;flex-wrap:nowrap;min-width:0}
-.block-scroll-area{display:flex;gap:6px;align-items:center;flex-wrap:nowrap;flex:1;min-width:0;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:thin;padding-bottom:2px}
-.block-scroll-area::-webkit-scrollbar{height:3px}
+.block-bar{display:flex;gap:6px;align-items:flex-start;margin-bottom:10px;flex-wrap:nowrap;min-width:0}
+.block-scroll-area{flex:1;min-width:0;max-height:88px;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:thin;padding:2px}
+.block-scroll-area::-webkit-scrollbar{width:3px}
 .block-scroll-area::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
-.block-buttons{display:flex;gap:6px;align-items:center;flex-wrap:nowrap;flex-shrink:0}
+.block-buttons{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .block-btn{padding:5px 11px;font-size:12px;font-weight:500;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text2);cursor:pointer;white-space:nowrap;flex-shrink:0;font-family:inherit;max-width:160px;overflow:hidden;text-overflow:ellipsis}
 .block-btn.active{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
-.block-mgmt-actions{display:flex;gap:4px;flex-shrink:0;padding-left:4px;border-left:0.5px solid var(--border)}
-.app-actions{display:flex;gap:6px;flex-shrink:0}
+.block-mgmt-actions{display:flex;gap:4px;flex-shrink:0;align-items:center;height:32px}
+.app-actions{display:flex;gap:6px;flex-shrink:0;align-items:center;height:32px;padding-left:6px;border-left:0.5px solid var(--border)}
 .icon-btn{padding:6px 10px;font-size:15px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text2);cursor:pointer;display:flex;align-items:center;min-height:32px;font-family:inherit}
 .icon-btn:active{background:var(--bg2)}
 .icon-btn:disabled{opacity:0.35;cursor:not-allowed}
@@ -373,11 +373,11 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
   <div class="block-bar" id="block-bar">
     <div class="block-scroll-area" id="block-scroll-area">
       <div class="block-buttons" id="block-buttons"></div>
-      <div class="block-mgmt-actions">
-        <button class="icon-btn" onclick="addBlock()" title="Add new block" aria-label="Add new block">＋</button>
-        <button class="icon-btn" onclick="confirmDeleteBlock()" title="Delete this block" aria-label="Delete this block">🗑</button>
-        <button class="icon-btn" onclick="confirmResetBlock()" title="Reset this block" aria-label="Reset this block"><i class="ti ti-refresh"></i></button>
-      </div>
+    </div>
+    <div class="block-mgmt-actions">
+      <button class="icon-btn" onclick="addBlock()" title="Add new block" aria-label="Add new block">＋</button>
+      <button class="icon-btn" onclick="confirmDeleteBlock()" title="Delete this block" aria-label="Delete this block">🗑</button>
+      <button class="icon-btn" onclick="confirmResetBlock()" title="Reset this block" aria-label="Reset this block"><i class="ti ti-refresh"></i></button>
     </div>
     <div class="app-actions">
       <button class="icon-btn" onclick="openHistory()" title="History" aria-label="Open history"><i class="ti ti-chart-line"></i></button>
@@ -1354,7 +1354,7 @@ function addBlock(){
   // Scroll the block bar to bring the new block into view
   setTimeout(()=>{
     const newBtn=document.getElementById("btn-"+newId);
-    if(newBtn)newBtn.scrollIntoView({behavior:"smooth",block:"nearest",inline:"end"});
+    if(newBtn)newBtn.scrollIntoView({behavior:"smooth",block:"nearest",inline:"nearest"});
   },50);
 }
 
@@ -1904,12 +1904,36 @@ function est1rm(set){
 }
 
 // Build an SVG scatter/line graph from an array of logged sets.
+// "Nice numbers" axis tick generator. Returns ~targetCount tick values that fall on
+// human-friendly intervals (1, 2, 5, 10, 20, 50, 100, ...) within an extended [min, max].
+// We expand to the nearest nice boundary so we always get the full target tick count.
+function niceTicks(min, max, targetCount){
+  if(min===max){return [min]}
+  const range=max-min;
+  const roughStep=range/Math.max(targetCount-1,1);
+  const mag=Math.pow(10,Math.floor(Math.log10(roughStep)));
+  const normalized=roughStep/mag;
+  let step;
+  if(normalized<1.5)step=1*mag;
+  else if(normalized<3.5)step=2*mag;
+  else if(normalized<7.5)step=5*mag;
+  else step=10*mag;
+  const niceMin=Math.floor(min/step)*step;
+  const niceMax=Math.ceil(max/step)*step;
+  const ticks=[];
+  // Include the full extended range so the axis labels span min->max
+  for(let v=niceMin; v<=niceMax+step*0.0001; v+=step){
+    ticks.push(Math.round(v*1e6)/1e6);
+  }
+  return ticks;
+}
+
 function buildSvgGraph(sets){
-  const W=480, H=340, P=36; // larger viewbox; CSS controls actual rendered size
+  const W=480, H=340, P=40; // larger viewbox; CSS controls actual rendered size
   const svg=document.createElementNS("http://www.w3.org/2000/svg","svg");
   svg.setAttribute("viewBox",`0 0 ${W} ${H}`);
   svg.setAttribute("class","graph-svg");
-  // Stretch fills the container; OK for our use since axis labels are in screen-px-like units
+  // We use preserveAspectRatio="none" because we control axis labels in viewBox space
   svg.setAttribute("preserveAspectRatio","none");
   function metric(s){
     if(graphMetric==="estimated1rm")return est1rm(s);
@@ -1917,24 +1941,25 @@ function buildSvgGraph(sets){
     return s.weight||0;
   }
   // For setCount we aggregate per day rather than per set
-  let points; // [{t, m, count}]
+  let points; // [{t, m, src}]
   if(graphMetric==="setCount"){
     const byDay={};
     sets.forEach(s=>{
       const d=(s.timestamp||s.sessionDate).slice(0,10);
-      if(!byDay[d])byDay[d]={t:new Date((s.timestamp||s.sessionDate)).getTime(),count:0};
-      byDay[d].count++;
+      if(!byDay[d])byDay[d]={t:new Date((s.timestamp||s.sessionDate)).getTime(),count:0,sets:[]};
+      byDay[d].count++;byDay[d].sets.push(s);
     });
-    points=Object.values(byDay).map(d=>({t:d.t,m:d.count})).sort((a,b)=>a.t-b.t);
+    points=Object.values(byDay).map(d=>({t:d.t,m:d.count,daySets:d.sets,isAggregate:true})).sort((a,b)=>a.t-b.t);
   } else {
     points=sets.map(s=>({t:new Date(s.timestamp||s.sessionDate).getTime(),m:metric(s),src:s}));
   }
   if(points.length===0)return svg;
   const xMin=Math.min(...points.map(p=>p.t)), xMax=Math.max(...points.map(p=>p.t));
   const yMin=Math.min(...points.map(p=>p.m)), yMax=Math.max(...points.map(p=>p.m));
-  // Pad the y range slightly so the top/bottom dots aren't on the axis
-  const yPad=Math.max((yMax-yMin)*0.08, 1);
-  const yMinP=Math.max(0,yMin-yPad), yMaxP=yMax+yPad;
+  // Use nice ticks for the y-axis (~5 ticks). Range is expanded to match the outer ticks.
+  const ticks=niceTicks(yMin, yMax, 5);
+  const yMinP=ticks.length?Math.min(ticks[0],yMin):yMin;
+  const yMaxP=ticks.length?Math.max(ticks[ticks.length-1],yMax):yMax;
   const yRange=Math.max(yMaxP-yMinP, 1);
   const xRange=Math.max(xMax-xMin, 1);
   function px(x){return P + (x-xMin)/xRange * (W-2*P)}
@@ -1943,21 +1968,18 @@ function buildSvgGraph(sets){
   const ax=document.createElementNS("http://www.w3.org/2000/svg","g");
   ax.innerHTML=`<line x1="${P}" y1="${H-P}" x2="${W-P}" y2="${H-P}" stroke="currentColor" stroke-width="0.5" opacity="0.3"/><line x1="${P}" y1="${P}" x2="${P}" y2="${H-P}" stroke="currentColor" stroke-width="0.5" opacity="0.3"/>`;
   svg.appendChild(ax);
-  // Y axis labels: min, mid, max
-  function ylabel(val, y){
+  // Y axis: nice ticks + gridlines
+  ticks.forEach(val=>{
+    const y=py(val);
     const t=document.createElementNS("http://www.w3.org/2000/svg","text");
     t.setAttribute("x",P-6);t.setAttribute("y",y+4);t.setAttribute("text-anchor","end");t.setAttribute("font-size","12");t.setAttribute("fill","currentColor");t.setAttribute("opacity","0.65");
-    t.textContent=Math.round(val);
+    t.textContent=fmtTickValue(val);
     svg.appendChild(t);
-    // Faint horizontal gridline
     const g=document.createElementNS("http://www.w3.org/2000/svg","line");
     g.setAttribute("x1",P);g.setAttribute("y1",y);g.setAttribute("x2",W-P);g.setAttribute("y2",y);
     g.setAttribute("stroke","currentColor");g.setAttribute("stroke-width","0.5");g.setAttribute("opacity","0.1");
     svg.appendChild(g);
-  }
-  ylabel(yMaxP, P);
-  ylabel((yMinP+yMaxP)/2, (P+H-P)/2);
-  ylabel(yMinP, H-P);
+  });
   // X axis labels (first + last date)
   const xlbl1=document.createElementNS("http://www.w3.org/2000/svg","text");
   xlbl1.setAttribute("x",P);xlbl1.setAttribute("y",H-P+18);xlbl1.setAttribute("text-anchor","start");xlbl1.setAttribute("font-size","11");xlbl1.setAttribute("fill","currentColor");xlbl1.setAttribute("opacity","0.65");
@@ -1967,6 +1989,64 @@ function buildSvgGraph(sets){
   xlbl2.setAttribute("x",W-P);xlbl2.setAttribute("y",H-P+18);xlbl2.setAttribute("text-anchor","end");xlbl2.setAttribute("font-size","11");xlbl2.setAttribute("fill","currentColor");xlbl2.setAttribute("opacity","0.65");
   xlbl2.textContent=new Date(xMax).toLocaleDateString(undefined,{month:"short",day:"numeric"});
   svg.appendChild(xlbl2);
+
+  // Tooltip group (created last so it sits on top). Hidden until a point is tapped.
+  const tipGroup=document.createElementNS("http://www.w3.org/2000/svg","g");
+  tipGroup.setAttribute("visibility","hidden");
+  tipGroup.style.pointerEvents="none";
+  const tipBg=document.createElementNS("http://www.w3.org/2000/svg","rect");
+  tipBg.setAttribute("rx","4");tipBg.setAttribute("ry","4");
+  tipBg.setAttribute("fill","var(--text)");tipBg.setAttribute("opacity","0.92");
+  const tipText=document.createElementNS("http://www.w3.org/2000/svg","text");
+  tipText.setAttribute("font-size","12");tipText.setAttribute("fill","var(--bg)");tipText.setAttribute("font-weight","500");
+  tipGroup.appendChild(tipBg);tipGroup.appendChild(tipText);
+
+  function showTooltip(cx, cy, lines){
+    // Render multi-line text with tspans
+    tipText.innerHTML="";
+    lines.forEach((ln,i)=>{
+      const ts=document.createElementNS("http://www.w3.org/2000/svg","tspan");
+      ts.setAttribute("x",0);ts.setAttribute("dy",i===0?"0":"14");
+      ts.textContent=ln;
+      tipText.appendChild(ts);
+    });
+    // Position above the point first, fall back to below if not enough space
+    const padX=8, padY=6;
+    // Render to compute bbox
+    tipGroup.setAttribute("visibility","visible");
+    tipGroup.setAttribute("transform",`translate(0,0)`);
+    const bbox=tipText.getBBox();
+    const boxW=bbox.width+padX*2, boxH=bbox.height+padY*2;
+    let tx=cx-boxW/2, ty=cy-boxH-10;
+    if(tx<P)tx=P;
+    if(tx+boxW>W-P)tx=W-P-boxW;
+    if(ty<P){ty=cy+12} // flip below if no room above
+    tipBg.setAttribute("x",0);tipBg.setAttribute("y",0);
+    tipBg.setAttribute("width",boxW);tipBg.setAttribute("height",boxH);
+    tipText.setAttribute("x",padX);tipText.setAttribute("y",padY+12);
+    tipGroup.setAttribute("transform",`translate(${tx},${ty})`);
+  }
+  function hideTooltip(){tipGroup.setAttribute("visibility","hidden")}
+
+  // Tap on empty area dismisses the tooltip
+  const bgRect=document.createElementNS("http://www.w3.org/2000/svg","rect");
+  bgRect.setAttribute("x","0");bgRect.setAttribute("y","0");bgRect.setAttribute("width",W);bgRect.setAttribute("height",H);
+  bgRect.setAttribute("fill","transparent");
+  bgRect.addEventListener("click",hideTooltip);
+  svg.appendChild(bgRect);
+
+  // Helper to format a single point for the tooltip
+  function tipLines(p){
+    const date=new Date(p.t).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});
+    if(p.isAggregate){
+      return [`${p.m} set${p.m===1?"":"s"}`, date];
+    }
+    const s=p.src;
+    let line2=`${fmtNum(s.weight)}${s.unit||""}×${s.reps}`;
+    if(graphMetric==="estimated1rm")line2=`~${Math.round(est1rm(s))}${s.unit||""} 1RM · ${fmtNum(s.weight)}×${s.reps}`;
+    if(graphMetric==="volume")line2=`vol ${fmtNum((s.weight||0)*(s.reps||0))} · ${fmtNum(s.weight)}×${s.reps}`;
+    return [line2, date];
+  }
 
   // For setCount mode: simple line chart through points with bigger dots
   // For other modes: scatter of every set + trend line of best-set-per-day
@@ -1978,22 +2058,28 @@ function buildSvgGraph(sets){
       svg.appendChild(line);
     }
     points.forEach(p=>{
+      const cx=px(p.t), cy=py(p.m);
       const c=document.createElementNS("http://www.w3.org/2000/svg","circle");
-      c.setAttribute("cx",px(p.t));c.setAttribute("cy",py(p.m));c.setAttribute("r","5");c.setAttribute("fill","var(--accent)");
+      c.setAttribute("cx",cx);c.setAttribute("cy",cy);c.setAttribute("r","6");c.setAttribute("fill","var(--accent)");
+      c.style.cursor="pointer";
+      c.addEventListener("click",e=>{e.stopPropagation();showTooltip(cx,cy,tipLines(p))});
       svg.appendChild(c);
     });
   } else {
-    // Scatter of every set
+    // Scatter of every set (tappable)
     points.forEach(p=>{
+      const cx=px(p.t), cy=py(p.m);
       const c=document.createElementNS("http://www.w3.org/2000/svg","circle");
-      c.setAttribute("cx",px(p.t));c.setAttribute("cy",py(p.m));c.setAttribute("r","4.5");c.setAttribute("fill","var(--accent)");c.setAttribute("opacity","0.55");
+      c.setAttribute("cx",cx);c.setAttribute("cy",cy);c.setAttribute("r","5");c.setAttribute("fill","var(--accent)");c.setAttribute("opacity","0.55");
+      c.style.cursor="pointer";
+      c.addEventListener("click",e=>{e.stopPropagation();showTooltip(cx,cy,tipLines(p))});
       svg.appendChild(c);
     });
     // Trend line: best-set-per-day connecting line
     const byDay={};
     points.forEach(p=>{
       const d=new Date(p.t).toISOString().slice(0,10);
-      if(!byDay[d]||p.m>byDay[d].m)byDay[d]={t:p.t,m:p.m};
+      if(!byDay[d]||p.m>byDay[d].m)byDay[d]={t:p.t,m:p.m,src:p.src};
     });
     const dailyMax=Object.values(byDay).sort((a,b)=>a.t-b.t);
     if(dailyMax.length>1){
@@ -2002,14 +2088,29 @@ function buildSvgGraph(sets){
       line.setAttribute("d",path);line.setAttribute("fill","none");line.setAttribute("stroke","var(--accent)");line.setAttribute("stroke-width","2");line.setAttribute("opacity","0.85");
       svg.appendChild(line);
     }
-    // Highlight the best-per-day points with slightly bigger filled dots
+    // Highlight the best-per-day points with bigger filled dots, also tappable
     dailyMax.forEach(p=>{
+      const cx=px(p.t), cy=py(p.m);
       const c=document.createElementNS("http://www.w3.org/2000/svg","circle");
-      c.setAttribute("cx",px(p.t));c.setAttribute("cy",py(p.m));c.setAttribute("r","4");c.setAttribute("fill","var(--accent)");c.setAttribute("stroke","var(--bg)");c.setAttribute("stroke-width","1");
+      c.setAttribute("cx",cx);c.setAttribute("cy",cy);c.setAttribute("r","5");c.setAttribute("fill","var(--accent)");c.setAttribute("stroke","var(--bg)");c.setAttribute("stroke-width","1.5");
+      c.style.cursor="pointer";
+      c.addEventListener("click",e=>{e.stopPropagation();showTooltip(cx,cy,tipLines(p))});
       svg.appendChild(c);
     });
   }
+  // Tooltip on top
+  svg.appendChild(tipGroup);
   return svg;
+}
+
+// Format a tick value: keep small numbers compact, abbreviate large ones (1.2k, 12k)
+function fmtTickValue(v){
+  if(v===0)return "0";
+  const abs=Math.abs(v);
+  if(abs>=10000)return Math.round(v/1000)+"k";
+  if(abs>=1000)return (v/1000).toFixed(1).replace(/\.0$/,"")+"k";
+  if(Number.isInteger(v))return String(v);
+  return v.toFixed(1).replace(/\.0$/,"");
 }
 
 // ===== Migrate Flexify history into native sessions =====
