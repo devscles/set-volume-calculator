@@ -316,7 +316,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .wo-ex-type{font-size:11px;font-weight:600;color:var(--text3);padding:1px 6px;border:0.5px solid var(--border);border-radius:8px;flex-shrink:0;letter-spacing:0.04em}
 .wo-ex-type.intensifier{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
 .wo-set-strip{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
-.wo-set-chip{min-width:64px;padding:8px 10px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);font-size:12px;font-weight:500;color:var(--text);cursor:pointer;text-align:center;font-family:inherit;font-variant-numeric:tabular-nums;touch-action:manipulation;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.2;min-height:42px}
+.wo-set-chip{min-width:64px;max-width:100%;padding:8px 10px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);font-size:12px;font-weight:500;color:var(--text);cursor:pointer;text-align:center;font-family:inherit;font-variant-numeric:tabular-nums;touch-action:manipulation;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.25;min-height:42px;word-break:break-all}
 .wo-set-chip:active{background:var(--bg2)}
 .wo-set-chip.empty{color:var(--text3);border-style:dashed}
 .wo-set-chip.logged{background:var(--success-bg);border-color:var(--success-text);color:var(--success-text)}
@@ -331,6 +331,23 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .logset-title{font-size:15px;font-weight:600;color:var(--text);text-align:center;margin-bottom:4px}
 .logset-target{font-size:12px;color:var(--text2);text-align:center;margin-bottom:14px;min-height:16px}
 .logset-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px}
+/* Weight row (always full width above either Reps or Activation+mini-sets) */
+.logset-weight-row{display:flex;flex-direction:column;gap:5px;margin-bottom:8px;min-width:0}
+.logset-weight-row label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.04em;font-weight:500}
+.logset-weight-row input{box-sizing:border-box;width:100%;padding:10px 8px;font-size:16px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg2);color:var(--text);outline:none;font-family:inherit;text-align:center;font-variant-numeric:tabular-nums;-moz-appearance:textfield}
+.logset-weight-row input:focus{border-color:var(--accent)}
+/* Myo-rep section */
+.logset-myorep{display:flex;flex-direction:column;gap:10px;margin-bottom:8px}
+.logset-minisets-wrap{background:var(--bg2);border-radius:var(--radius);padding:10px;border:0.5px solid var(--border)}
+.logset-minisets-label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.04em;font-weight:500;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.logset-mini-count{font-size:11px;color:var(--text3);text-transform:none;letter-spacing:0;font-weight:400;font-variant-numeric:tabular-nums}
+.logset-minisets{display:grid;grid-template-columns:repeat(auto-fill, minmax(48px, 1fr));gap:6px;margin-bottom:8px}
+.logset-mini-input{box-sizing:border-box;width:100%;padding:8px 4px;font-size:15px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);outline:none;font-family:inherit;text-align:center;font-variant-numeric:tabular-nums;-moz-appearance:textfield;min-width:0}
+.logset-mini-input:focus{border-color:var(--accent)}
+.logset-mini-input::-webkit-outer-spin-button,.logset-mini-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.logset-mini-controls{display:flex;justify-content:center;gap:6px}
+.logset-mini-btn{width:36px;height:32px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);font-size:16px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;touch-action:manipulation}
+.logset-mini-btn:active{background:var(--bg3)}
 .logset-field{display:flex;flex-direction:column;gap:5px;min-width:0}
 .logset-field label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.04em;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .logset-field input{box-sizing:border-box;width:100%;min-width:0;padding:10px 8px;font-size:16px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg2);color:var(--text);outline:none;font-family:inherit;text-align:center;font-variant-numeric:tabular-nums;-moz-appearance:textfield}
@@ -531,16 +548,37 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
   <div class="modal logset-modal">
     <div class="logset-title" id="logset-title">Log set</div>
     <div class="logset-target" id="logset-target"></div>
-    <div class="logset-fields">
-      <div class="logset-field">
-        <label>Weight (<span id="logset-unit">lb</span>)</label>
-        <input type="text" inputmode="decimal" pattern="[0-9]*\.?[0-9]*" id="logset-weight" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-form-type="other" data-lpignore="true">
-      </div>
-      <div class="logset-field">
-        <label>Reps</label>
+
+    <!-- Weight always shown on its own row for both modes -->
+    <div class="logset-weight-row">
+      <label for="logset-weight">Weight (<span id="logset-unit">lb</span>)</label>
+      <input type="text" inputmode="decimal" pattern="[0-9]*\.?[0-9]*" id="logset-weight" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-form-type="other" data-lpignore="true">
+    </div>
+
+    <!-- STRAIGHT mode: single Reps input -->
+    <div class="logset-fields" id="logset-straight-row">
+      <div class="logset-field" style="grid-column:1 / -1">
+        <label for="logset-reps">Reps</label>
         <input type="text" inputmode="numeric" pattern="[0-9]*" id="logset-reps" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-form-type="other" data-lpignore="true">
       </div>
     </div>
+
+    <!-- MYO-REP mode: activation set + variable number of mini-sets -->
+    <div class="logset-myorep" id="logset-myorep-row" style="display:none">
+      <div class="logset-field">
+        <label for="logset-activation">Activation reps</label>
+        <input type="text" inputmode="numeric" pattern="[0-9]*" id="logset-activation" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-form-type="other" data-lpignore="true">
+      </div>
+      <div class="logset-minisets-wrap">
+        <div class="logset-minisets-label">Mini-sets <span id="logset-mini-count" class="logset-mini-count"></span></div>
+        <div class="logset-minisets" id="logset-minisets"></div>
+        <div class="logset-mini-controls">
+          <button type="button" class="logset-mini-btn" onclick="adjustMiniSets(-1)">−</button>
+          <button type="button" class="logset-mini-btn" onclick="adjustMiniSets(1)">+</button>
+        </div>
+      </div>
+    </div>
+
     <div class="logset-rir-toggle">
       <button class="logset-rir-link" id="logset-rir-toggle" onclick="toggleRirRow()">+ Add RIR</button>
     </div>
@@ -769,6 +807,14 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
         </ul>
         <p>Only one in-progress workout at a time. Starting a new one from a different day will prompt before discarding any other in-progress session.</p>
         <p>The log modal pre-fills weight and reps with (in order): an existing logged value if you're editing, the planned target if set, your last set in this session, or your last set of this exercise from any past session. A small "last time" hint shows what you did before so you can match or progress.</p>
+        <p><b>Myo-rep tracking:</b> when the row's set type is set to <b>M</b> (Myo-rep), the log modal switches to a more detailed layout: Weight, Activation reps, and a row of mini-set inputs (default 4, adjustable with the −/+ buttons, up to 8). Blank mini-sets are ignored when you save. The set chip displays the full sequence, e.g. <b>185×15+5,5,5,3</b>.</p>
+        <p><b>How myo-reps feed the graphs:</b></p>
+        <ul>
+          <li><b>Weight</b> graph: uses the working weight (same as straight sets)</li>
+          <li><b>Est 1RM</b> graph: uses the activation reps only (most representative of true working strength)</li>
+          <li><b>Volume</b> graph: weight × <i>total</i> reps including all mini-sets (the actual work performed)</li>
+          <li><b>Sets</b> graph: each myo-rep sequence contributes <b>2.5 effective sets</b> per the same multiplier used in the Summary tab. Days that include intensifier sets are marked with a hollow (outlined) dot on the graph and an asterisk in the history table — so you can tell at a glance which trends are inflated by the multipliers vs straight-set work. Tap any dot for a per-type breakdown.</li>
+        </ul>
       </details>
 
       <details class="help-section">
@@ -1823,7 +1869,7 @@ function renderSessionDetail(sessId){
     byEx[ex].forEach(st=>{
       const sp=document.createElement("span");sp.className="sess-ex-set"+(st.targetReps&&st.reps<st.targetReps?" miss":"");
       const rir=st.rir!==undefined?` @${st.rir}R`:"";
-      sp.textContent=`${fmtNum(st.weight)}${st.unit||prefs.preferredUnit}×${st.reps}${rir}`;
+      sp.textContent=`${fmtSetReps(st)}${rir}`;
       sets.appendChild(sp);
     });
     card.appendChild(sets);
@@ -1895,9 +1941,13 @@ function renderExerciseGraph(exName){
   dates.forEach(d=>{
     const sets=bySession[d];
     const best=sets.reduce((b,s)=>est1rm(s)>est1rm(b)?s:b,sets[0]);
-    const vol=sets.reduce((sum,s)=>sum+(s.weight||0)*(s.reps||0),0);
+    const vol=sets.reduce((sum,s)=>sum+(s.weight||0)*totalRepsForSet(s),0);
+    // Effective set count = sum of multipliers. If any intensifiers contributed, mark with *
+    const effSets=sets.reduce((sum,s)=>sum+getSetTypeMult(s.type||"straight"),0);
+    const hasIntens=sets.some(s=>{const t=s.type||"straight";return t!=="straight"&&t!=="amrap"});
+    const setsCell=hasIntens?`${fmtNum(effSets)}*`:String(sets.length);
     const tr=document.createElement("tr");
-    tr.innerHTML=`<td>${new Date(d).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"2-digit"})}</td><td>${fmtNum(best.weight)}×${best.reps}</td><td>${fmtNum(vol)}</td><td>${sets.length}</td>`;
+    tr.innerHTML=`<td>${new Date(d).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"2-digit"})}</td><td>${fmtNum(best.weight)}×${fmtRepsOnly(best)}</td><td>${fmtNum(vol)}</td><td title="${hasIntens?'includes intensifier sets (multiplied)':''}">${setsCell}</td>`;
     tbl.appendChild(tr);
   });
   tableWrap.appendChild(tbl);
@@ -1936,6 +1986,17 @@ function renderExercisePicker(){
 }
 
 // Epley 1RM estimate
+// Total reps for a set, accounting for myo-rep mini-sets.
+// Used for volume (weight × total reps) calculations on graphs and tables.
+function totalRepsForSet(s){
+  if(!s||!s.reps)return 0;
+  let t=s.reps;
+  if(s.type==="myorep"&&Array.isArray(s.miniSetReps)){
+    s.miniSetReps.forEach(r=>{if(typeof r==="number"&&r>0)t+=r});
+  }
+  return t;
+}
+
 function est1rm(set){
   if(!set||!set.weight||!set.reps)return 0;
   if(set.reps===1)return set.weight;
@@ -1976,19 +2037,34 @@ function buildSvgGraph(sets){
   svg.setAttribute("preserveAspectRatio","none");
   function metric(s){
     if(graphMetric==="estimated1rm")return est1rm(s);
-    if(graphMetric==="volume")return (s.weight||0)*(s.reps||0);
+    if(graphMetric==="volume")return (s.weight||0)*totalRepsForSet(s);
     return s.weight||0;
   }
-  // For setCount we aggregate per day rather than per set
+  // For setCount we aggregate per day rather than per set.
+  // Each set contributes its set-type multiplier (straight=1.0, drop=1.5, myo-rep=2.5, etc.)
+  // so the "Sets" graph matches the volume math used in the Summary tab.
   let points; // [{t, m, src}]
   if(graphMetric==="setCount"){
     const byDay={};
     sets.forEach(s=>{
       const d=(s.timestamp||s.sessionDate).slice(0,10);
-      if(!byDay[d])byDay[d]={t:new Date((s.timestamp||s.sessionDate)).getTime(),count:0,sets:[]};
-      byDay[d].count++;byDay[d].sets.push(s);
+      if(!byDay[d])byDay[d]={t:new Date((s.timestamp||s.sessionDate)).getTime(),count:0,physical:0,types:{},sets:[]};
+      const mult=getSetTypeMult(s.type||"straight");
+      byDay[d].count+=mult;
+      byDay[d].physical+=1;
+      const tk=s.type||"straight";
+      byDay[d].types[tk]=(byDay[d].types[tk]||0)+1;
+      byDay[d].sets.push(s);
     });
-    points=Object.values(byDay).map(d=>({t:d.t,m:d.count,daySets:d.sets,isAggregate:true})).sort((a,b)=>a.t-b.t);
+    points=Object.values(byDay).map(d=>({
+      t:d.t,
+      m:d.count,           // effective set count (with multipliers)
+      physical:d.physical, // raw count of logged sets
+      types:d.types,       // {straight:3, myorep:1, ...}
+      daySets:d.sets,
+      isAggregate:true,
+      hasIntensifier: Object.keys(d.types).some(k=>k!=="straight"&&k!=="amrap")
+    })).sort((a,b)=>a.t-b.t);
   } else {
     points=sets.map(s=>({t:new Date(s.timestamp||s.sessionDate).getTime(),m:metric(s),src:s}));
   }
@@ -2093,17 +2169,41 @@ function buildSvgGraph(sets){
   function tipLines(p){
     const date=new Date(p.t).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});
     if(p.isAggregate){
-      return [`${p.m} set${p.m===1?"":"s"}`, date];
+      // setCount mode: show effective sets (with multipliers) and breakdown when intensifiers contribute
+      const lines=[`${fmtNum(p.m)} effective set${p.m===1?"":"s"}`];
+      if(p.hasIntensifier){
+        // e.g. "3 straight + 1 myo-rep (×2.5)" — show the contribution per type
+        const parts=[];
+        const order=["straight","amrap","drop","cluster","restpause","myorep"];
+        order.forEach(k=>{
+          if(!p.types[k])return;
+          const n=p.types[k];
+          const info=getSetTypeInfo(k);
+          if(k==="straight"){
+            parts.push(`${n} straight`);
+          } else {
+            const mult=getSetTypeMult(k);
+            parts.push(`${n} ${info.label.toLowerCase()} (×${mult})`);
+          }
+        });
+        lines.push(parts.join(" + "));
+      } else {
+        lines.push(`${p.physical} logged`);
+      }
+      lines.push(date);
+      return lines;
     }
     const s=p.src;
-    let line2=`${fmtNum(s.weight)}${s.unit||""}×${s.reps}`;
+    const repsShort=fmtRepsOnly(s);
+    let line2=`${fmtNum(s.weight)}${s.unit||""}×${repsShort}`;
     if(graphMetric==="estimated1rm")line2=`~${Math.round(est1rm(s))}${s.unit||""} 1RM · ${fmtNum(s.weight)}×${s.reps}`;
-    if(graphMetric==="volume")line2=`vol ${fmtNum((s.weight||0)*(s.reps||0))} · ${fmtNum(s.weight)}×${s.reps}`;
+    if(graphMetric==="volume")line2=`vol ${fmtNum((s.weight||0)*totalRepsForSet(s))} · ${fmtNum(s.weight)}×${repsShort}`;
     return [line2, date];
   }
 
-  // For setCount mode: simple line chart through points with bigger dots
-  // For other modes: scatter of every set + trend line of best-set-per-day
+  // For setCount mode: simple line chart through points with bigger dots.
+  // Days that include intensifier sets get a hollow (outlined) dot so you can spot at a glance
+  // which trends are inflated by multipliers vs straight-set work.
   if(graphMetric==="setCount"){
     if(points.length>1){
       const path=points.map((p,i)=>`${i===0?"M":"L"} ${px(p.t).toFixed(1)} ${py(p.m).toFixed(1)}`).join(" ");
@@ -2114,7 +2214,15 @@ function buildSvgGraph(sets){
     points.forEach(p=>{
       const cx=px(p.t), cy=py(p.m);
       const c=document.createElementNS("http://www.w3.org/2000/svg","circle");
-      c.setAttribute("cx",cx);c.setAttribute("cy",cy);c.setAttribute("r","6");c.setAttribute("fill","var(--accent)");
+      c.setAttribute("cx",cx);c.setAttribute("cy",cy);c.setAttribute("r","6");
+      if(p.hasIntensifier){
+        // Hollow: bg fill with accent ring, so it reads as "different category"
+        c.setAttribute("fill","var(--bg)");
+        c.setAttribute("stroke","var(--accent)");
+        c.setAttribute("stroke-width","2");
+      } else {
+        c.setAttribute("fill","var(--accent)");
+      }
       c.style.cursor="pointer";
       c.addEventListener("click",e=>{e.stopPropagation();showTooltip(cx,cy,tipLines(p))});
       svg.appendChild(c);
@@ -2867,7 +2975,12 @@ function renderWorkoutBody(){
         chip.classList.add("logged");
         // Heuristic: "miss" colour if target existed and reps fell short
         if(pr.target&&pr.target.reps&&log.reps<pr.target.reps)chip.classList.add("miss");
-        chip.innerHTML=`<div>${fmtNum(log.weight)}×${log.reps}</div>${log.rir!==undefined?`<div class="wo-set-target">@${log.rir} RIR</div>`:""}`;
+        // Build the rep display: straight = "8", myo-rep = "15+5,5,5,3"
+        let repText=String(log.reps);
+        if(log.type==="myorep"&&Array.isArray(log.miniSetReps)&&log.miniSetReps.length>0){
+          repText=`${log.reps}+${log.miniSetReps.join(",")}`;
+        }
+        chip.innerHTML=`<div>${fmtNum(log.weight)}×${repText}</div>${log.rir!==undefined?`<div class="wo-set-target">@${log.rir} RIR</div>`:""}`;
       } else {
         chip.classList.add("empty");
         if(pr.target){
@@ -3019,37 +3132,72 @@ let logSetCtx=null;
 function openLogSet(plannedRow, slotIdx, existing){
   const s=sessions.find(x=>x.id===curWorkoutSessId);
   if(!s)return;
-  logSetCtx={plannedRow, slotIdx, existing};
-  document.getElementById("logset-title").textContent=plannedRow.ex;
+  const isMyo=plannedRow.type==="myorep";
+  logSetCtx={plannedRow, slotIdx, existing, isMyo, miniReps: existing?.miniSetReps?[...existing.miniSetReps]:null};
+  document.getElementById("logset-title").textContent=plannedRow.ex+(isMyo?" (myo-rep)":"");
   // Compute last-session set for this exercise (across any past session, most recent first)
   const lastSet=findLastSetForExercise(plannedRow.ex, s.id);
-  // Target / hint display: show target if set, else last-session hint if available
+  // Target / hint display
   const targetEl=document.getElementById("logset-target");
   if(plannedRow.target){
     targetEl.innerHTML=`target <b>${fmtNum(plannedRow.target.weight)}${plannedRow.target.unit||prefs.preferredUnit} × ${plannedRow.target.reps}</b>`;
   } else if(lastSet){
     const ago=relativeDateText(new Date(lastSet.timestamp));
-    targetEl.innerHTML=`last time (${ago}): <b>${fmtNum(lastSet.weight)}${lastSet.unit||prefs.preferredUnit} × ${lastSet.reps}</b>`;
+    targetEl.innerHTML=`last time (${ago}): <b>${fmtSetReps(lastSet)}</b>`;
   } else {
     targetEl.textContent="";
   }
   document.getElementById("logset-unit").textContent=prefs.preferredUnit;
-  // Pre-fill priority: existing log → target → last set in this session → last set ever
+
+  // Show/hide the two mode-specific rows
+  document.getElementById("logset-straight-row").style.display=isMyo?"none":"";
+  document.getElementById("logset-myorep-row").style.display=isMyo?"":"none";
+
+  // Pre-fill weight (priority: existing → target → last set in session → last set ever)
   const weightInput=document.getElementById("logset-weight");
-  const repsInput=document.getElementById("logset-reps");
   if(existing){
     weightInput.value=existing.weight;
-    repsInput.value=existing.reps;
   } else if(plannedRow.target){
     weightInput.value=plannedRow.target.weight;
-    repsInput.value=plannedRow.target.reps;
   } else {
-    // Use last set of this exercise in this session
     const prev=s.sets.filter(st=>st.rowIdx===plannedRow.idx).pop();
-    if(prev){weightInput.value=prev.weight;repsInput.value=prev.reps}
-    else if(lastSet){weightInput.value=lastSet.weight;repsInput.value=lastSet.reps}
-    else {weightInput.value="";repsInput.value=""}
+    if(prev)weightInput.value=prev.weight;
+    else if(lastSet)weightInput.value=lastSet.weight;
+    else weightInput.value="";
   }
+
+  if(isMyo){
+    // Activation reps + mini-sets
+    const actInput=document.getElementById("logset-activation");
+    if(existing){
+      actInput.value=existing.reps; // activation reps stored in `reps`
+      logSetCtx.miniReps = existing.miniSetReps ? [...existing.miniSetReps] : [];
+    } else if(plannedRow.target){
+      actInput.value=plannedRow.target.reps;
+      logSetCtx.miniReps = newDefaultMiniSets();
+    } else if(lastSet&&lastSet.type==="myorep"){
+      actInput.value=lastSet.reps;
+      logSetCtx.miniReps = lastSet.miniSetReps?[...lastSet.miniSetReps]:newDefaultMiniSets();
+    } else {
+      actInput.value="";
+      logSetCtx.miniReps = newDefaultMiniSets();
+    }
+    renderMiniSetInputs();
+  } else {
+    // Straight reps
+    const repsInput=document.getElementById("logset-reps");
+    if(existing){
+      repsInput.value=existing.reps;
+    } else if(plannedRow.target){
+      repsInput.value=plannedRow.target.reps;
+    } else {
+      const prev=s.sets.filter(st=>st.rowIdx===plannedRow.idx).pop();
+      if(prev)repsInput.value=prev.reps;
+      else if(lastSet&&lastSet.type!=="myorep")repsInput.value=lastSet.reps;
+      else repsInput.value="";
+    }
+  }
+
   // RIR row
   buildRirChips();
   if(existing && existing.rir!==undefined){
@@ -3061,6 +3209,62 @@ function openLogSet(plannedRow, slotIdx, existing){
   document.getElementById("logset-delete").style.display=existing?"":"none";
   document.getElementById("logset-bg").classList.add("open");
   setTimeout(()=>weightInput.focus(),60);
+}
+
+// Default mini-set template: 4 blank slots
+function newDefaultMiniSets(){return [null,null,null,null]}
+
+// Render the mini-set inputs based on logSetCtx.miniReps (array of numbers/nulls)
+function renderMiniSetInputs(){
+  const wrap=document.getElementById("logset-minisets");
+  wrap.innerHTML="";
+  const reps=logSetCtx.miniReps||[];
+  reps.forEach((v,i)=>{
+    const inp=document.createElement("input");
+    inp.type="text";inp.inputMode="numeric";inp.pattern="[0-9]*";
+    inp.className="logset-mini-input";
+    inp.placeholder=String(i+1);
+    inp.autocomplete="off";inp.dataset.idx=i;
+    if(v!==null&&v!==undefined)inp.value=v;
+    inp.addEventListener("input",e=>{
+      const idx=parseInt(e.target.dataset.idx,10);
+      const num=parseInt(e.target.value,10);
+      logSetCtx.miniReps[idx]=isNaN(num)?null:num;
+    });
+    wrap.appendChild(inp);
+  });
+  document.getElementById("logset-mini-count").textContent=`(${reps.length})`;
+}
+
+// Add or remove mini-set slots (kept between 0 and 8)
+function adjustMiniSets(delta){
+  if(!logSetCtx||!logSetCtx.isMyo)return;
+  let n=logSetCtx.miniReps.length+delta;
+  n=Math.max(0,Math.min(8,n));
+  if(n>logSetCtx.miniReps.length){
+    while(logSetCtx.miniReps.length<n)logSetCtx.miniReps.push(null);
+  } else {
+    logSetCtx.miniReps=logSetCtx.miniReps.slice(0,n);
+  }
+  renderMiniSetInputs();
+}
+
+// Format a logged set (or last-set hint) for human display
+function fmtSetReps(st){
+  if(!st)return "";
+  const u=st.unit||prefs.preferredUnit;
+  const w=fmtNum(st.weight);
+  return `${w}${u} × ${fmtRepsOnly(st)}`;
+}
+// Just the rep portion of a set: "8" for straight, "15+5,5,5,3" for myo-rep
+function fmtRepsOnly(st){
+  if(!st)return "";
+  if(st.type==="myorep"&&Array.isArray(st.miniSetReps)){
+    const mini=st.miniSetReps.filter(x=>x!=null&&x>0);
+    if(mini.length===0)return String(st.reps);
+    return `${st.reps}+${mini.join(",")}`;
+  }
+  return String(st.reps);
 }
 
 // Find the most recent logged set for a given exercise across all past sessions, excluding
@@ -3128,12 +3332,23 @@ function saveLoggedSet(){
   const s=sessions.find(x=>x.id===curWorkoutSessId);
   if(!s){closeLogSet();return}
   const w=parseFloat(document.getElementById("logset-weight").value);
-  const r=parseInt(document.getElementById("logset-reps").value,10);
-  if(isNaN(w)||w<0||isNaN(r)||r<0){
-    alert("Please enter valid weight and reps.");
-    return;
-  }
+  if(isNaN(w)||w<0){alert("Please enter a valid weight.");return}
   const pr=logSetCtx.plannedRow;
+
+  let r, miniSetReps=null;
+  if(logSetCtx.isMyo){
+    r=parseInt(document.getElementById("logset-activation").value,10);
+    if(isNaN(r)||r<=0){alert("Please enter the activation set reps.");return}
+    // Filter out null/blank mini-sets, keep only positive integers
+    miniSetReps=(logSetCtx.miniReps||[]).map(v=>{
+      const n=parseInt(v,10);
+      return isNaN(n)||n<=0 ? null : n;
+    }).filter(v=>v!==null);
+  } else {
+    r=parseInt(document.getElementById("logset-reps").value,10);
+    if(isNaN(r)||r<0){alert("Please enter valid reps.");return}
+  }
+
   const setRec={
     rowIdx:pr.idx,
     ex:pr.ex,
@@ -3143,11 +3358,11 @@ function saveLoggedSet(){
     unit:prefs.preferredUnit,
     timestamp:new Date().toISOString()
   };
+  if(miniSetReps!==null)setRec.miniSetReps=miniSetReps;
   if(logSetCtx.rir!==undefined&&logSetCtx.rir!==null)setRec.rir=logSetCtx.rir;
   if(pr.target){setRec.targetWeight=pr.target.weight;setRec.targetReps=pr.target.reps}
 
   if(logSetCtx.existing){
-    // Replace the existing record (find by reference within session)
     const idx=s.sets.indexOf(logSetCtx.existing);
     if(idx>=0)s.sets[idx]={...s.sets[idx],...setRec};
   } else {
