@@ -372,6 +372,29 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .myo-card-cancel{padding:7px 12px;font-size:12px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);cursor:pointer;font-family:inherit}
 .myo-add-seq{font-size:12px;padding:8px 12px;min-height:0;color:var(--text2)}
 
+/* === Drop set inline cards === */
+.drop-inline-container{display:flex;flex-direction:column;gap:10px}
+.drop-card{background:var(--bg);border-radius:var(--radius);border:0.5px solid var(--border);padding:12px}
+.drop-card.logged{background:var(--success-bg);border-color:var(--success-text)}
+.drop-card.editing{background:var(--bg2);border:0.5px dashed var(--border2)}
+.drop-card-summary{display:flex;flex-direction:column;gap:3px}
+.drop-card-summary-main{font-size:13px;color:var(--success-text);font-variant-numeric:tabular-nums;font-weight:500;line-height:1.4;word-break:break-word}
+.drop-card-summary-meta{font-size:11px;color:var(--success-text);opacity:0.85}
+.drop-card-actions{display:flex;justify-content:flex-end;gap:6px;margin-top:8px}
+.drop-card-edit,.drop-card-del{padding:5px 10px;font-size:11px;font-weight:500;border-radius:var(--radius);border:0.5px solid var(--success-text);background:transparent;color:var(--success-text);cursor:pointer;font-family:inherit}
+.drop-card-del{padding:4px 10px;font-size:14px;line-height:1}
+.drop-card-label-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.drop-card-label{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:0.04em;font-weight:600}
+.drop-card-meta{font-size:11px;color:var(--accent);font-weight:500;font-variant-numeric:tabular-nums}
+.drop-card-rowlabel{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:0.04em;font-weight:500;margin:6px 0 4px}
+.drop-card-chiprow{display:grid;grid-template-columns:repeat(auto-fit, minmax(56px, 1fr));gap:4px;margin-bottom:6px}
+.drop-chip-cell{display:flex;flex-direction:column;gap:2px;min-width:0}
+.drop-chip-tag{font-size:9px;color:var(--text3);text-align:center;font-weight:500;letter-spacing:0.02em;text-transform:uppercase}
+.drop-chip-input{box-sizing:border-box;width:100%;padding:7px 2px;font-size:14px;border-radius:4px;border:0.5px solid var(--border2);background:var(--bg);color:var(--text);outline:none;font-family:inherit;text-align:center;font-variant-numeric:tabular-nums;min-width:0}
+.drop-chip-input:focus{border-color:var(--accent)}
+.drop-card-controls{display:flex;align-items:center;gap:6px;justify-content:flex-end;margin-top:8px}
+.drop-card-controls-label{font-size:11px;color:var(--text2);margin-right:auto}
+
 /* Log-set modal */
 .logset-modal{max-width:340px}
 .logset-title{font-size:15px;font-weight:600;color:var(--text);text-align:center;margin-bottom:4px}
@@ -882,6 +905,14 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
         <p>Only one in-progress workout at a time. Starting a new one from a different day will prompt before discarding any other in-progress session.</p>
         <p>The log modal pre-fills weight and reps with (in order): an existing logged value if you're editing, the planned target if set, your last set in this session, or your last set of this exercise from any past session. A small "last time" hint shows what you did before so you can match or progress.</p>
         <p><b>Myo-rep tracking:</b> when the row's set type is set to <b>M</b> (Myo-rep), the log modal switches to a more detailed layout: Weight, Activation reps, and a row of mini-set inputs (default 4, adjustable with the −/+ buttons, up to 8). Blank mini-sets are ignored when you save. The set chip displays the full sequence, e.g. <b>185×15+5,5,5,3</b>.</p>
+        <p><b>Drop set tracking:</b> when the row's set type is set to <b>D</b> (Drop set), the workout view shows an inline card with two rows of chips: weights (top) and reps (bottom). The first slot is the initial set; subsequent slots are drops. After entering the initial weight, downstream blank weights auto-fill with 20% less than the previous slot, rounded to the nearest 5lb (or 2.5kg). You can edit any auto-suggested value, and the cascade only fills blanks — never overwrites what you've typed. The default layout shows 1 initial + 4 drops; use the −/+ buttons to add or remove drops (max 7 drops, 8 slots total). Empty drop slots are skipped when saving. The summary displays the sequence as <b>100lb×10 → 80lb×8 → 64lb×6</b>.</p>
+        <p><b>How drop sets feed the graphs:</b></p>
+        <ul>
+          <li><b>Weight</b> graph: uses the initial (heaviest) weight, treated like any straight set</li>
+          <li><b>Est 1RM</b> graph: uses the initial set's weight and reps (the heaviest single effort)</li>
+          <li><b>Volume</b> graph: weight × total reps across the entire sequence (initial + all drops)</li>
+          <li><b>Sets</b> graph: contribution depends on drop count — 1 drop = 1.5 effective sets, 2 drops = 2.0, 3+ drops = 2.5 (see "Intensifier weighting" for details)</li>
+        </ul>
         <p><b>How myo-reps feed the graphs:</b></p>
         <ul>
           <li><b>Weight</b> graph: uses the working weight (same as straight sets)</li>
@@ -2176,6 +2207,9 @@ function totalRepsForSet(s){
   if(s.type==="myorep"&&Array.isArray(s.miniSetReps)){
     s.miniSetReps.forEach(r=>{if(typeof r==="number"&&r>0)t+=r});
   }
+  if(s.type==="drop"&&Array.isArray(s.dropReps)){
+    s.dropReps.forEach(r=>{if(typeof r==="number"&&r>0)t+=r});
+  }
   return t;
 }
 
@@ -3157,10 +3191,12 @@ function renderWorkoutBody(){
     head.appendChild(nm);head.appendChild(tEl);
     wrap.appendChild(head);
 
-    // Branch on set type. Myo-rep gets an inline editor per sequence (no modal).
-    // Other types still use the chip-per-set strip with the log modal.
+    // Branch on set type. Myo-rep and drop sets get their own inline editors (no modal).
+    // Other types use the chip-per-set strip with the log modal.
     if(pr.type==="myorep"){
       renderMyorepInlineCards(wrap, s, pr);
+    } else if(pr.type==="drop"){
+      renderDropSetInlineCards(wrap, s, pr);
     } else {
       renderChipStrip(wrap, s, pr);
     }
@@ -3430,6 +3466,280 @@ function saveMyorepInline(s, pr, slotIdx, existing){
 }
 function fmtNum(n){if(n==null)return "—";return (n%1===0)?String(n):n.toFixed(1).replace(/\.?0+$/,"")||"0"}
 
+// ===== Drop set inline cards =====
+// Each card = one drop-set sequence (initial set + N drops). Two rows of chip inputs:
+// weights on top, reps below. Blank downstream weights auto-fill from the prev populated
+// weight × 0.8, rounded to 5lb (or 2.5kg). No per-input timer — there are no rests inside
+// a drop sequence; the main default timer fires when the whole sequence is saved.
+const dropInlineState={};
+const DROP_DEFAULT_COUNT=4;        // 4 drops after the initial set
+const DROP_MAX_COUNT=7;            // up to 7 drops total
+const DROP_REDUCTION=0.20;         // 20% drop each step
+
+function dropStateKey(pr,slotIdx){return `${pr.idx}_${slotIdx}`}
+
+function roundToPlate(w, unit){
+  if(typeof w!=="number"||isNaN(w))return null;
+  const step = unit==="kg" ? 2.5 : 5;
+  return Math.round(w/step)*step;
+}
+function nextDropWeight(prev, unit){
+  if(typeof prev!=="number"||isNaN(prev)||prev<=0)return null;
+  return roundToPlate(prev*(1-DROP_REDUCTION), unit);
+}
+// Cascade: walk left-to-right, fill blank downstream weights from the prev populated one.
+// Manually-typed values are preserved.
+function cascadeDropWeights(weights, unit){
+  for(let i=1;i<weights.length;i++){
+    if(weights[i]==null||weights[i]===""||(typeof weights[i]==="string"&&isNaN(parseFloat(weights[i])))){
+      const prev=typeof weights[i-1]==="number"?weights[i-1]:parseFloat(weights[i-1]);
+      if(!isNaN(prev)&&prev>0){
+        weights[i]=nextDropWeight(prev, unit);
+      }
+    }
+  }
+  return weights;
+}
+
+function renderDropSetInlineCards(wrap, s, pr){
+  const logged=setsForRowIdx(s,pr.idx);
+  const slotCount=Math.max(pr.plannedSets,logged.length);
+  const container=document.createElement("div");
+  container.className="drop-inline-container";
+  for(let k=0;k<slotCount;k++){
+    container.appendChild(buildDropCard(s, pr, k, logged[k]||null));
+  }
+  const addBtn=document.createElement("button");
+  addBtn.className="wo-add-set myo-add-seq";
+  addBtn.type="button";
+  addBtn.innerHTML='<i class="ti ti-plus"></i> Add sequence';
+  addBtn.onclick=()=>{
+    pr.plannedSets=Math.max(pr.plannedSets, setsForRowIdx(s,pr.idx).length)+1;
+    renderWorkoutBody();
+  };
+  container.appendChild(addBtn);
+  wrap.appendChild(container);
+}
+
+function buildDropCard(s, pr, slotIdx, existing){
+  const card=document.createElement("div");
+  card.className="drop-card"+(existing?" logged":"");
+  const stateKey=dropStateKey(pr,slotIdx);
+  const editing=dropInlineState[stateKey]&&dropInlineState[stateKey].editing;
+
+  // Logged & not editing: summary view
+  if(existing && !editing){
+    const drops=Array.isArray(existing.dropWeights)?existing.dropWeights:[];
+    const dropReps=Array.isArray(existing.dropReps)?existing.dropReps:[];
+    const u=existing.unit||prefs.preferredUnit;
+    const parts=[`${fmtNum(existing.weight)}${u}×${existing.reps}`];
+    drops.forEach((w,i)=>{
+      const r=dropReps[i]!=null?dropReps[i]:"—";
+      parts.push(`${fmtNum(w)}×${r}`);
+    });
+    const tier=getDropTierMult(drops.length);
+    const summary=document.createElement("div");
+    summary.className="drop-card-summary";
+    summary.innerHTML=`<div class="drop-card-summary-main">${parts.join(" → ")}</div><div class="drop-card-summary-meta">${drops.length} drop${drops.length===1?"":"s"} (×${tier})${existing.rir!==undefined?` · @${existing.rir} RIR`:""}</div>`;
+    const actions=document.createElement("div");actions.className="drop-card-actions";
+    const editBtn=document.createElement("button");editBtn.type="button";editBtn.className="drop-card-edit";editBtn.textContent="Edit";
+    editBtn.onclick=()=>{dropInlineState[stateKey]={editing:true};renderWorkoutBody()};
+    const delBtn=document.createElement("button");delBtn.type="button";delBtn.className="drop-card-del";delBtn.textContent="×";delBtn.title="Delete this sequence";
+    delBtn.onclick=()=>{
+      if(!confirm("Delete this drop set sequence?"))return;
+      const idx=s.sets.indexOf(existing);
+      if(idx>=0)s.sets.splice(idx,1);
+      saveSessions();
+      renderWorkoutBody();
+    };
+    actions.appendChild(editBtn);actions.appendChild(delBtn);
+    card.appendChild(summary);card.appendChild(actions);
+    return card;
+  }
+
+  card.classList.add("editing");
+
+  // Initialize state for this slot. Schema: weights[] and reps[] parallel arrays.
+  // weights[0] = initial set, weights[1..] = drop weights.
+  if(!dropInlineState[stateKey]){
+    const st0={editing:true, weights:[], reps:[]};
+    if(existing){
+      st0.weights=[existing.weight, ...(existing.dropWeights||[])];
+      st0.reps=[existing.reps, ...(existing.dropReps||[])];
+      if(existing.rir!==undefined)st0.rir=existing.rir;
+    } else {
+      // Default: 1 initial + 4 drops = 5 slots
+      st0.weights=new Array(1+DROP_DEFAULT_COUNT).fill(null);
+      st0.reps=new Array(1+DROP_DEFAULT_COUNT).fill(null);
+      // Pre-fill initial weight from target → last in session → last ever
+      const lastSet=findLastSetForExercise(pr.ex, s.id);
+      const prevThisSession=s.sets.filter(st=>st.rowIdx===pr.idx).pop();
+      const seed=prevThisSession||lastSet;
+      if(pr.target){
+        st0.weights[0]=pr.target.weight;
+        st0.reps[0]=pr.target.reps;
+      } else if(seed){
+        st0.weights[0]=seed.weight;
+        st0.reps[0]=seed.reps;
+      }
+      // Cascade any auto-fillable downstream weights based on the initial weight
+      cascadeDropWeights(st0.weights, prefs.preferredUnit);
+    }
+    dropInlineState[stateKey]=st0;
+  }
+  const st=dropInlineState[stateKey];
+
+  // Header row: label + slot count
+  const labelRow=document.createElement("div");labelRow.className="drop-card-label-row";
+  const label=document.createElement("div");label.className="drop-card-label";
+  label.textContent=`Sequence ${slotIdx+1}`;
+  labelRow.appendChild(label);
+  const meta=document.createElement("div");meta.className="drop-card-meta";
+  const dropsCount=st.weights.length-1;
+  meta.textContent=`${dropsCount} drop${dropsCount===1?"":"s"} (×${getDropTierMult(dropsCount)})`;
+  labelRow.appendChild(meta);
+  card.appendChild(labelRow);
+
+  // Weights row (top)
+  const weightsLbl=document.createElement("div");weightsLbl.className="drop-card-rowlabel";
+  weightsLbl.textContent=`Weight (${prefs.preferredUnit})`;
+  card.appendChild(weightsLbl);
+  const wRow=document.createElement("div");wRow.className="drop-card-chiprow";
+  st.weights.forEach((w,i)=>{
+    const cell=document.createElement("div");cell.className="drop-chip-cell";
+    const tag=document.createElement("div");tag.className="drop-chip-tag";
+    tag.textContent=i===0?"Initial":`Drop ${i}`;
+    const inp=document.createElement("input");
+    inp.type="text";inp.inputMode="decimal";inp.pattern="[0-9]*\\.?[0-9]*";
+    inp.autocomplete="off";inp.setAttribute("data-form-type","other");inp.setAttribute("data-lpignore","true");
+    inp.className="drop-chip-input";
+    inp.placeholder="—";
+    if(w!=null&&w!=="")inp.value=w;
+    inp.oninput=e=>{
+      const v=parseFloat(e.target.value);
+      st.weights[i]=isNaN(v)?null:v;
+    };
+    // On commit (Enter/Done or blur after typing), recompute downstream blanks
+    const onCommit=()=>{
+      const v=parseFloat(inp.value);
+      st.weights[i]=isNaN(v)?null:v;
+      cascadeDropWeights(st.weights, prefs.preferredUnit);
+      renderWorkoutBody();
+    };
+    inp.onchange=onCommit;
+    inp.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();e.target.blur()}};
+    cell.appendChild(tag);cell.appendChild(inp);
+    wRow.appendChild(cell);
+  });
+  card.appendChild(wRow);
+
+  // Reps row (bottom)
+  const repsLbl=document.createElement("div");repsLbl.className="drop-card-rowlabel";
+  repsLbl.textContent="Reps";
+  card.appendChild(repsLbl);
+  const rRow=document.createElement("div");rRow.className="drop-card-chiprow";
+  st.reps.forEach((r,i)=>{
+    const cell=document.createElement("div");cell.className="drop-chip-cell";
+    const tag=document.createElement("div");tag.className="drop-chip-tag";
+    tag.textContent=i===0?"Initial":`Drop ${i}`;
+    const inp=document.createElement("input");
+    inp.type="text";inp.inputMode="numeric";inp.pattern="[0-9]*";
+    inp.autocomplete="off";inp.setAttribute("data-form-type","other");inp.setAttribute("data-lpignore","true");
+    inp.className="drop-chip-input";
+    inp.placeholder="—";
+    if(r!=null&&r!=="")inp.value=r;
+    inp.oninput=e=>{
+      const v=parseInt(e.target.value,10);
+      st.reps[i]=isNaN(v)?null:v;
+    };
+    inp.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();e.target.blur()}};
+    cell.appendChild(tag);cell.appendChild(inp);
+    rRow.appendChild(cell);
+  });
+  card.appendChild(rRow);
+
+  // Drop count adjuster
+  const ctrls=document.createElement("div");ctrls.className="drop-card-controls";
+  const minus=document.createElement("button");minus.type="button";minus.className="myo-card-mini-btn";minus.textContent="−";minus.title="Remove a drop";
+  minus.onclick=()=>{
+    if(st.weights.length>1){st.weights.pop();st.reps.pop();renderWorkoutBody()}
+  };
+  const plus=document.createElement("button");plus.type="button";plus.className="myo-card-mini-btn";plus.textContent="+";plus.title="Add a drop";
+  plus.onclick=()=>{
+    if(st.weights.length-1<DROP_MAX_COUNT){
+      st.weights.push(null);st.reps.push(null);
+      cascadeDropWeights(st.weights, prefs.preferredUnit);
+      renderWorkoutBody();
+    }
+  };
+  const ctrlsLabel=document.createElement("span");ctrlsLabel.className="drop-card-controls-label";ctrlsLabel.textContent="Drops:";
+  ctrls.appendChild(ctrlsLabel);ctrls.appendChild(minus);ctrls.appendChild(plus);
+  card.appendChild(ctrls);
+
+  // Save / Cancel
+  const btnRow=document.createElement("div");btnRow.className="myo-card-buttons";
+  if(existing){
+    const cancel=document.createElement("button");cancel.type="button";cancel.className="myo-card-cancel";cancel.textContent="Cancel";
+    cancel.onclick=()=>{delete dropInlineState[stateKey];renderWorkoutBody()};
+    btnRow.appendChild(cancel);
+  }
+  const save=document.createElement("button");save.type="button";save.className="myo-card-save";save.textContent=existing?"Update":"Log sequence";
+  save.onclick=()=>saveDropInline(s, pr, slotIdx, existing);
+  btnRow.appendChild(save);
+  card.appendChild(btnRow);
+
+  return card;
+}
+
+function saveDropInline(s, pr, slotIdx, existing){
+  const stateKey=dropStateKey(pr,slotIdx);
+  const st=dropInlineState[stateKey];
+  if(!st)return;
+  const w0=parseFloat(st.weights[0]);
+  const r0=parseInt(st.reps[0],10);
+  if(isNaN(w0)||w0<0){alert("Please enter the initial set weight.");return}
+  if(isNaN(r0)||r0<=0){alert("Please enter the initial set reps.");return}
+  // Collect drops — only include consecutive valid pairs starting from drop 1.
+  // A drop with a weight but missing reps (or vice versa) is invalid and we'll warn.
+  const dropWeights=[];
+  const dropReps=[];
+  for(let i=1;i<st.weights.length;i++){
+    const w=parseFloat(st.weights[i]);
+    const r=parseInt(st.reps[i],10);
+    const wValid=!isNaN(w)&&w>0;
+    const rValid=!isNaN(r)&&r>0;
+    if(!wValid&&!rValid)continue; // empty drop slot, skip
+    if(!wValid||!rValid){
+      alert(`Drop ${i} is missing ${!wValid?"weight":"reps"}. Fill it in or leave both blank to skip.`);
+      return;
+    }
+    dropWeights.push(w);
+    dropReps.push(r);
+  }
+  const rec={
+    rowIdx:pr.idx, ex:pr.ex, type:"drop",
+    weight:w0, reps:r0,
+    dropWeights, dropReps,
+    dropCount: dropWeights.length,
+    unit: prefs.preferredUnit,
+    timestamp: new Date().toISOString()
+  };
+  if(st.rir!==undefined&&st.rir!==null)rec.rir=st.rir;
+  if(pr.target){rec.targetWeight=pr.target.weight;rec.targetReps=pr.target.reps}
+  if(existing){
+    const idx=s.sets.indexOf(existing);
+    if(idx>=0)s.sets[idx]={...s.sets[idx],...rec};
+  } else {
+    s.sets.push(rec);
+  }
+  saveSessions();
+  delete dropInlineState[stateKey];
+  renderWorkoutBody();
+  // Drop sequences are continuous (no internal rests), so just start the default rest timer
+  // when the whole sequence is logged — same behaviour as straight sets.
+  if(!existing&&!restTimer.id)startRestTimer();
+}
+
 function confirmAbandonWorkout(){
   const s=sessions.find(x=>x.id===curWorkoutSessId);
   if(!s){closeWorkoutModal();return}
@@ -3684,13 +3994,18 @@ function fmtSetReps(st){
   const w=fmtNum(st.weight);
   return `${w}${u} × ${fmtRepsOnly(st)}`;
 }
-// Just the rep portion of a set: "8" for straight, "15+5,5,5,3" for myo-rep
+// Just the rep portion of a set: "8" for straight, "15+5,5,5,3" for myo-rep, "10→8→6" for drop
 function fmtRepsOnly(st){
   if(!st)return "";
   if(st.type==="myorep"&&Array.isArray(st.miniSetReps)){
     const mini=st.miniSetReps.filter(x=>x!=null&&x>0);
     if(mini.length===0)return String(st.reps);
     return `${st.reps}+${mini.join(",")}`;
+  }
+  if(st.type==="drop"&&Array.isArray(st.dropReps)){
+    const drops=st.dropReps.filter(x=>x!=null&&x>0);
+    if(drops.length===0)return String(st.reps);
+    return `${st.reps}→${drops.join("→")}`;
   }
   return String(st.reps);
 }
