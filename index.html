@@ -79,7 +79,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .panel.active{display:block;animation:panelFadeIn 0.18s var(--ease)}
 @keyframes panelFadeIn{from{opacity:0;transform:translateY(2px)}to{opacity:1;transform:translateY(0)}}
 .day-label-row{display:flex;align-items:center;margin-bottom:10px}
-.exercise-row{display:grid;grid-template-columns:1fr 32px 100px;gap:6px;align-items:center;margin-bottom:8px;position:relative;padding-left:0;transition:padding-left 0.15s var(--ease)}
+.exercise-row{display:grid;grid-template-columns:1fr 28px 32px 100px;gap:6px;align-items:center;margin-bottom:8px;position:relative;padding-left:0;transition:padding-left 0.15s var(--ease)}
 /* Superset visual grouping. We use a left bar (::before) and add a class to rows that are part of a group. */
 .exercise-row.ss-member{padding-left:8px}
 .exercise-row.ss-member::before{content:"";position:absolute;left:0;top:-2px;bottom:-2px;width:3px;background:var(--accent);opacity:0.85}
@@ -88,6 +88,11 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 /* The first row of a group gets a tiny "×N" badge near the exercise picker */
 .ss-badge{position:absolute;top:-8px;left:6px;background:var(--accent);color:var(--accent-text);font-size:9px;font-weight:600;padding:1px 5px;border-radius:8px;letter-spacing:0.04em;line-height:1.3;pointer-events:none;z-index:2}
 .set-type-chip{height:30px;border-radius:var(--radius);border:0.5px solid var(--border);background:var(--bg);color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit;touch-action:manipulation;letter-spacing:0.02em;transition:background-color 0.15s var(--ease),color 0.15s var(--ease),border-color 0.15s var(--ease)}
+/* Superset link toggle: small chain button between picker and chip */
+.ss-link-btn{width:28px;height:30px;border-radius:var(--radius);border:0.5px solid var(--border);background:var(--bg);color:var(--text3);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit;padding:0;transition:background-color 0.15s var(--ease),color 0.15s var(--ease),border-color 0.15s var(--ease)}
+.ss-link-btn:active{background:var(--bg2)}
+.ss-link-btn.linked{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
+.ss-link-btn.disabled{opacity:0.25;cursor:not-allowed}
 .set-type-chip:active{background:var(--bg2)}
 .set-type-chip.intensifier{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
 .set-type-popover{position:absolute;top:100%;right:0;margin-top:4px;background:var(--bg);border:0.5px solid var(--border2);border-radius:var(--radius);z-index:150;box-shadow:0 4px 16px var(--shadow);min-width:200px;display:none;overflow:hidden}
@@ -340,8 +345,12 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .start-workout:active{opacity:0.85}
 .start-workout-resume{background:var(--warn-text);color:var(--bg)}
 
-/* Target hint shown on planner rows */
-.row-target-hint{font-size:10px;color:var(--accent);margin-top:2px;padding-left:2px;font-variant-numeric:tabular-nums}
+/* Target hint shown on planner rows. Tappable to open the target editor. */
+.row-target-hint{font-size:11px;margin-top:4px;padding:3px 6px;border:none;background:transparent;cursor:pointer;font-family:inherit;text-align:left;border-radius:4px;justify-self:start;font-variant-numeric:tabular-nums;display:inline-block}
+.row-target-hint:active{background:var(--bg2)}
+.row-target-hint.has-target{color:var(--accent);font-weight:500}
+.row-target-hint.no-target{color:var(--text3);font-style:italic;opacity:0.7}
+.row-target-hint.no-target:hover{opacity:1}
 
 /* Custom exercise editor */
 .ce-modal{background:var(--bg);border-radius:12px;padding:16px;width:100%;max-width:340px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 8px 32px var(--shadow)}
@@ -727,12 +736,13 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 
       <details class="help-section">
         <summary>Supersets &amp; giant sets</summary>
-        <p><b>Long-press</b> any exercise row (except the first one in a day) to link it to the row above as a superset. Long-press again to unlink it. You can chain three or more rows together to create tri-sets or giant sets.</p>
+        <p>Each exercise row has a small <b>chain icon button</b> between the exercise picker and the set-type chip. Tap it to link the row with the one above as a superset. Tap again to unlink. You can chain three or more rows together to create tri-sets or giant sets.</p>
         <p>Visual cues:</p>
         <ul>
+          <li>The chain button fills with your accent colour when a row is linked</li>
           <li>A coloured accent bar runs down the left edge of any rows that are linked together</li>
           <li>The first row of each group shows a small <b>SUPERSET ×N</b> badge with the group size</li>
-          <li>The +/− buttons, the chip, and the exercise dropdown all still work normally — long-press is detected on empty parts of the row only</li>
+          <li>The chain button on row 1 of any day is disabled (no row above to link to)</li>
         </ul>
         <p>Supersets are a purely organizational concept here. They don't change volume calculations — each exercise still counts its sets independently toward its muscle groups. The grouping just helps you remember which exercises you're pairing during execution.</p>
         <p>Note: the Flexify export doesn't preserve superset grouping (Flexify's plan format doesn't support it). The exercises just stay in the order you have them.</p>
@@ -3304,21 +3314,35 @@ function renderDay(dayId){
     // Long-press the number to open the target editor (optional weight/reps target)
     attachLongPress(num,()=>openTargetEditor(dayId,i),{allowOnInteractive:true});
     ctrl.appendChild(minus);ctrl.appendChild(num);ctrl.appendChild(plus);
-    div.appendChild(picker);div.appendChild(chip);div.appendChild(ctrl);
 
-    // Target hint shown below the row if a target is set
-    if(row.target){
-      const hint=document.createElement("div");
-      hint.className="row-target-hint";
+    // Superset link button: chain icon to link this row with the previous one.
+    // Disabled visually on row 0 (no previous row to link to).
+    const linkBtn=document.createElement("button");
+    linkBtn.type="button";
+    linkBtn.setAttribute("aria-label","Link as superset with row above");
+    linkBtn.title=i===0
+      ? "First row — nothing above to link to"
+      : (row.linkedToPrev?"Linked with row above — tap to unlink":"Tap to link with row above as a superset");
+    linkBtn.innerHTML='<i class="ti ti-link"></i>';
+    linkBtn.className="ss-link-btn"+(row.linkedToPrev&&i>0?" linked":"")+(i===0?" disabled":"");
+    if(i===0){linkBtn.disabled=true}
+    else linkBtn.onclick=e=>{e.stopPropagation();toggleSupersetLink(dayId,i)};
+
+    div.appendChild(picker);div.appendChild(linkBtn);div.appendChild(chip);div.appendChild(ctrl);
+
+    // Target hint: always render a tappable spot below the row when an exercise is selected.
+    // If a target is set, show the value; if not, show a faint "+ set target" link.
+    if(row.ex){
+      const hint=document.createElement("button");
+      hint.type="button";
+      hint.className=row.target?"row-target-hint has-target":"row-target-hint no-target";
       hint.style.gridColumn="1 / -1";
-      hint.textContent=`@ ${fmtNum(row.target.weight)}${row.target.unit||prefs.preferredUnit} × ${row.target.reps}`;
+      hint.textContent=row.target
+        ?`🎯 ${fmtNum(row.target.weight)}${row.target.unit||prefs.preferredUnit} × ${row.target.reps}`
+        :`+ set target`;
+      hint.onclick=e=>{e.stopPropagation();openTargetEditor(dayId,i)};
       div.appendChild(hint);
     }
-
-    // Long-press on the row toggles linkedToPrev (superset linking with the previous row).
-    // Only valid on rows after the first (i>0). Skip if the press is on an interactive child
-    // (picker, chip, +/− buttons, the number) so we don't fight other gestures.
-    if(i>0)attachLongPress(div,()=>toggleSupersetLink(dayId,i));
 
     el.appendChild(div);
   });
@@ -3358,14 +3382,16 @@ function toggleSupersetLink(dayId,rowIndex){
 // Attach a long-press handler that fires after ~500ms held on an element.
 // Cancels if the pointer moves >10px (likely a scroll) or if a tap-targetable child is hit.
 function attachLongPress(el,action,opts){
-  const HOLD_MS=500, MOVE_TOL=10;
+  const HOLD_MS=500, MOVE_TOL=20; // 20px is more forgiving for finger jitter
   const skipInteractiveCheck=opts&&opts.allowOnInteractive===true;
   let timer=null, startX=0, startY=0, fired=false;
   function isInteractive(target){
+    // Only skip long-press on elements that have their OWN press-and-hold or click handlers
+    // that would conflict. The exercise picker opens on tap — long-press on it is free for us.
     return target.closest && (
-      target.closest(".ex-picker")||target.closest(".set-type-chip")||
       target.closest(".set-type-popover")||target.closest(".s-btn")||
-      target.closest(".s-num")||target.closest(".ex-dropdown")
+      target.closest(".s-num")||target.closest(".ex-dropdown")||
+      target.closest(".set-type-chip")
     );
   }
   el.addEventListener("pointerdown",e=>{
