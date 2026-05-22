@@ -66,6 +66,17 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .settings-btn:active{background:var(--bg2)}
 .settings-btn.primary{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
 .settings-btn.primary:active{opacity:0.85}
+
+/* Set type multiplier editor */
+.mult-edit-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:0.5px solid var(--border)}
+.mult-edit-row:last-child{border-bottom:none}
+.mult-edit-label{flex:1;min-width:0;font-size:13px;color:var(--text);display:flex;flex-direction:column;gap:1px}
+.mult-edit-label b{font-weight:500}
+.mult-edit-sub{font-size:10px;color:var(--text2);font-weight:400}
+.mult-edit-input{width:60px;padding:5px 6px;font-size:13px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);outline:none;font-family:inherit;text-align:center;font-variant-numeric:tabular-nums}
+.mult-edit-input:focus{border-color:var(--accent)}
+.mult-edit-default{font-size:10px;color:var(--text3);min-width:60px;font-variant-numeric:tabular-nums}
+.mult-edit-note{font-size:11px;color:var(--text3);font-style:italic}
 .flexify-bar{display:flex;align-items:center;gap:8px;padding:6px 14px;border-bottom:0.5px solid var(--border);font-size:11px;color:var(--text2);flex-shrink:0;flex-wrap:wrap}
 .flexify-label{text-transform:uppercase;letter-spacing:0.05em;font-weight:500}
 .flexify-btn{padding:5px 10px;font-size:12px;font-weight:500;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);cursor:pointer;font-family:inherit;touch-action:manipulation}
@@ -728,6 +739,18 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
       </details>
 
       <details class="help-section">
+        <summary>Set type multipliers</summary>
+        <p>How much each intensifier set type counts toward your weekly volume, relative to a straight set. <b>Edit these if you disagree with the defaults</b> — the literature on these techniques is thin and reasonable people land in different places.</p>
+        <p class="help-note">Defaults are conservative estimates drawn from coaching literature on rest-pause (Marshall et al.), myo-reps (Fagerli), and drop set protocols. Wide error bars apply. See the Help → "Intensifier weighting &amp; the literature" section for more.</p>
+        <div id="settings-mult-grid" style="margin:8px 0 0 16px"></div>
+        <p style="font-size:11px;color:var(--text2);margin:10px 0 0 16px"><b>Drop sets</b> use a tiered multiplier based on the number of drops in the sequence:</p>
+        <div id="settings-drop-grid" style="margin:8px 0 0 16px"></div>
+        <div style="margin:10px 0 0 16px">
+          <button class="settings-btn" onclick="resetAllMultipliers()">Reset all to defaults</button>
+        </div>
+      </details>
+
+      <details class="help-section">
         <summary>Preferred weight unit</summary>
         <p>The unit used when logging new sets.</p>
         <div style="margin:8px 0 0 16px">
@@ -804,12 +827,28 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
           <tr><th>Chip</th><th>Type</th><th>×</th><th>What "1 set" means</th></tr>
           <tr><td><b>S</b></td><td>Straight</td><td>1.0</td><td>One standard set to ~0–3 RIR</td></tr>
           <tr><td><b>A</b></td><td>AMRAP</td><td>1.0</td><td>One set taken to failure</td></tr>
-          <tr><td><b>D</b></td><td>Drop set</td><td>1.5</td><td>One top set + 2–3 weight drops</td></tr>
+          <tr><td><b>D</b></td><td>Drop set</td><td>1.5–2.5</td><td>Top set + N drops; multiplier scales with drop count (see below)</td></tr>
           <tr><td><b>C</b></td><td>Cluster</td><td>1.5</td><td>5×3 or similar with very short rest</td></tr>
           <tr><td><b>R</b></td><td>Rest-pause</td><td>2.0</td><td>One set + 2–3 short-rest mini-sets</td></tr>
           <tr><td><b>M</b></td><td>Myo-rep</td><td>2.5</td><td>Activation set + 3–5 mini-sets at short rest</td></tr>
         </table>
-        <p class="help-note">Multipliers approximate the hypertrophy stimulus of an intensified set vs a single straight set. They're estimates from coaching literature — wide error bars apply. Importantly, <b>"1 set" of myo-rep means one full activation+mini-sets sequence</b>, not each mini-set. The number on the row is how many such sequences you're doing.</p>
+        <p class="help-note">These multipliers are <b>defensible estimates, not precise measurements</b>. The research on intensifier techniques is thin and the numbers were chosen as reasonable midpoints in the available literature. <b>All multipliers are user-editable</b> in Settings → Set type multipliers. If you disagree with any of these (and reasonable people do), change them.</p>
+      </details>
+
+      <details class="help-section">
+        <summary>Intensifier weighting &amp; the literature</summary>
+        <p>This is the most opinionated part of the app, so we want to be transparent about how we landed where we did and where the uncertainty is.</p>
+        <p><b>The basic question:</b> if a straight set to ~0–3 RIR contributes 1 "set" toward your weekly volume, how much should an intensified set contribute?</p>
+        <p><b>What the literature actually says:</b></p>
+        <ul>
+          <li><b>Rest-pause (Marshall et al., 2012):</b> equated-volume comparisons show similar hypertrophy outcomes per equated rep. Rest-pause sequences allow ~50–100% more total reps than a straight set in the same time. We use <b>2.0×</b>.</li>
+          <li><b>Myo-reps (Børge Fagerli, various):</b> coaching framings put a full myo-rep sequence at "2–3 traditional sets." We use <b>2.5×</b> as the midpoint. Crucially, <b>"1 myo-rep set" means one full activation+mini-sets sequence</b>, not each mini-set individually — otherwise the count would be wildly inflated.</li>
+          <li><b>Drop sets:</b> minimal direct hypertrophy research. A 1-drop sequence is roughly comparable to a normal set with a small bonus from the drop; a 3+ drop sequence is closer in fatigue to a rest-pause or myo-rep sequence. We tier this: <b>1.5× / 2.0× / 2.5×</b> for 1, 2, and 3+ drops.</li>
+          <li><b>Cluster sets:</b> equated-volume research shows similar hypertrophy to traditional sets per equated rep, with potentially better mechanical performance. We use <b>1.5×</b> reflecting the modest additional reps cluster format allows.</li>
+        </ul>
+        <p><b>What we're guessing about:</b> the precise multiplier for each technique relative to a straight set. Individual response varies enormously based on training age, recovery, exercise selection, and how strictly the technique is performed. A poorly-executed myo-rep with long rests between mini-sets is essentially a straight set; a tightly-executed one with very short rest is much more.</p>
+        <p><b>Why this matters for the Summary tab:</b> if you do 4 myo-rep sets of curls (= 10 effective sets per our math) you'll see Biceps at 10 in the Summary. Whether that "really" represents the same biceps stimulus as 10 straight sets is unprovable — but it's a useful planning approximation that prevents you from accidentally over- or under-training a muscle.</p>
+        <p><b>If you want to change anything:</b> Settings → Set type multipliers. You can edit any base value and the drop tiers individually. Changes apply immediately to all Summary calculations and the per-exercise Sets graph. Click "Reset all to defaults" to restore.</p>
       </details>
 
       <details class="help-section">
@@ -1098,7 +1137,7 @@ const MAX_SETS=99;
 const SET_TYPE_DEFAULTS={
   straight:    {label:"Straight",  short:"S", mult:1.0, sub:"Standard sets to ~0-3 RIR"},
   amrap:       {label:"AMRAP",     short:"A", mult:1.0, sub:"To failure; same volume as a straight set"},
-  drop:        {label:"Drop set",  short:"D", mult:1.5, sub:"Top set + 2-3 drops in weight"},
+  drop:        {label:"Drop set",  short:"D", mult:1.5, sub:"Top set + 1-3 weight drops (multiplier scales with number of drops)"},
   cluster:     {label:"Cluster",   short:"C", mult:1.5, sub:"5×3 with short rest, etc."},
   restpause:   {label:"Rest-pause",short:"R", mult:2.0, sub:"1 set + 2-3 short-rest mini-sets"},
   myorep:      {label:"Myo-rep",   short:"M", mult:2.5, sub:"Activation set + 3-5 mini-sets"}
@@ -1106,6 +1145,13 @@ const SET_TYPE_DEFAULTS={
 const SET_TYPE_KEYS=["straight","amrap","drop","cluster","restpause","myorep"];
 const SET_TYPE_OVERRIDES_KEY="trainblock_set_type_overrides_v1";
 let setTypeMultipliers={}; // overrides; merged with defaults via getSetTypeMult
+
+// Drop set tiering: multiplier scales with number of drops in the sequence.
+// 1 drop ≈ 1.5 sets, 2 drops ≈ 2.0 sets, 3+ drops ≈ 2.5 sets.
+// Users can override these in Settings.
+const DROP_TIER_DEFAULTS={1:1.5, 2:2.0, 3:2.5};
+const DROP_TIER_KEY="trainblock_drop_tiers_v1";
+let dropTierMultipliers={};
 
 function loadSetTypeOverrides(){
   try{
@@ -1115,11 +1161,31 @@ function loadSetTypeOverrides(){
       if(parsed&&typeof parsed==="object")setTypeMultipliers=parsed;
     }
   }catch(e){setTypeMultipliers={}}
+  try{
+    const raw=localStorage.getItem(DROP_TIER_KEY);
+    if(raw){
+      const parsed=JSON.parse(raw);
+      if(parsed&&typeof parsed==="object")dropTierMultipliers=parsed;
+    }
+  }catch(e){dropTierMultipliers={}}
 }
-function saveSetTypeOverrides(){try{localStorage.setItem(SET_TYPE_OVERRIDES_KEY,JSON.stringify(setTypeMultipliers))}catch(e){}}
-function getSetTypeMult(key){
+function saveSetTypeOverrides(){
+  try{localStorage.setItem(SET_TYPE_OVERRIDES_KEY,JSON.stringify(setTypeMultipliers))}catch(e){}
+  try{localStorage.setItem(DROP_TIER_KEY,JSON.stringify(dropTierMultipliers))}catch(e){}
+}
+// Returns the multiplier for a logged set. For drop sets, uses the tier defined by dropCount.
+// For all other types, uses the flat multiplier (with user override if set).
+function getSetTypeMult(key, setRecord){
+  if(key==="drop"&&setRecord&&typeof setRecord.dropCount==="number"){
+    return getDropTierMult(setRecord.dropCount);
+  }
   if(setTypeMultipliers[key]!==undefined)return setTypeMultipliers[key];
   return (SET_TYPE_DEFAULTS[key]||SET_TYPE_DEFAULTS.straight).mult;
+}
+function getDropTierMult(dropCount){
+  const tier=Math.max(1, Math.min(3, dropCount));
+  if(dropTierMultipliers[tier]!==undefined)return dropTierMultipliers[tier];
+  return DROP_TIER_DEFAULTS[tier];
 }
 function getSetTypeInfo(key){return SET_TYPE_DEFAULTS[key]||SET_TYPE_DEFAULTS.straight}
 const CUSTOM_GROUP="Custom";
@@ -1642,6 +1708,87 @@ function refreshSettingsUI(){
   document.getElementById("settings-rest-current").textContent=`Currently: ${fmtRestDuration(prefs.defaultRestSec)}`;
   // Unit
   document.querySelectorAll('input[name="weight-unit"]').forEach(r=>{r.checked=(r.value===prefs.preferredUnit)});
+  // Set type multiplier editors
+  renderMultiplierEditors();
+}
+
+function renderMultiplierEditors(){
+  const grid=document.getElementById("settings-mult-grid");
+  if(!grid)return;
+  grid.innerHTML="";
+  // One row per intensifier type (skip straight + amrap since they're always 1.0)
+  ["drop","cluster","restpause","myorep"].forEach(key=>{
+    const info=SET_TYPE_DEFAULTS[key];
+    const cur=key==="drop"?info.mult:getSetTypeMult(key);
+    const row=document.createElement("div");
+    row.className="mult-edit-row";
+    row.innerHTML=`<div class="mult-edit-label"><b>${info.label}</b><span class="mult-edit-sub">${info.sub}</span></div>`;
+    if(key==="drop"){
+      // Drop set base multiplier isn't directly used — its actual value comes from the dropCount tier.
+      // Show a note instead of an input.
+      const note=document.createElement("div");
+      note.className="mult-edit-note";
+      note.textContent="(see tier values below)";
+      row.appendChild(note);
+    } else {
+      const input=document.createElement("input");
+      input.type="number";input.step="0.1";input.min="0.1";input.max="10";
+      input.className="mult-edit-input";
+      input.value=cur;
+      input.onchange=e=>{
+        const v=parseFloat(e.target.value);
+        if(!isNaN(v)&&v>0){
+          setTypeMultipliers[key]=v;
+          saveSetTypeOverrides();
+          renderSummary();
+        } else {
+          e.target.value=getSetTypeMult(key);
+        }
+      };
+      row.appendChild(input);
+      const dflt=document.createElement("span");dflt.className="mult-edit-default";dflt.textContent=`default ${info.mult}`;
+      row.appendChild(dflt);
+    }
+    grid.appendChild(row);
+  });
+  // Drop tier grid
+  const dropGrid=document.getElementById("settings-drop-grid");
+  if(!dropGrid)return;
+  dropGrid.innerHTML="";
+  [1,2,3].forEach(tier=>{
+    const cur=getDropTierMult(tier);
+    const row=document.createElement("div");
+    row.className="mult-edit-row";
+    const label=tier===3?"3+ drops":`${tier} drop${tier===1?"":"s"}`;
+    row.innerHTML=`<div class="mult-edit-label"><b>${label}</b></div>`;
+    const input=document.createElement("input");
+    input.type="number";input.step="0.1";input.min="0.1";input.max="10";
+    input.className="mult-edit-input";
+    input.value=cur;
+    input.onchange=e=>{
+      const v=parseFloat(e.target.value);
+      if(!isNaN(v)&&v>0){
+        dropTierMultipliers[tier]=v;
+        saveSetTypeOverrides();
+        renderSummary();
+      } else {
+        e.target.value=getDropTierMult(tier);
+      }
+    };
+    row.appendChild(input);
+    const dflt=document.createElement("span");dflt.className="mult-edit-default";dflt.textContent=`default ${DROP_TIER_DEFAULTS[tier]}`;
+    row.appendChild(dflt);
+    dropGrid.appendChild(row);
+  });
+}
+
+function resetAllMultipliers(){
+  if(!confirm("Reset all set type multipliers and drop tiers to defaults?"))return;
+  setTypeMultipliers={};
+  dropTierMultipliers={};
+  saveSetTypeOverrides();
+  renderMultiplierEditors();
+  renderSummary();
 }
 function fmtRestDuration(sec){
   if(sec<60)return sec+"s";
@@ -1978,7 +2125,7 @@ function renderExerciseGraph(exName){
     const best=sets.reduce((b,s)=>est1rm(s)>est1rm(b)?s:b,sets[0]);
     const vol=sets.reduce((sum,s)=>sum+(s.weight||0)*totalRepsForSet(s),0);
     // Effective set count = sum of multipliers. If any intensifiers contributed, mark with *
-    const effSets=sets.reduce((sum,s)=>sum+getSetTypeMult(s.type||"straight"),0);
+    const effSets=sets.reduce((sum,s)=>sum+getSetTypeMult(s.type||"straight",s),0);
     const hasIntens=sets.some(s=>{const t=s.type||"straight";return t!=="straight"&&t!=="amrap"});
     const setsCell=hasIntens?`${fmtNum(effSets)}*`:String(sets.length);
     const tr=document.createElement("tr");
@@ -2084,7 +2231,7 @@ function buildSvgGraph(sets){
     sets.forEach(s=>{
       const d=(s.timestamp||s.sessionDate).slice(0,10);
       if(!byDay[d])byDay[d]={t:new Date((s.timestamp||s.sessionDate)).getTime(),count:0,physical:0,types:{},sets:[]};
-      const mult=getSetTypeMult(s.type||"straight");
+      const mult=getSetTypeMult(s.type||"straight", s);
       byDay[d].count+=mult;
       byDay[d].physical+=1;
       const tk=s.type||"straight";
@@ -2204,24 +2351,29 @@ function buildSvgGraph(sets){
   function tipLines(p){
     const date=new Date(p.t).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});
     if(p.isAggregate){
-      // setCount mode: show effective sets (with multipliers) and breakdown when intensifiers contribute
       const lines=[`${fmtNum(p.m)} effective set${p.m===1?"":"s"}`];
       if(p.hasIntensifier){
-        // e.g. "3 straight + 1 myo-rep (×2.5)" — show the contribution per type
-        const parts=[];
-        const order=["straight","amrap","drop","cluster","restpause","myorep"];
-        order.forEach(k=>{
-          if(!p.types[k])return;
-          const n=p.types[k];
-          const info=getSetTypeInfo(k);
-          if(k==="straight"){
-            parts.push(`${n} straight`);
-          } else {
-            const mult=getSetTypeMult(k);
-            parts.push(`${n} ${info.label.toLowerCase()} (×${mult})`);
-          }
+        // Group by (type, effective multiplier) so drop sets of different tiers render distinctly:
+        // "3 straight + 1 drop x1 (×1.5) + 1 drop x3 (×2.5) + 1 myo-rep (×2.5)"
+        const buckets={};
+        p.daySets.forEach(st=>{
+          const t=st.type||"straight";
+          const mult=getSetTypeMult(t, st);
+          const dropTag = t==="drop" && st.dropCount ? ` ×${st.dropCount}` : "";
+          const key=t+"|"+mult+"|"+dropTag;
+          if(!buckets[key])buckets[key]={type:t,mult,dropTag,n:0};
+          buckets[key].n++;
         });
-        lines.push(parts.join(" + "));
+        const order=["straight","amrap","drop","cluster","restpause","myorep"];
+        const parts=Object.values(buckets).sort((a,b)=>order.indexOf(a.type)-order.indexOf(b.type));
+        const text=parts.map(b=>{
+          const info=getSetTypeInfo(b.type);
+          if(b.type==="straight"||b.type==="amrap"){
+            return `${b.n} ${info.label.toLowerCase()}`;
+          }
+          return `${b.n} ${info.label.toLowerCase()}${b.dropTag} (×${b.mult})`;
+        }).join(" + ");
+        lines.push(text);
       } else {
         lines.push(`${p.physical} logged`);
       }
@@ -2796,7 +2948,7 @@ function calcActualVolume(){
         const t=new Date(st.timestamp||s.date);
         if(t<cutoff)return;
         const mults=exMuscles(st.ex);
-        const mult=getSetTypeMult(st.type||"straight");
+        const mult=getSetTypeMult(st.type||"straight", st);
         Object.entries(mults).forEach(([m,w])=>{totals[m]=(totals[m]||0)+w*mult});
         counted++;
         if(!firstDate||t<firstDate)firstDate=t;
@@ -3174,6 +3326,7 @@ function buildMyoCard(s, pr, slotIdx, existing){
   wInp.autocomplete="off";wInp.setAttribute("data-form-type","other");wInp.setAttribute("data-lpignore","true");
   wInp.value=st.weight;wInp.placeholder=pr.target?String(pr.target.weight):"—";
   wInp.oninput=e=>{st.weight=e.target.value};
+  wInp.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();e.target.blur()}};
   wRow.appendChild(wLbl);wRow.appendChild(wInp);
   card.appendChild(wRow);
 
@@ -3185,6 +3338,8 @@ function buildMyoCard(s, pr, slotIdx, existing){
   aInp.value=st.activation;aInp.placeholder=pr.target?String(pr.target.reps):"—";
   aInp.oninput=e=>{st.activation=e.target.value};
   aInp.onchange=e=>maybeStartShortTimer(e.target);
+  // On Enter: dismiss the keyboard rather than advancing focus to the next input.
+  aInp.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();e.target.blur()}};
   aRow.appendChild(aLbl);aRow.appendChild(aInp);
   card.appendChild(aRow);
 
@@ -3207,6 +3362,8 @@ function buildMyoCard(s, pr, slotIdx, existing){
     // 'change' fires after the user confirms (taps Enter/Done on keypad or blurs the field).
     // Treat this as "I just completed that mini-set" → kick off the short rest timer.
     m.onchange=e=>maybeStartShortTimer(e.target);
+    // On Enter: dismiss the keyboard rather than advancing focus to the next mini-set input.
+    m.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();e.target.blur()}};
     miniGrid.appendChild(m);
   });
   miniWrap.appendChild(miniGrid);
@@ -4123,7 +4280,7 @@ function renderSummary(){
           const t=new Date(st.timestamp||s.date);
           if(t<cutoff)return;
           const mults=exMuscles(st.ex);
-          const mult=getSetTypeMult(st.type||"straight");
+          const mult=getSetTypeMult(st.type||"straight", st);
           Object.entries(mults).forEach(([m,w])=>{
             if(!byMuscleExercise[m][st.ex])byMuscleExercise[m][st.ex]={count:0,weight:w*mult};
             byMuscleExercise[m][st.ex].count+=1;
