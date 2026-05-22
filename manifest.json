@@ -1,7 +1,7 @@
 {
-  "name": "Training Program",
-  "short_name": "Training",
-  "description": "3-day training program tracker with weekly muscle volume summary",
+  "name": "Shred Sheet",
+  "short_name": "Shred Sheet",
+  "description": "Hypertrophy planning and workout tracking. Born as a spreadsheet, now decidedly not one.",
   "start_url": ".",
   "display": "standalone",
   "orientation": "portrait",

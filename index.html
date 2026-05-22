@@ -6,8 +6,8 @@
 <meta name="theme-color" content="#ffffff">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Training">
-<title>Training Program</title>
+<meta name="apple-mobile-web-app-title" content="Shred Sheet">
+<title>Shred Sheet</title>
 <link rel="manifest" href="manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -48,9 +48,9 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .tab-sum{flex:1;padding:8px 1px;font-size:12px;font-weight:500;text-align:center;cursor:pointer;border:none;background:none;color:var(--text2);border-bottom:2px solid transparent;margin-bottom:-1px;min-height:44px;min-width:0;font-family:inherit;transition:color 0.15s var(--ease),border-color 0.15s var(--ease)}
 .tabs.compact .tab-sum{font-size:11px}
 .tab-sum.active{color:var(--accent);border-bottom-color:var(--accent)}
-.day-mgr{display:flex;align-items:center;gap:8px;padding:6px 14px;border-bottom:0.5px solid var(--border);font-size:11px;color:var(--text2);flex-shrink:0}
+.day-mgr{display:flex;align-items:center;gap:8px;padding:0 14px;margin-bottom:8px;font-size:11px;color:var(--text2);flex-shrink:0}
 .day-mgr-label{text-transform:uppercase;letter-spacing:0.05em;font-weight:500;margin-right:auto}
-.day-mgr-btn{width:30px;height:30px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit;touch-action:manipulation}
+.day-mgr-btn{width:28px;height:28px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit;touch-action:manipulation}
 .day-mgr-btn:active{background:var(--bg2)}
 .day-mgr-btn:disabled{opacity:0.35;cursor:not-allowed}
 .day-mgr-count{min-width:18px;text-align:center;font-size:13px;font-weight:500;color:var(--text)}
@@ -120,7 +120,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .ex-search{width:100%;font-size:12px;padding:6px 8px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg2);color:var(--text);outline:none;font-family:inherit}
 .ex-list{overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y}
 .ex-group{font-size:10px;font-weight:500;letter-spacing:0.05em;text-transform:uppercase;color:var(--text3);padding:7px 10px 3px}
-.ex-option{font-size:13px;padding:10px 10px;cursor:pointer;color:var(--text)}
+.ex-option{font-size:13px;padding:10px 10px;cursor:pointer;color:var(--text);word-wrap:break-word;line-height:1.3}
 .ex-option:active{background:var(--bg2)}
 .ex-option.selected{font-weight:500}
 .ex-group.hidden,.ex-option.hidden{display:none}
@@ -179,8 +179,12 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 
 /* Modal overlay (numpad + confirm reset) */
 .modal-bg{position:fixed;inset:0;background:var(--overlay);display:none;align-items:center;justify-content:center;z-index:200;padding:20px}
+/* Input-heavy modals (target editor, log set) anchor near top so on-screen keyboard
+   doesn't cover the action buttons */
+.modal-bg.input-modal{align-items:flex-start;padding-top:max(20px, env(safe-area-inset-top, 0px))}
+.modal-bg.input-modal.open{display:flex}
 .modal-bg.open{display:flex}
-.modal{background:var(--bg);border-radius:12px;padding:18px;width:100%;max-width:280px;box-shadow:0 8px 32px var(--shadow)}
+.modal{background:var(--bg);border-radius:12px;padding:18px;width:100%;max-width:280px;max-height:calc(100vh - 40px);overflow-y:auto;-webkit-overflow-scrolling:touch;box-shadow:0 8px 32px var(--shadow)}
 .modal-title{font-size:13px;color:var(--text2);text-align:center;margin-bottom:4px}
 .modal-display{font-size:28px;font-weight:500;text-align:center;color:var(--text);padding:6px 0 12px;min-height:44px}
 .numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
@@ -401,14 +405,15 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
     <input class="editable-label" id="block-name-input" type="text" placeholder="e.g. Hypertrophy Phase" oninput="onBlockNameInput(this.value)">
   </div>
 </div>
-<div class="tabs" id="tabs-bar">
-  <button class="tab-sum" id="tab-sum" onclick="showTab('sum')">Summary</button>
-</div>
+<!-- Days +/- controls: between block name editor (above) and day tabs (below) -->
 <div class="day-mgr" id="day-mgr">
   <span class="day-mgr-label">Days</span>
   <button class="day-mgr-btn" id="day-remove" title="Remove last day" aria-label="Remove last day">−</button>
   <span class="day-mgr-count" id="day-count">3</span>
   <button class="day-mgr-btn" id="day-add" title="Add a day" aria-label="Add a day">+</button>
+</div>
+<div class="tabs" id="tabs-bar">
+  <button class="tab-sum" id="tab-sum" onclick="showTab('sum')">Summary</button>
 </div>
 <!-- Backup reminder banner (shown if it's been >14 days since last backup) -->
 <div class="backup-banner" id="backup-banner" style="display:none">
@@ -522,18 +527,18 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 </div>
 
 <!-- Log-set modal -->
-<div class="modal-bg" id="logset-bg">
+<div class="modal-bg input-modal" id="logset-bg">
   <div class="modal logset-modal">
     <div class="logset-title" id="logset-title">Log set</div>
     <div class="logset-target" id="logset-target"></div>
     <div class="logset-fields">
       <div class="logset-field">
         <label>Weight (<span id="logset-unit">lb</span>)</label>
-        <input type="number" inputmode="decimal" id="logset-weight" step="0.5" min="0">
+        <input type="text" inputmode="decimal" pattern="[0-9]*\.?[0-9]*" id="logset-weight" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-form-type="other" data-lpignore="true">
       </div>
       <div class="logset-field">
         <label>Reps</label>
-        <input type="number" inputmode="numeric" id="logset-reps" step="1" min="0">
+        <input type="text" inputmode="numeric" pattern="[0-9]*" id="logset-reps" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-form-type="other" data-lpignore="true">
       </div>
     </div>
     <div class="logset-rir-toggle">
@@ -566,18 +571,18 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 </div>
 
 <!-- Target editor modal (plan-time: weight/reps target per exercise row) -->
-<div class="modal-bg" id="target-bg">
+<div class="modal-bg input-modal" id="target-bg">
   <div class="modal target-modal">
     <div class="logset-title" id="target-title">Target</div>
     <div class="logset-target">Optional weight × reps target for this exercise. Pre-fills the log modal during workouts.</div>
     <div class="logset-fields">
       <div class="logset-field">
         <label>Weight (<span id="target-unit">lb</span>)</label>
-        <input type="number" inputmode="decimal" id="target-weight" step="0.5" min="0" placeholder="—">
+        <input type="text" inputmode="decimal" pattern="[0-9]*\.?[0-9]*" id="target-weight" placeholder="—" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-form-type="other" data-lpignore="true">
       </div>
       <div class="logset-field">
         <label>Reps</label>
-        <input type="number" inputmode="numeric" id="target-reps" step="1" min="0" placeholder="—">
+        <input type="text" inputmode="numeric" pattern="[0-9]*" id="target-reps" placeholder="—" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-form-type="other" data-lpignore="true">
       </div>
     </div>
     <div class="modal-actions">
@@ -682,7 +687,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 
       <details class="help-section">
         <summary>About</summary>
-        <p>TrainBlock is a hypertrophy planning and workout tracking app, built collaboratively with Claude (Anthropic). All data is stored locally on your device.</p>
+        <p>Shred Sheet is a hypertrophy planning and workout tracking app, built collaboratively with Claude (Anthropic). Born as a spreadsheet, now decidedly not one. All data is stored locally on your device.</p>
       </details>
     </div>
   </div>
@@ -1264,16 +1269,24 @@ function positionDropdown(triggerWrap, dropdown, list){
   const PAD=12;            // margin from viewport edges
   const RESERVED=95;       // height reserved for search bar + clear/add row inside the dropdown
   const MIN_LIST=140;      // minimum list height (will scroll within)
+  const PREFERRED_W=320;   // ideal dropdown width — wide enough for the longest exercise names
   const rect=triggerWrap.getBoundingClientRect();
+  const vw=window.innerWidth;
   const vh=window.innerHeight;
   const spaceBelow=vh-rect.bottom-PAD;
   const spaceAbove=rect.top-PAD;
   const openUp=spaceBelow<260 && spaceAbove>spaceBelow;
   const avail=Math.max(MIN_LIST,(openUp?spaceAbove:spaceBelow)-RESERVED);
   list.style.maxHeight=avail+"px";
-  // Horizontal positioning: match the trigger's width/left
-  dropdown.style.left=rect.left+"px";
-  dropdown.style.width=rect.width+"px";
+
+  // Horizontal: dropdown wants to be PREFERRED_W (or picker width, whichever is larger),
+  // but capped at viewport - 2*PAD. We anchor at the picker's left, then shift left if needed
+  // so the dropdown doesn't get clipped on the right edge.
+  const finalW=Math.min(Math.max(rect.width, PREFERRED_W), vw-2*PAD);
+  let left=rect.left;
+  if(left+finalW > vw-PAD)left=Math.max(PAD, vw-PAD-finalW);
+  dropdown.style.left=left+"px";
+  dropdown.style.width=finalW+"px";
   if(openUp){
     dropdown.style.bottom=(vh-rect.top+4)+"px";
     dropdown.style.top="auto";
@@ -1600,7 +1613,7 @@ function exportBackup(){
   });
   const json=JSON.stringify(payload,null,2);
   const stamp=new Date().toISOString().slice(0,10);
-  downloadFile(`trainblock-backup-${stamp}.json`, json, "application/json");
+  downloadFile(`shredsheet-backup-${stamp}.json`, json, "application/json");
   prefs.lastBackupAt=new Date().toISOString();
   savePrefs();
   refreshSettingsUI();
