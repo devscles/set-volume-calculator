@@ -386,12 +386,15 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .drop-card-label-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
 .drop-card-label{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:0.04em;font-weight:600}
 .drop-card-meta{font-size:11px;color:var(--accent);font-weight:500;font-variant-numeric:tabular-nums}
-.drop-card-rowlabel{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:0.04em;font-weight:500;margin:6px 0 4px}
-.drop-card-chiprow{display:grid;grid-template-columns:repeat(auto-fit, minmax(56px, 1fr));gap:4px;margin-bottom:6px}
-.drop-chip-cell{display:flex;flex-direction:column;gap:2px;min-width:0}
-.drop-chip-tag{font-size:9px;color:var(--text3);text-align:center;font-weight:500;letter-spacing:0.02em;text-transform:uppercase}
-.drop-chip-input{box-sizing:border-box;width:100%;padding:7px 2px;font-size:14px;border-radius:4px;border:0.5px solid var(--border2);background:var(--bg);color:var(--text);outline:none;font-family:inherit;text-align:center;font-variant-numeric:tabular-nums;min-width:0}
-.drop-chip-input:focus{border-color:var(--accent)}
+/* Grid of stacked cells. Each cell = one step (initial or a drop). */
+.drop-card-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(64px, 1fr));gap:6px;margin:6px 0 4px}
+.drop-step-cell{display:flex;flex-direction:column;gap:3px;min-width:0;padding:6px 4px;border-radius:var(--radius);background:var(--bg);border:0.5px solid var(--border)}
+.drop-step-tag{font-size:9px;color:var(--text2);text-align:center;font-weight:600;letter-spacing:0.04em;text-transform:uppercase}
+.drop-step-unit{font-size:9px;color:var(--text3);text-align:center;font-weight:500;text-transform:lowercase;min-height:11px;line-height:1}
+.drop-step-input{box-sizing:border-box;width:100%;padding:5px 2px;font-size:13px;border-radius:4px;border:0.5px solid var(--border2);background:var(--bg2);color:var(--text);outline:none;font-family:inherit;text-align:center;font-variant-numeric:tabular-nums;min-width:0}
+.drop-step-input:focus{border-color:var(--accent)}
+.drop-step-input.weight{font-weight:500}
+.drop-step-input.reps{font-size:12px}
 .drop-card-controls{display:flex;align-items:center;gap:6px;justify-content:flex-end;margin-top:8px}
 .drop-card-controls-label{font-size:11px;color:var(--text2);margin-right:auto}
 
@@ -3472,7 +3475,7 @@ function fmtNum(n){if(n==null)return "—";return (n%1===0)?String(n):n.toFixed(
 // weight × 0.8, rounded to 5lb (or 2.5kg). No per-input timer — there are no rests inside
 // a drop sequence; the main default timer fires when the whole sequence is saved.
 const dropInlineState={};
-const DROP_DEFAULT_COUNT=4;        // 4 drops after the initial set
+const DROP_DEFAULT_COUNT=3;        // 3 drops after the initial set (4 slots total) — fits one row nicely
 const DROP_MAX_COUNT=7;            // up to 7 drops total
 const DROP_REDUCTION=0.20;         // 20% drop each step
 
@@ -3600,63 +3603,63 @@ function buildDropCard(s, pr, slotIdx, existing){
   labelRow.appendChild(meta);
   card.appendChild(labelRow);
 
-  // Weights row (top)
-  const weightsLbl=document.createElement("div");weightsLbl.className="drop-card-rowlabel";
-  weightsLbl.textContent=`Weight (${prefs.preferredUnit})`;
-  card.appendChild(weightsLbl);
-  const wRow=document.createElement("div");wRow.className="drop-card-chiprow";
+  // Grid of stacked cells. Each cell = one step (initial or a drop), containing:
+  //   [Tag] / [Weight input] / [Reps input], stacked vertically.
+  // The grid wraps when there are more cells than fit on one row, keeping weight above reps
+  // within each cell — so "Drop 4" stays as its own column with its weight above its reps.
+  const grid=document.createElement("div");grid.className="drop-card-grid";
   st.weights.forEach((w,i)=>{
-    const cell=document.createElement("div");cell.className="drop-chip-cell";
-    const tag=document.createElement("div");tag.className="drop-chip-tag";
+    const cell=document.createElement("div");cell.className="drop-step-cell";
+    const tag=document.createElement("div");tag.className="drop-step-tag";
     tag.textContent=i===0?"Initial":`Drop ${i}`;
-    const inp=document.createElement("input");
-    inp.type="text";inp.inputMode="decimal";inp.pattern="[0-9]*\\.?[0-9]*";
-    inp.autocomplete="off";inp.setAttribute("data-form-type","other");inp.setAttribute("data-lpignore","true");
-    inp.className="drop-chip-input";
-    inp.placeholder="—";
-    if(w!=null&&w!=="")inp.value=w;
-    inp.oninput=e=>{
+    cell.appendChild(tag);
+
+    // Weight input
+    const wInp=document.createElement("input");
+    wInp.type="text";wInp.inputMode="decimal";wInp.pattern="[0-9]*\\.?[0-9]*";
+    wInp.autocomplete="off";wInp.setAttribute("data-form-type","other");wInp.setAttribute("data-lpignore","true");
+    wInp.className="drop-step-input weight";
+    wInp.placeholder="—";
+    if(w!=null&&w!=="")wInp.value=w;
+    wInp.oninput=e=>{
       const v=parseFloat(e.target.value);
       st.weights[i]=isNaN(v)?null:v;
     };
-    // On commit (Enter/Done or blur after typing), recompute downstream blanks
-    const onCommit=()=>{
-      const v=parseFloat(inp.value);
+    wInp.onchange=()=>{
+      const v=parseFloat(wInp.value);
       st.weights[i]=isNaN(v)?null:v;
       cascadeDropWeights(st.weights, prefs.preferredUnit);
       renderWorkoutBody();
     };
-    inp.onchange=onCommit;
-    inp.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();e.target.blur()}};
-    cell.appendChild(tag);cell.appendChild(inp);
-    wRow.appendChild(cell);
-  });
-  card.appendChild(wRow);
+    wInp.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();e.target.blur()}};
+    cell.appendChild(wInp);
 
-  // Reps row (bottom)
-  const repsLbl=document.createElement("div");repsLbl.className="drop-card-rowlabel";
-  repsLbl.textContent="Reps";
-  card.appendChild(repsLbl);
-  const rRow=document.createElement("div");rRow.className="drop-card-chiprow";
-  st.reps.forEach((r,i)=>{
-    const cell=document.createElement("div");cell.className="drop-chip-cell";
-    const tag=document.createElement("div");tag.className="drop-chip-tag";
-    tag.textContent=i===0?"Initial":`Drop ${i}`;
-    const inp=document.createElement("input");
-    inp.type="text";inp.inputMode="numeric";inp.pattern="[0-9]*";
-    inp.autocomplete="off";inp.setAttribute("data-form-type","other");inp.setAttribute("data-lpignore","true");
-    inp.className="drop-chip-input";
-    inp.placeholder="—";
-    if(r!=null&&r!=="")inp.value=r;
-    inp.oninput=e=>{
+    // Unit hint (only on the first cell, to label what unit the column means)
+    if(i===0){
+      const unitHint=document.createElement("div");unitHint.className="drop-step-unit";unitHint.textContent=prefs.preferredUnit;
+      cell.appendChild(unitHint);
+    } else {
+      const spacer=document.createElement("div");spacer.className="drop-step-unit";spacer.innerHTML="&nbsp;";
+      cell.appendChild(spacer);
+    }
+
+    // Reps input
+    const rInp=document.createElement("input");
+    rInp.type="text";rInp.inputMode="numeric";rInp.pattern="[0-9]*";
+    rInp.autocomplete="off";rInp.setAttribute("data-form-type","other");rInp.setAttribute("data-lpignore","true");
+    rInp.className="drop-step-input reps";
+    rInp.placeholder="reps";
+    if(st.reps[i]!=null&&st.reps[i]!=="")rInp.value=st.reps[i];
+    rInp.oninput=e=>{
       const v=parseInt(e.target.value,10);
       st.reps[i]=isNaN(v)?null:v;
     };
-    inp.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();e.target.blur()}};
-    cell.appendChild(tag);cell.appendChild(inp);
-    rRow.appendChild(cell);
+    rInp.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();e.target.blur()}};
+    cell.appendChild(rInp);
+
+    grid.appendChild(cell);
   });
-  card.appendChild(rRow);
+  card.appendChild(grid);
 
   // Drop count adjuster
   const ctrls=document.createElement("div");ctrls.className="drop-card-controls";
