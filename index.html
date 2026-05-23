@@ -1844,12 +1844,18 @@ document.getElementById("day-remove").onclick=removeDay;
 // Press-and-hold helper for +/- buttons
 function attachRepeatPress(btn,action){
   let holdTimer=null,repeatTimer=null,active=false;
+  function tick(){
+    // Defensive: if the button has been detached (e.g. a re-render destroyed it),
+    // self-cancel rather than firing into the void. Prevents runaway increments.
+    if(!btn.isConnected){stop();return}
+    action();
+  }
   function start(e){
     if(active)return;
     active=true;
-    action(); // immediate first tick
+    tick(); // immediate first tick
     holdTimer=setTimeout(()=>{
-      repeatTimer=setInterval(action,90);
+      repeatTimer=setInterval(tick,90);
     },420);
   }
   function stop(){
@@ -5375,15 +5381,18 @@ function renderDay(dayId){
     attachRepeatPress(minus,()=>{
       if(dayData.rows[i].sets>0){
         dayData.rows[i].sets--;
-        // Full row re-render so the pill row reflects the new set count.
-        renderDay(dayId);
+        // Partial update: keep the button alive (don't rebuild the DOM), or the
+        // repeat-press timer keeps firing after the button is destroyed.
+        num.textContent=dayData.rows[i].sets;
+        replacePillRowInPlace(div, dayData.rows[i], dayId, i);
         updateDayTabLabel(dayId);renderSummary();autoSave();
       }
     });
     attachRepeatPress(plus,()=>{
       if(dayData.rows[i].sets<MAX_SETS){
         dayData.rows[i].sets++;
-        renderDay(dayId);
+        num.textContent=dayData.rows[i].sets;
+        replacePillRowInPlace(div, dayData.rows[i], dayId, i);
         updateDayTabLabel(dayId);renderSummary();autoSave();
       }
     });
@@ -5416,6 +5425,18 @@ function renderDay(dayId){
 
     el.appendChild(div);
   });
+}
+
+// In-place pill row replacement: removes the existing pill row inside `rowDiv`
+// and inserts a fresh one. Used by the sets +/- handlers, which must not destroy
+// the buttons they're firing from (would orphan the repeat-press timer).
+function replacePillRowInPlace(rowDiv, row, dayId, rowIdx){
+  const existing=rowDiv.querySelector(":scope > .pill-row");
+  if(existing)existing.remove();
+  if(row.ex && row.sets>0){
+    const fresh=renderPillRow(row, dayId, rowIdx);
+    if(fresh)rowDiv.appendChild(fresh);
+  }
 }
 
 // === Pill row renderer ===
@@ -5631,11 +5652,15 @@ function openSetTypePopover(rowDiv,dayId,rowIndex,chipEl,onChange){
     opt.onclick=ev=>{
       ev.stopPropagation();
       mem[curBlock].days[dayId].rows[rowIndex].type=key;
-      onChange();
+      onChange(); // repaints the chip with new type
       closeSetTypePopover();
-      // Re-render the day so the pill row visualization adapts to the new set type
-      // (e.g. from straight pills to drop sequences with ↓ pills).
-      renderDay(dayId);
+      // Partial update: replace just the pill row so it adapts to the new set type
+      // (e.g. from straight pills to drop sequences with ↓ pills). Don't full-render
+      // the day — keeps the rest of the row's DOM (buttons, popover, etc.) intact.
+      const rowDiv=chipEl.closest(".exercise-row");
+      if(rowDiv){
+        replacePillRowInPlace(rowDiv, mem[curBlock].days[dayId].rows[rowIndex], dayId, rowIndex);
+      }
       renderSummary();
       autoSave();
     };
