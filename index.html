@@ -80,6 +80,14 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .muscle-pip:active{background:var(--bg)}
 /* Brief highlight when scrolled to from the status strip */
 .muscle-card-highlight{outline:1.5px solid var(--accent);outline-offset:2px;transition:outline-color 0.3s var(--ease)}
+.muscle-ex-list{max-height:55vh;overflow-y:auto;margin:12px 0;border-top:0.5px solid var(--border);border-bottom:0.5px solid var(--border)}
+.muscle-ex-row{display:flex;align-items:center;justify-content:space-between;padding:8px 4px;font-size:13px;border-bottom:0.5px solid var(--border)}
+.muscle-ex-row:last-child{border-bottom:none}
+.muscle-ex-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-right:8px}
+.muscle-ex-weight{font-size:11px;color:var(--text3);font-variant-numeric:tabular-nums;flex-shrink:0;padding:2px 7px;border-radius:999px;background:var(--bg2);border:0.5px solid var(--border)}
+.muscle-ex-weight.primary{color:var(--accent);border-color:var(--accent);background:transparent}
+.muscle-ex-group{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.04em;padding:8px 4px 4px;font-weight:500}
+.muscle-ex-empty{padding:16px;text-align:center;color:var(--text3);font-style:italic;font-size:12px}
 
 /* Settings buttons */
 .settings-btn{padding:8px 14px;font-size:13px;font-weight:500;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);cursor:pointer;font-family:inherit;touch-action:manipulation}
@@ -807,6 +815,18 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
   </div>
 </div>
 
+<!-- Muscle exercises modal: shown when a user long-presses a muscle card on the Summary -->
+<div class="modal-bg" id="muscle-ex-bg">
+  <div class="modal">
+    <div class="modal-title" id="muscle-ex-title">Muscle</div>
+    <div class="logset-target" id="muscle-ex-sub">Exercises that target this muscle, sorted by contribution.</div>
+    <div class="muscle-ex-list" id="muscle-ex-list"></div>
+    <div class="modal-actions">
+      <button onclick="closeMuscleExercises()">Close</button>
+    </div>
+  </div>
+</div>
+
 <!-- History modal: list, session detail, exercise progression graph -->
 <div class="modal-bg" id="history-bg">
   <div class="help-modal" style="max-width:560px">
@@ -1452,7 +1472,7 @@ function rebuildEX(){
 function makeEmptyDay(){return{label:"",rows:Array(10).fill(null).map(()=>({ex:"",sets:0,type:"straight",linkedToPrev:false}))}}
 // Safe read of a row's set type (older saved rows may lack the field)
 function rowType(row){return (row&&row.type&&SET_TYPE_DEFAULTS[row.type])?row.type:"straight"}
-function makeEmptyBlock(id){return{id,name:"Block "+id,days:{d1:makeEmptyDay(),d2:makeEmptyDay(),d3:makeEmptyDay()}}}
+function makeEmptyBlock(id){return{id,name:"",days:{d1:makeEmptyDay(),d2:makeEmptyDay(),d3:makeEmptyDay()}}}
 
 const mem={};
 function storageKey(b){return"trainblock_v4_"+b}
@@ -1585,8 +1605,23 @@ function makePicker(rowEx,onChange){
     addRow.onclick=e=>{e.stopPropagation();closeAllDropdowns();openCustomEditor(null)};
     list.appendChild(addRow);
   }
-  search.oninput=()=>buildList(search.value);
-  search.onclick=e=>{e.stopPropagation();search.removeAttribute("readonly");search.focus()};
+  search.oninput=()=>{
+    buildList(search.value);
+    // After the result list changes size, re-run positioning so the dropdown's
+    // max-height matches the new content and stays anchored above the keyboard.
+    // Defer to next frame so the DOM has measured the new list height.
+    requestAnimationFrame(()=>positionDropdown(wrap, dropdown, list));
+  };
+  search.onclick=e=>{
+    e.stopPropagation();
+    search.removeAttribute("readonly");
+    search.focus();
+    // Scroll the picker into view at the top of the viewport so the dropdown
+    // (which expands below the trigger) has maximum space before the keyboard.
+    // 'block: start' aligns the row to the top; 'behavior: instant' avoids visible scroll.
+    wrap.scrollIntoView({block:"start", behavior:"instant"});
+    requestAnimationFrame(()=>positionDropdown(wrap, dropdown, list));
+  };
   clearBtn.onclick=e=>{e.stopPropagation();currentVal="";onChange("",true);updateDisplay();closeAllDropdowns();renderSummary();autoSave()};
   display.onclick=e=>{
     e.stopPropagation();
@@ -1610,10 +1645,17 @@ function positionDropdown(triggerWrap, dropdown, list){
   const MIN_LIST=140;      // minimum list height (will scroll within)
   const PREFERRED_W=320;   // ideal dropdown width — wide enough for the longest exercise names
   const rect=triggerWrap.getBoundingClientRect();
-  const vw=window.innerWidth;
-  const vh=window.innerHeight;
-  const spaceBelow=vh-rect.bottom-PAD;
-  const spaceAbove=rect.top-PAD;
+  // Use visualViewport when available — it excludes the virtual keyboard's height,
+  // so the dropdown stays above the keyboard instead of being hidden behind it.
+  // The visualViewport.offsetTop accounts for any viewport scroll due to the keyboard pushing
+  // the page up on iOS-style behavior.
+  const vv=window.visualViewport;
+  const vw=vv?vv.width:window.innerWidth;
+  const vh=vv?vv.height:window.innerHeight;
+  const vTop=vv?vv.offsetTop:0;
+  const vBottom=vTop+vh;
+  const spaceBelow=vBottom-rect.bottom-PAD;
+  const spaceAbove=rect.top-vTop-PAD;
   const openUp=spaceBelow<260 && spaceAbove>spaceBelow;
   const avail=Math.max(MIN_LIST,(openUp?spaceAbove:spaceBelow)-RESERVED);
   list.style.maxHeight=avail+"px";
@@ -1627,7 +1669,8 @@ function positionDropdown(triggerWrap, dropdown, list){
   dropdown.style.left=left+"px";
   dropdown.style.width=finalW+"px";
   if(openUp){
-    dropdown.style.bottom=(vh-rect.top+4)+"px";
+    // Anchor to the bottom of the visible viewport from above the trigger
+    dropdown.style.bottom=(window.innerHeight-rect.top+4)+"px";
     dropdown.style.top="auto";
   } else {
     dropdown.style.top=(rect.bottom+4)+"px";
@@ -1644,6 +1687,12 @@ function repositionOpenDropdown(){
 }
 window.addEventListener("scroll", repositionOpenDropdown, true);
 window.addEventListener("resize", repositionOpenDropdown);
+// visualViewport fires when the virtual keyboard opens/closes — reposition so the
+// dropdown stays in the visible area above the keyboard.
+if(window.visualViewport){
+  window.visualViewport.addEventListener("resize", repositionOpenDropdown);
+  window.visualViewport.addEventListener("scroll", repositionOpenDropdown);
+}
 
 // Build tab buttons + panels based on the current block's day count.
 // Summary tab is always last and is a fixed element.
@@ -1721,10 +1770,23 @@ function pickDayPlaceholder(blockId, dayIdx){
   return DAY_LABEL_PLACEHOLDERS[Math.abs(h+dayIdx*7)%DAY_LABEL_PLACEHOLDERS.length];
 }
 
+// Returns the user-visible block name. Treats the default "Block X" auto-name as empty
+// (so the rotating placeholder shows in the input). Used for the name input only —
+// the block buttons keep showing "Block A" etc. as a fallback label.
+// Matches case-insensitively and trims whitespace, so legacy data variations don't slip through.
+function effectiveBlockName(blockId){
+  const n=mem[blockId]?.name||"";
+  const trimmed=n.trim();
+  if(!trimmed)return "";
+  // Match "Block A", "block a", "BLOCK A" etc.
+  if(trimmed.toLowerCase()==="block "+blockId.toLowerCase())return "";
+  return n;
+}
+
 function syncBlockButtons(){
   rebuildBlockButtons();
   const nameInput=document.getElementById("block-name-input");
-  nameInput.value=mem[curBlock].name||"";
+  nameInput.value=effectiveBlockName(curBlock);
   nameInput.placeholder="e.g. "+pickBlockPlaceholder(curBlock);
   rebuildTabsAndPanels();
   syncDayTabs();
@@ -1840,34 +1902,6 @@ function removeDay(){
 }
 document.getElementById("day-add").onclick=addDay;
 document.getElementById("day-remove").onclick=removeDay;
-
-// Press-and-hold helper for +/- buttons
-function attachRepeatPress(btn,action){
-  let holdTimer=null,repeatTimer=null,active=false;
-  function tick(){
-    // Defensive: if the button has been detached (e.g. a re-render destroyed it),
-    // self-cancel rather than firing into the void. Prevents runaway increments.
-    if(!btn.isConnected){stop();return}
-    action();
-  }
-  function start(e){
-    if(active)return;
-    active=true;
-    tick(); // immediate first tick
-    holdTimer=setTimeout(()=>{
-      repeatTimer=setInterval(tick,90);
-    },420);
-  }
-  function stop(){
-    active=false;
-    if(holdTimer){clearTimeout(holdTimer);holdTimer=null}
-    if(repeatTimer){clearInterval(repeatTimer);repeatTimer=null}
-  }
-  btn.addEventListener("pointerdown",e=>{e.preventDefault();start(e)});
-  btn.addEventListener("pointerup",stop);
-  btn.addEventListener("pointerleave",stop);
-  btn.addEventListener("pointercancel",stop);
-}
 
 // Numpad state
 let numpadCtx=null; // {dayId, rowIndex, numEl, value (string)}
@@ -3483,6 +3517,59 @@ function scrollToMuscleInSummary(muscle){
     card.classList.add("muscle-card-highlight");
     setTimeout(()=>card.classList.remove("muscle-card-highlight"), 1500);
   }
+}
+
+// Opens a modal listing every exercise that targets the given muscle, sorted by contribution weight.
+// Triggered by long-pressing a muscle card on the Summary tab.
+function openMuscleExercises(muscle){
+  document.getElementById("muscle-ex-title").textContent=muscle;
+  const sub=document.getElementById("muscle-ex-sub");
+  const list=document.getElementById("muscle-ex-list");
+  list.innerHTML="";
+
+  // Walk EX (grouped) and collect any exercise where this muscle has weight > 0.
+  // Grouping preserves the natural categorization (Chest, Back, Legs, etc.) the user already knows.
+  const groups=[];
+  let totalCount=0;
+  Object.entries(EX).forEach(([groupName, items])=>{
+    const hits=[];
+    items.forEach(([name, muscles])=>{
+      const w=muscles[muscle];
+      if(w&&w>0)hits.push({name, weight:w});
+    });
+    if(hits.length){
+      // Sort within group by weight descending (heaviest contributors first)
+      hits.sort((a,b)=>b.weight-a.weight);
+      groups.push({groupName, hits});
+      totalCount+=hits.length;
+    }
+  });
+
+  if(totalCount===0){
+    const empty=document.createElement("div");empty.className="muscle-ex-empty";
+    empty.textContent="No exercises currently map to this muscle.";
+    list.appendChild(empty);
+    sub.textContent=`Exercises that target ${muscle}.`;
+  } else {
+    sub.textContent=`${totalCount} exercise${totalCount===1?"":"s"} target ${muscle}, sorted by contribution.`;
+    groups.forEach(({groupName, hits})=>{
+      const gl=document.createElement("div");gl.className="muscle-ex-group";gl.textContent=groupName;
+      list.appendChild(gl);
+      hits.forEach(({name, weight})=>{
+        const row=document.createElement("div");row.className="muscle-ex-row";
+        const nm=document.createElement("span");nm.className="muscle-ex-name";nm.textContent=name;
+        const wt=document.createElement("span");wt.className="muscle-ex-weight"+(weight>=1?" primary":"");
+        // Show as "×1.0" / "×0.5" — primary muscles at weight 1 stand out
+        wt.textContent="×"+(weight%1===0?weight:weight.toFixed(2).replace(/0+$/,"").replace(/\.$/,""));
+        row.appendChild(nm);row.appendChild(wt);
+        list.appendChild(row);
+      });
+    });
+  }
+  document.getElementById("muscle-ex-bg").classList.add("open");
+}
+function closeMuscleExercises(){
+  document.getElementById("muscle-ex-bg").classList.remove("open");
 }
 
 // ===== Native tracking: sessions =====
@@ -5378,24 +5465,24 @@ function renderDay(dayId){
     const minus=document.createElement("button");minus.className="s-btn";minus.textContent="−";minus.type="button";
     const num=document.createElement("span");num.className="s-num";num.textContent=row.sets;
     const plus=document.createElement("button");plus.className="s-btn";plus.textContent="+";plus.type="button";
-    attachRepeatPress(minus,()=>{
+    // Single-tap only: no press-and-hold rapid-fire. Most sets are <10 so tapping once
+    // per increment is fine, and removing the gesture eliminates accidental over-input.
+    minus.onclick=()=>{
       if(dayData.rows[i].sets>0){
         dayData.rows[i].sets--;
-        // Partial update: keep the button alive (don't rebuild the DOM), or the
-        // repeat-press timer keeps firing after the button is destroyed.
         num.textContent=dayData.rows[i].sets;
         replacePillRowInPlace(div, dayData.rows[i], dayId, i);
         updateDayTabLabel(dayId);renderSummary();autoSave();
       }
-    });
-    attachRepeatPress(plus,()=>{
+    };
+    plus.onclick=()=>{
       if(dayData.rows[i].sets<MAX_SETS){
         dayData.rows[i].sets++;
         num.textContent=dayData.rows[i].sets;
         replacePillRowInPlace(div, dayData.rows[i], dayId, i);
         updateDayTabLabel(dayId);renderSummary();autoSave();
       }
-    });
+    };
     num.onclick=()=>openNumpad(dayId,i,num);
     // (Targets are set per-set by tapping pills in the pill row below — no long-press needed here)
     ctrl.appendChild(minus);ctrl.appendChild(num);ctrl.appendChild(plus);
@@ -5817,6 +5904,8 @@ function renderSummary(){
         });
         card.appendChild(nameRow);card.appendChild(valsRow);card.appendChild(detail);
         card.onclick=()=>card.classList.toggle("open");
+        // Long-press reveals which exercises target this muscle (and their weights)
+        attachLongPress(card, ()=>openMuscleExercises(m), {allowOnInteractive:true});
         return card;
       }});
     });
@@ -5889,6 +5978,8 @@ function renderSummary(){
         }
         card.appendChild(nameRow);card.appendChild(valsRow);card.appendChild(detail);
         card.onclick=()=>card.classList.toggle("open");
+        // Long-press reveals which exercises target this muscle (and their weights)
+        attachLongPress(card, ()=>openMuscleExercises(m), {allowOnInteractive:true});
         return card;
       }});
     });
