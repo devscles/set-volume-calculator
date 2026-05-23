@@ -1031,9 +1031,10 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 
       <details class="help-section">
         <summary>Planning targets</summary>
-        <p>Optionally set a target weight × reps per exercise row in the planner. <b>Long-press the sets number</b> to open the target editor. Enter the weight and reps you're aiming for; save.</p>
-        <p>When a target is set, a small <span style="color:var(--accent);font-size:11px;font-variant-numeric:tabular-nums">@ 185lb × 8</span>-style hint appears below the row, and the workout tracker will pre-fill those numbers when you start logging. Logged sets that miss the rep target are flagged in yellow.</p>
-        <p>Targets are entirely optional — the tracker works fine without them.</p>
+        <p>When you pick an exercise and set a number of sets, a row of <b>pills</b> appears below the row — one per set (for straight/AMRAP) or one per sequence (for drop sets, myo-reps, cluster, rest-pause). Each pill represents one effort and starts in an empty state showing the set number.</p>
+        <p><b>Tap a pill</b> to set a target weight × reps for that specific set. Filled pills show the target inline like <span style="color:var(--accent);font-size:11px;font-variant-numeric:tabular-nums">185×8</span>. Each set in a row can have its own target, so you can plan e.g. a top set heavier than the back-off sets.</p>
+        <p>For drop sets, the pill row shows the initial set followed by downward-arrow drop pills; an inline <b>drops [−][+]</b> control adjusts how many drops are in each sequence. Myo-rep, rest-pause, and cluster set types have similar inline controls for mini-sets / clusters.</p>
+        <p>Targets are entirely optional. When set, they flow into the workout tracker — the inline log cards pre-fill weight and reps with the target value, and logged sets that miss the rep target are flagged in yellow.</p>
       </details>
 
       <details class="help-section">
@@ -1042,12 +1043,20 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
         <ul>
           <li><b>Session list</b> — every workout you've logged, most recent first. Tap a session to see its details. In-progress workouts get a highlighted border so you can resume them.</li>
           <li><b>Session detail</b> — shows each exercise with its sets and reps as little chips. Tap an exercise name to jump to its progression graph. A red <i>Delete session</i> button removes it permanently.</li>
-          <li><b>Progression graph</b> — for any exercise, a scatter+line chart of your sets over time. Toggle between <b>Weight</b> (heaviest single set), <b>Est 1RM</b> (Epley formula), and <b>Volume</b> (weight × reps summed). Below the graph, a table breaks it down by day.</li>
+          <li><b>Progression graph</b> — for any exercise, a scatter+line chart of your sets over time. The trend line connects your best set per day. Below the graph, a table breaks it down by day.</li>
+        </ul>
+        <p>Graph metrics:</p>
+        <ul>
+          <li><b>Weight</b> — the load lifted per set</li>
+          <li><b>Est 1RM</b> — Epley-formula estimated one-rep max from your actual sets (useful for trending strength when you're not maxing out). Sets logged at <b>1 rep</b> are treated as <b>true 1RMs</b> and drawn as <b>squares</b> instead of circles; multi-rep sets are estimated and drawn as circles. When a day has both a true 1RM and a higher Epley estimate from a multi-rep set, the true 1RM wins as the best-of-day point — a measured single is more truthful than an estimate.</li>
+          <li><b>Volume</b> — weight × reps per set</li>
+          <li><b>Sets</b> — daily aggregated effective set count, with set-type multipliers applied</li>
         </ul>
         <p><b>Browse by exercise</b> from the top of the History list is the fastest way to find a graph if you remember the exercise but not the date.</p>
         <p><b>Migrating Flexify history:</b> if you've imported a Flexify CSV but haven't yet tracked native workouts, a "Migrate" button appears at the top of the History list. It groups your imported sets into one synthetic session per calendar day, flagged "IMPORTED" so you can tell them apart. Migration is non-destructive — your original Flexify data stays available.</p>
         <p>The Summary's <b>Actual</b> mode automatically uses native sessions if any exist, falling back to raw Flexify history only if no sessions are present.</p>
       </details>
+
 
       <details class="help-section">
         <summary>Exercise library</summary>
@@ -1072,19 +1081,6 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
           <li><span class="help-swatch high"></span> ≥15 sets/week — high-volume range</li>
         </ul>
         <p>The <b>Planned / Actual</b> toggle at the top switches between your planned volume and your actual logged volume from imported Flexify history. Actual mode uses the last 4 weeks of history and scales the thresholds by 4× (so ≤24, 25–36, 40–59, ≥60).</p>
-      </details>
-
-      <details class="help-section">
-        <summary>History &amp; progression graphs</summary>
-        <p>The <b>📈 History</b> button in the top bar opens a chronological list of every logged session. Tap a session to see its sets, or use <b>Browse by exercise</b> to pick an exercise and see its progression graph.</p>
-        <p>Graphs offer three metrics:</p>
-        <ul>
-          <li><b>Weight</b> — the load lifted per set</li>
-          <li><b>Est 1RM</b> — Epley-formula estimated one-rep max from your actual sets (useful for trending strength when you're not maxing out)</li>
-          <li><b>Volume</b> — weight × reps per set</li>
-        </ul>
-        <p>The trend line connects your best set per day. Scatter dots show every individual logged set. Below the graph, a table summarizes each session with the best set, total volume, and set count.</p>
-        <p>Imported Flexify history (after migration) shows up in graphs alongside native sessions. Looks the same to the analytics.</p>
       </details>
 
       <details class="help-section">
@@ -2496,11 +2492,21 @@ function buildSvgGraph(sets){
   }
   if(points.length===0)return svg;
 
-  // Compute best-per-day points (always — used for trend line and "best only" view)
+  // Compute best-per-day points (always — used for trend line and "best only" view).
+  // In Est 1RM mode, prefer true 1RMs (reps===1) over higher Epley estimates from multi-rep sets:
+  // a measured single is more truthful than an estimate, even if the estimate computes higher.
   const byDayBest={};
   points.forEach(p=>{
     const d=new Date(p.t).toISOString().slice(0,10);
-    if(!byDayBest[d]||p.m>byDayBest[d].m)byDayBest[d]={t:p.t,m:p.m,src:p.src,isAggregate:p.isAggregate,daySets:p.daySets};
+    const cur=byDayBest[d];
+    const isTrue1rm = graphMetric==="estimated1rm" && p.src && p.src.reps===1;
+    const curIsTrue1rm = cur && graphMetric==="estimated1rm" && cur.src && cur.src.reps===1;
+    let replace=false;
+    if(!cur)replace=true;
+    else if(isTrue1rm && !curIsTrue1rm)replace=true; // true 1RM always wins over estimate
+    else if(!isTrue1rm && curIsTrue1rm)replace=false; // never let estimate win over true 1RM
+    else if(p.m > cur.m)replace=true; // otherwise standard "highest metric wins"
+    if(replace)byDayBest[d]={t:p.t,m:p.m,src:p.src,isAggregate:p.isAggregate,daySets:p.daySets};
   });
   const dailyMax=Object.values(byDayBest).sort((a,b)=>a.t-b.t);
 
@@ -2627,7 +2633,10 @@ function buildSvgGraph(sets){
     const s=p.src;
     const repsShort=fmtRepsOnly(s);
     let line2=`${fmtNum(s.weight)}${s.unit||""}×${repsShort}`;
-    if(graphMetric==="estimated1rm")line2=`~${Math.round(est1rm(s))}${s.unit||""} 1RM · ${fmtNum(s.weight)}×${s.reps}`;
+    if(graphMetric==="estimated1rm"){
+      if(s.reps===1)line2=`${fmtNum(s.weight)}${s.unit||""} actual 1RM`;
+      else line2=`~${Math.round(est1rm(s))}${s.unit||""} 1RM (est) · ${fmtNum(s.weight)}×${s.reps}`;
+    }
     if(graphMetric==="volume")line2=`vol ${fmtNum((s.weight||0)*totalRepsForSet(s))} · ${fmtNum(s.weight)}×${repsShort}`;
     return [line2, date];
   }
@@ -2663,8 +2672,19 @@ function buildSvgGraph(sets){
     if(showAll){
       points.forEach(p=>{
         const cx=px(p.t), cy=py(p.m);
-        const c=document.createElementNS("http://www.w3.org/2000/svg","circle");
-        c.setAttribute("cx",cx);c.setAttribute("cy",cy);c.setAttribute("r","5");c.setAttribute("fill","var(--accent)");c.setAttribute("opacity","0.4");
+        // In est1rm mode, true 1RMs (single rep — weight IS the 1RM) get a square marker;
+        // Epley-estimated 1RMs stay as circles. This lets the user tell measured vs estimated apart.
+        const isTrue1rm = graphMetric==="estimated1rm" && p.src && p.src.reps===1;
+        let c;
+        if(isTrue1rm){
+          c=document.createElementNS("http://www.w3.org/2000/svg","rect");
+          c.setAttribute("x",cx-4);c.setAttribute("y",cy-4);
+          c.setAttribute("width","8");c.setAttribute("height","8");
+        } else {
+          c=document.createElementNS("http://www.w3.org/2000/svg","circle");
+          c.setAttribute("cx",cx);c.setAttribute("cy",cy);c.setAttribute("r","5");
+        }
+        c.setAttribute("fill","var(--accent)");c.setAttribute("opacity","0.4");
         c.style.cursor="pointer";
         c.addEventListener("click",e=>{e.stopPropagation();showTooltip(cx,cy,tipLines(p))});
         svg.appendChild(c);
@@ -2680,8 +2700,17 @@ function buildSvgGraph(sets){
     // Best-per-day points: always shown as the prominent dots
     dailyMax.forEach(p=>{
       const cx=px(p.t), cy=py(p.m);
-      const c=document.createElementNS("http://www.w3.org/2000/svg","circle");
-      c.setAttribute("cx",cx);c.setAttribute("cy",cy);c.setAttribute("r","5");c.setAttribute("fill","var(--accent)");c.setAttribute("stroke","var(--bg)");c.setAttribute("stroke-width","1.5");
+      const isTrue1rm = graphMetric==="estimated1rm" && p.src && p.src.reps===1;
+      let c;
+      if(isTrue1rm){
+        c=document.createElementNS("http://www.w3.org/2000/svg","rect");
+        c.setAttribute("x",cx-5);c.setAttribute("y",cy-5);
+        c.setAttribute("width","10");c.setAttribute("height","10");
+      } else {
+        c=document.createElementNS("http://www.w3.org/2000/svg","circle");
+        c.setAttribute("cx",cx);c.setAttribute("cy",cy);c.setAttribute("r","5");
+      }
+      c.setAttribute("fill","var(--accent)");c.setAttribute("stroke","var(--bg)");c.setAttribute("stroke-width","1.5");
       c.style.cursor="pointer";
       c.addEventListener("click",e=>{e.stopPropagation();showTooltip(cx,cy,tipLines(p))});
       svg.appendChild(c);
@@ -5359,8 +5388,7 @@ function renderDay(dayId){
       }
     });
     num.onclick=()=>openNumpad(dayId,i,num);
-    // Long-press the number to open the target editor (optional weight/reps target)
-    attachLongPress(num,()=>openTargetEditor(dayId,i),{allowOnInteractive:true});
+    // (Targets are set per-set by tapping pills in the pill row below — no long-press needed here)
     ctrl.appendChild(minus);ctrl.appendChild(num);ctrl.appendChild(plus);
 
     // Superset link button: chain icon to link this row with the previous one.
