@@ -359,11 +359,71 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 
 /* === Inline myo-rep cards (no modal, full editor on workout screen) === */
 .myo-inline-container{display:flex;flex-direction:column;gap:10px}
+
+/* ============================================================================
+ * Unified inline workout cards (basic / cluster / rest-pause)
+ * Shared visual vocabulary: green tint when logged, accent tint when editing,
+ * neutral outline when empty. Replaces the old chip-strip + modal flow.
+ * ============================================================================ */
+.wo-card-container{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+.wo-card{background:var(--bg);border-radius:var(--radius);border:0.5px solid var(--border);padding:10px 12px;transition:background-color 0.15s var(--ease), border-color 0.15s var(--ease)}
+.wo-card.logged{background:var(--success-bg);border-color:var(--success-text)}
+.wo-card.editing{background:var(--bg2);border-color:var(--accent)}
+/* Header row inside an editor card: slot number, optional AMRAP/star tag, optional target hint */
+.wo-card-header{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:11px;color:var(--text2)}
+.wo-card-slot-num{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 6px;border-radius:11px;background:var(--bg3);color:var(--text2);font-size:11px;font-weight:600;flex-shrink:0}
+.wo-card.logged .wo-card-slot-num{background:transparent;color:var(--success-text);border:0.5px solid var(--success-text)}
+.wo-card-amrap-tag{display:inline-flex;align-items:center;gap:3px;font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:0.04em}
+.wo-card-amrap-tag i{font-size:11px}
+.wo-card-tgt-hint{margin-left:auto;font-size:11px;color:var(--text3);font-variant-numeric:tabular-nums}
+/* Inputs row: weight × reps */
+.wo-card-inputs{display:flex;align-items:center;gap:4px;margin-bottom:6px;flex-wrap:wrap}
+.wo-card-input{box-sizing:border-box;padding:7px 8px;font-size:15px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);outline:none;font-family:inherit;text-align:center;font-variant-numeric:tabular-nums;min-width:0}
+.wo-card-input:focus{border-color:var(--accent)}
+.wo-card-weight{width:78px}
+.wo-card-reps{width:62px}
+.wo-card-unit-label{font-size:11px;color:var(--text2);flex-shrink:0}
+.wo-card-x{font-size:13px;color:var(--text3);margin:0 2px;flex-shrink:0}
+/* RIR row */
+.wo-card-rir-row{display:flex;font-size:11px;color:var(--text2);margin:4px 0 6px;cursor:pointer;user-select:none}
+.wo-card-rir-row:active{opacity:0.7}
+.wo-card-rir-add{color:var(--text3);font-style:italic}
+/* Action buttons */
+.wo-card-actions{display:flex;justify-content:flex-end;gap:6px;margin-top:6px}
+.wo-card-btn-save{padding:7px 14px;font-size:12px;font-weight:600;border-radius:var(--radius);border:none;background:var(--accent);color:var(--accent-text);cursor:pointer;font-family:inherit;touch-action:manipulation}
+.wo-card-btn-save:active{opacity:0.85}
+.wo-card-btn-cancel,.wo-card-btn-edit{padding:6px 11px;font-size:11px;font-weight:500;border-radius:var(--radius);border:0.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;font-family:inherit}
+.wo-card-btn-del{padding:6px 9px;font-size:13px;border-radius:var(--radius);border:0.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;font-family:inherit}
+.wo-card-btn-del:active{background:var(--bg2);color:var(--danger-text);border-color:var(--danger-text)}
+.wo-card.logged .wo-card-btn-edit,.wo-card.logged .wo-card-btn-del{border-color:var(--success-text);color:var(--success-text);opacity:0.85}
+/* Logged-state summary row */
+.wo-card-summary{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--success-text);font-variant-numeric:tabular-nums}
+.wo-card-check{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:var(--success-text);color:var(--success-bg);flex-shrink:0}
+.wo-card-check i{font-size:12px}
+.wo-card-main-text{flex:1;font-weight:500;line-height:1.3}
+.wo-card-main-text.missed{color:var(--warn-text)}
+.wo-card-unit{font-size:11px;font-weight:400;opacity:0.85;margin-left:1px}
+.wo-card-extra{font-weight:400;opacity:0.8;font-size:12px;margin-left:4px}
+.wo-card-rir{font-size:11px;opacity:0.85;flex-shrink:0}
+/* Extras row (cluster count, etc.) */
+.wo-card-extras-row{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2);margin:6px 0}
+.wo-card-extras-label{margin-right:2px}
+.wo-card-count-btn{width:24px;height:24px;border-radius:4px;border:0.5px solid var(--border2);background:transparent;color:var(--text2);font-size:14px;cursor:pointer;font-family:inherit;line-height:1;padding:0;touch-action:manipulation}
+.wo-card-count-btn:active{background:var(--bg2)}
+.wo-card-count-num{min-width:18px;text-align:center;font-size:12px;font-weight:500;color:var(--text);font-variant-numeric:tabular-nums}
+/* Mini-set inputs row (rest-pause) */
+.wo-card-mini-row{display:flex;flex-direction:column;gap:5px;margin:6px 0;padding:7px;background:var(--bg);border-radius:var(--radius);border:0.5px solid var(--border)}
+.wo-card-mini-label{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:0.04em;font-weight:500}
+.wo-card-mini-inputs{display:flex;flex-wrap:wrap;gap:4px}
+.wo-card-mini-input{box-sizing:border-box;width:42px;padding:5px 2px;font-size:13px;border-radius:4px;border:0.5px solid var(--border2);background:var(--bg2);color:var(--text);outline:none;font-family:inherit;text-align:center;font-variant-numeric:tabular-nums}
+.wo-card-mini-input:focus{border-color:var(--accent)}
+.wo-card-mini-ctrls{display:inline-flex;align-items:center;gap:3px;margin-left:auto}
+
 .myo-card{background:var(--bg);border-radius:var(--radius);border:0.5px solid var(--border);padding:12px}
 .myo-card.logged{background:var(--success-bg);border-color:var(--success-text)}
 .myo-card.editing{background:var(--bg2);border:0.5px dashed var(--border2)}
 .myo-card-summary{display:flex;flex-direction:column;gap:3px}
-.myo-card-summary-main{font-size:14px;color:var(--success-text);font-variant-numeric:tabular-nums;font-weight:500}
+.myo-card-summary-main{font-size:14px;color:var(--success-text);font-variant-numeric:tabular-nums;font-weight:500;display:flex;align-items:center;gap:8px}
 .myo-card-summary-rir{font-size:11px;color:var(--success-text);opacity:0.85}
 .myo-card-actions{display:flex;justify-content:flex-end;gap:6px;margin-top:8px}
 .myo-card-edit,.myo-card-del{padding:5px 10px;font-size:11px;font-weight:500;border-radius:var(--radius);border:0.5px solid var(--success-text);background:transparent;color:var(--success-text);cursor:pointer;font-family:inherit}
@@ -398,7 +458,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .drop-card.logged{background:var(--success-bg);border-color:var(--success-text)}
 .drop-card.editing{background:var(--bg2);border:0.5px dashed var(--border2)}
 .drop-card-summary{display:flex;flex-direction:column;gap:3px}
-.drop-card-summary-main{font-size:13px;color:var(--success-text);font-variant-numeric:tabular-nums;font-weight:500;line-height:1.4;word-break:break-word}
+.drop-card-summary-main{font-size:13px;color:var(--success-text);font-variant-numeric:tabular-nums;font-weight:500;line-height:1.4;word-break:break-word;display:flex;align-items:center;gap:8px}
 .drop-card-summary-meta{font-size:11px;color:var(--success-text);opacity:0.85}
 .drop-card-actions{display:flex;justify-content:flex-end;gap:6px;margin-top:8px}
 .drop-card-edit,.drop-card-del{padding:5px 10px;font-size:11px;font-weight:500;border-radius:var(--radius);border:0.5px solid var(--success-text);background:transparent;color:var(--success-text);cursor:pointer;font-family:inherit}
@@ -1841,6 +1901,9 @@ function confirmNumpad(){
   mem[curBlock].days[dayId].rows[rowIndex].sets=n;
   numEl.textContent=n;
   closeNumpad();
+  // Re-render day so the pill row updates to match the new set count
+  renderDay(dayId);
+  updateDayTabLabel(dayId);
   renderSummary();
   autoSave();
 }
@@ -3591,54 +3654,574 @@ function renderWorkoutBody(){
     head.appendChild(nm);head.appendChild(tEl);
     wrap.appendChild(head);
 
-    // Branch on set type. Myo-rep and drop sets get their own inline editors (no modal).
-    // Other types use the chip-per-set strip with the log modal.
+    // Branch on set type. All 5 types now use inline editor cards (no popup modal).
+    // Each type has its own card builder, but they share the unified "logged" visual treatment.
     if(pr.type==="myorep"){
       renderMyorepInlineCards(wrap, s, pr);
     } else if(pr.type==="drop"){
       renderDropSetInlineCards(wrap, s, pr);
+    } else if(pr.type==="cluster"){
+      renderClusterInlineCards(wrap, s, pr);
+    } else if(pr.type==="restpause"){
+      renderRestPauseInlineCards(wrap, s, pr);
     } else {
-      renderChipStrip(wrap, s, pr);
+      // straight + amrap (and any future flat types) use the basic inline card
+      renderBasicInlineCards(wrap, s, pr);
     }
     body.appendChild(wrap);
   });
 }
 
-// Renders the chip-per-set strip (for straight, AMRAP, drop, cluster, rest-pause).
-function renderChipStrip(wrap, s, pr){
-  const strip=document.createElement("div");strip.className="wo-set-strip";
-  const logged=setsForRowIdx(s,pr.idx);
-  const slotCount=Math.max(pr.plannedSets,logged.length);
-  for(let k=0;k<slotCount;k++){
-    const chip=document.createElement("button");chip.className="wo-set-chip";chip.type="button";
-    const log=logged[k]||null;
-    // Per-set planned target — falls back to legacy single target if targets[] absent
-    const tgt = (Array.isArray(pr.targets)&&pr.targets[k]) ? pr.targets[k]
-              : (k===0&&pr.target ? pr.target : null);
-    if(log){
-      chip.classList.add("logged");
-      if(tgt&&tgt.reps&&log.reps<tgt.reps)chip.classList.add("miss");
-      let repText=String(log.reps);
-      if(log.type==="myorep"&&Array.isArray(log.miniSetReps)&&log.miniSetReps.length>0){
-        repText=`${log.reps}+${log.miniSetReps.join(",")}`;
-      }
-      chip.innerHTML=`<div>${fmtNum(log.weight)}×${repText}</div>${log.rir!==undefined?`<div class="wo-set-target">@${log.rir} RIR</div>`:""}`;
-    } else {
-      chip.classList.add("empty");
-      if(tgt){
-        chip.innerHTML=`<div>—</div><div class="wo-set-target">target ${fmtNum(tgt.weight)}×${tgt.reps}</div>`;
-      } else {
-        chip.innerHTML=`<div>—</div>`;
-      }
-    }
-    chip.onclick=()=>openLogSet(pr,k,log);
-    strip.appendChild(chip);
+// ============================================================================
+// Inline set editors — unified pattern
+// ----------------------------------------------------------------------------
+// Each set type has its own renderXxxInlineCards function that produces a
+// column of cards (one per planned set/sequence + an "Add" button). Each card
+// has three possible states:
+//   1. LOGGED  — green tint background, ✓ icon, set summary, edit/delete actions
+//   2. EDITING — accent border, inline weight + reps inputs (+ type-specific bits)
+//   3. EMPTY   — neutral outline, "tap to log" placeholder with optional target hint
+// Saves go through saveInlineSet() which centralizes the set-record shape, target
+// metadata, and rest-timer firing.
+// ============================================================================
+
+// Per-row inline state (which slot is being edited, transient input values).
+// Keyed by "rowIdx_slotIdx" so values persist across re-renders.
+const basicInlineState={};
+const clusterInlineState={};
+const restPauseInlineState={};
+
+function basicStateKey(pr, slotIdx){return `${pr.idx}_${slotIdx}`}
+
+// Resolve per-slot target with legacy fallback (same pattern used throughout the workout).
+function resolveSlotTarget(pr, slotIdx){
+  if(Array.isArray(pr.targets)&&pr.targets[slotIdx])return pr.targets[slotIdx];
+  if(slotIdx===0&&pr.target)return pr.target;
+  return null;
+}
+
+// Centralised save: builds the set-record, writes it to the session, persists,
+// fires the rest timer if this is a new logged set, and triggers a re-render.
+function saveInlineSet(s, pr, slotIdx, existing, partial){
+  const rec={
+    rowIdx:pr.idx,
+    ex:pr.ex,
+    type:pr.type,
+    unit:prefs.preferredUnit,
+    timestamp:new Date().toISOString(),
+    ...partial
+  };
+  const tgt=resolveSlotTarget(pr,slotIdx);
+  if(tgt){rec.targetWeight=tgt.weight;rec.targetReps=tgt.reps}
+  if(existing){
+    const idx=s.sets.indexOf(existing);
+    if(idx>=0)s.sets[idx]={...s.sets[idx],...rec};
+  } else {
+    s.sets.push(rec);
   }
-  // Add-extra-set button
-  const addBtn=document.createElement("button");addBtn.className="wo-add-set";addBtn.type="button";addBtn.innerHTML='<i class="ti ti-plus"></i>';addBtn.title="Add an unplanned set";
-  addBtn.onclick=()=>openLogSet(pr,logged.length,null);
-  strip.appendChild(addBtn);
-  wrap.appendChild(strip);
+  saveSessions();
+  // Fire the rest timer only for genuinely new sets (not edits of existing logged sets)
+  if(!existing && !restTimer.id)startRestTimer();
+  renderWorkoutBody();
+}
+
+// Delete a logged set (with confirmation) and re-render.
+function deleteInlineSet(s, existing, prompt){
+  if(!existing)return;
+  if(prompt!==false && !confirm("Delete this set?"))return;
+  const idx=s.sets.indexOf(existing);
+  if(idx>=0)s.sets.splice(idx,1);
+  saveSessions();
+  renderWorkoutBody();
+}
+
+// Shared "logged summary" header used by all set types when a set has been recorded.
+// Returns an element with the checkmark, set number, and main weight×reps text.
+// `extraText` (optional) is shown after the main display (e.g. "+5,5,5" for myo-rep mini-sets).
+function buildLoggedSummary(slotIdx, log, extraText, isAmrap){
+  const summary=document.createElement("div");
+  summary.className="wo-card-summary";
+  const check=document.createElement("span");check.className="wo-card-check";check.innerHTML='<i class="ti ti-check" aria-hidden="true"></i>';
+  const num=document.createElement("span");num.className="wo-card-slot-num";num.textContent=String(slotIdx+1);
+  const main=document.createElement("span");main.className="wo-card-main-text";
+  const tgt={weight:log.targetWeight, reps:log.targetReps};
+  const missed = tgt.reps && log.reps < tgt.reps;
+  main.innerHTML = `${fmtNum(log.weight)}<span class="wo-card-unit">${log.unit||prefs.preferredUnit}</span> × <b>${log.reps}</b>${extraText?`<span class="wo-card-extra">${extraText}</span>`:""}${isAmrap?' <i class="ti ti-star" aria-hidden="true" style="font-size:11px;opacity:0.7"></i>':""}`;
+  if(missed)main.classList.add("missed");
+  summary.appendChild(check);summary.appendChild(num);summary.appendChild(main);
+  if(log.rir!==undefined){
+    const rir=document.createElement("span");rir.className="wo-card-rir";rir.textContent=`@${log.rir} RIR`;
+    summary.appendChild(rir);
+  }
+  return summary;
+}
+
+// Shared "empty" header used when a set has been planned but not logged yet.
+// Shows the set number, type marker (e.g. star for AMRAP), and target if present.
+function buildEmptyHeader(slotIdx, tgt, isAmrap){
+  const empty=document.createElement("div");
+  empty.className="wo-card-empty";
+  const num=document.createElement("span");num.className="wo-card-slot-num";num.textContent=String(slotIdx+1);
+  empty.appendChild(num);
+  const hint=document.createElement("span");hint.className="wo-card-empty-hint";
+  if(tgt){
+    hint.innerHTML=`target <b>${fmtNum(tgt.weight)}×${tgt.reps}</b>${isAmrap?' <i class="ti ti-star" aria-hidden="true" style="font-size:11px;opacity:0.7"></i>':""}`;
+  } else {
+    hint.innerHTML=`tap to log${isAmrap?' <i class="ti ti-star" aria-hidden="true" style="font-size:11px;opacity:0.7"></i>':""}`;
+  }
+  empty.appendChild(hint);
+  return empty;
+}
+
+// ===== Basic inline cards (straight + AMRAP) =====
+function renderBasicInlineCards(wrap, s, pr){
+  const logged=setsForRowIdx(s,pr.idx);
+  const slotCount=Math.max(pr.plannedSets, logged.length);
+  const container=document.createElement("div");
+  container.className="wo-card-container";
+  for(let k=0;k<slotCount;k++){
+    container.appendChild(buildBasicCard(s, pr, k, logged[k]||null));
+  }
+  // Add extra set button
+  const addBtn=document.createElement("button");
+  addBtn.className="wo-add-set";
+  addBtn.type="button";
+  addBtn.innerHTML='<i class="ti ti-plus"></i> Add set';
+  addBtn.onclick=()=>{
+    pr.plannedSets=Math.max(pr.plannedSets, setsForRowIdx(s,pr.idx).length)+1;
+    renderWorkoutBody();
+  };
+  container.appendChild(addBtn);
+  wrap.appendChild(container);
+}
+
+function buildBasicCard(s, pr, slotIdx, existing){
+  const card=document.createElement("div");
+  card.className="wo-card";
+  const isAmrap=pr.type==="amrap";
+  const stateKey=basicStateKey(pr,slotIdx);
+  const editingState=basicInlineState[stateKey];
+  const editing=editingState && editingState.editing;
+
+  // === Logged state (summary view) ===
+  if(existing && !editing){
+    card.classList.add("logged");
+    card.appendChild(buildLoggedSummary(slotIdx, existing, null, isAmrap));
+    const actions=document.createElement("div");actions.className="wo-card-actions";
+    const editBtn=document.createElement("button");editBtn.type="button";editBtn.className="wo-card-btn-edit";editBtn.textContent="Edit";
+    editBtn.onclick=()=>{
+      basicInlineState[stateKey]={editing:true, weight:String(existing.weight), reps:String(existing.reps), rir:existing.rir};
+      renderWorkoutBody();
+    };
+    const delBtn=document.createElement("button");delBtn.type="button";delBtn.className="wo-card-btn-del";delBtn.innerHTML='<i class="ti ti-trash" aria-hidden="true"></i>';delBtn.title="Delete this set";
+    delBtn.onclick=()=>deleteInlineSet(s, existing);
+    actions.appendChild(editBtn);actions.appendChild(delBtn);
+    card.appendChild(actions);
+    return card;
+  }
+
+  // === Editor state ===
+  card.classList.add("editing");
+
+  // Initialize transient state if needed (also handles target prefill)
+  if(!editingState){
+    const tgt=resolveSlotTarget(pr, slotIdx);
+    const lastSet=findLastSetForExercise(pr.ex, s.id);
+    const prevThisSession=s.sets.filter(st=>st.rowIdx===pr.idx).pop();
+    const seed=prevThisSession||lastSet;
+    const initWeight = existing ? String(existing.weight)
+                     : tgt ? String(tgt.weight)
+                     : seed ? String(seed.weight) : "";
+    const initReps = existing ? String(existing.reps)
+                   : tgt ? String(tgt.reps)
+                   : seed && seed.type!=="myorep" ? String(seed.reps) : "";
+    basicInlineState[stateKey]={editing:true, weight:initWeight, reps:initReps, rir: existing?.rir};
+  }
+  const st=basicInlineState[stateKey];
+  const tgt=resolveSlotTarget(pr, slotIdx);
+
+  // Header row: set number + (optional star) + target hint
+  const headerRow=document.createElement("div");headerRow.className="wo-card-header";
+  const num=document.createElement("span");num.className="wo-card-slot-num";num.textContent=String(slotIdx+1);
+  headerRow.appendChild(num);
+  if(isAmrap){
+    const star=document.createElement("span");star.className="wo-card-amrap-tag";star.innerHTML='<i class="ti ti-star" aria-hidden="true"></i> to failure';
+    headerRow.appendChild(star);
+  }
+  if(tgt){
+    const tgtHint=document.createElement("span");tgtHint.className="wo-card-tgt-hint";
+    tgtHint.textContent=`target ${fmtNum(tgt.weight)}×${tgt.reps}`;
+    headerRow.appendChild(tgtHint);
+  }
+  card.appendChild(headerRow);
+
+  // Inputs row: weight + × + reps
+  const inputsRow=document.createElement("div");inputsRow.className="wo-card-inputs";
+  const wInp=document.createElement("input");
+  wInp.type="text";wInp.inputMode="decimal";wInp.pattern="[0-9]*\\.?[0-9]*";
+  wInp.className="wo-card-input wo-card-weight";
+  wInp.autocomplete="off";wInp.setAttribute("data-form-type","other");wInp.setAttribute("data-lpignore","true");
+  wInp.value=st.weight;
+  wInp.placeholder = tgt ? String(tgt.weight) : "weight";
+  wInp.oninput=e=>{st.weight=e.target.value};
+  inputsRow.appendChild(wInp);
+  const unitEl=document.createElement("span");unitEl.className="wo-card-unit-label";unitEl.textContent=prefs.preferredUnit;
+  inputsRow.appendChild(unitEl);
+  const xEl=document.createElement("span");xEl.className="wo-card-x";xEl.textContent="×";
+  inputsRow.appendChild(xEl);
+  const rInp=document.createElement("input");
+  rInp.type="text";rInp.inputMode="numeric";rInp.pattern="[0-9]*";
+  rInp.className="wo-card-input wo-card-reps";
+  rInp.autocomplete="off";rInp.setAttribute("data-form-type","other");rInp.setAttribute("data-lpignore","true");
+  rInp.value=st.reps;
+  rInp.placeholder = tgt ? String(tgt.reps) : "reps";
+  rInp.oninput=e=>{st.reps=e.target.value};
+  inputsRow.appendChild(rInp);
+  const repsLbl=document.createElement("span");repsLbl.className="wo-card-unit-label";repsLbl.textContent="reps";
+  inputsRow.appendChild(repsLbl);
+  card.appendChild(inputsRow);
+
+  // Save handler
+  const trySave=()=>{
+    const w=parseFloat(st.weight);
+    const r=parseInt(st.reps,10);
+    if(isNaN(w)||w<0||isNaN(r)||r<0){
+      // Don't save silently bad values, but also don't alert on every blur — just leave the editor.
+      return;
+    }
+    saveInlineSet(s, pr, slotIdx, existing, {weight:w, reps:r, ...(st.rir!==undefined&&st.rir!==null?{rir:st.rir}:{})});
+    delete basicInlineState[stateKey];
+  };
+
+  // Enter key saves; blur of the reps input saves; weight blur does NOT save (waits for reps).
+  wInp.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();rInp.focus()}};
+  rInp.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();trySave()}};
+  rInp.onblur=()=>setTimeout(()=>{
+    // Only save on blur if both inputs are filled (avoid saving partial entries when the user
+    // is just moving between fields or the keyboard collapses momentarily)
+    if(st.weight && st.reps)trySave();
+  }, 150);
+
+  // Optional RIR row (collapsed by default; tappable to expand)
+  const rirRow=document.createElement("div");rirRow.className="wo-card-rir-row";
+  if(st.rir!==undefined&&st.rir!==null){
+    rirRow.innerHTML=`<span>RIR: <b>${st.rir}</b></span>`;
+  } else {
+    rirRow.innerHTML=`<span class="wo-card-rir-add">+ add RIR</span>`;
+  }
+  rirRow.onclick=()=>{
+    // Cycle: undefined -> 0 -> 1 -> 2 -> 3 -> undefined
+    const cur=st.rir;
+    if(cur===undefined||cur===null)st.rir=0;
+    else if(cur<3)st.rir=cur+1;
+    else st.rir=undefined;
+    renderWorkoutBody();
+  };
+  card.appendChild(rirRow);
+
+  // Action row: Save + Cancel
+  const actions=document.createElement("div");actions.className="wo-card-actions";
+  const saveBtn=document.createElement("button");saveBtn.type="button";saveBtn.className="wo-card-btn-save";saveBtn.textContent=existing?"Update":"Log set";
+  saveBtn.onclick=trySave;
+  actions.appendChild(saveBtn);
+  if(existing){
+    const cancelBtn=document.createElement("button");cancelBtn.type="button";cancelBtn.className="wo-card-btn-cancel";cancelBtn.textContent="Cancel";
+    cancelBtn.onclick=()=>{delete basicInlineState[stateKey];renderWorkoutBody()};
+    actions.appendChild(cancelBtn);
+  }
+  card.appendChild(actions);
+
+  return card;
+}
+
+// ===== Cluster inline cards =====
+// Cluster: one weight, multiple "mini-sets" of fixed reps with short rest between.
+// Logged as: weight, reps (the per-mini-set rep target), clusterCount (how many mini-sets).
+function renderClusterInlineCards(wrap, s, pr){
+  const logged=setsForRowIdx(s,pr.idx);
+  const slotCount=Math.max(pr.plannedSets, logged.length);
+  const container=document.createElement("div");
+  container.className="wo-card-container";
+  for(let k=0;k<slotCount;k++){
+    container.appendChild(buildClusterCard(s, pr, k, logged[k]||null));
+  }
+  const addBtn=document.createElement("button");
+  addBtn.className="wo-add-set";addBtn.type="button";
+  addBtn.innerHTML='<i class="ti ti-plus"></i> Add cluster set';
+  addBtn.onclick=()=>{
+    pr.plannedSets=Math.max(pr.plannedSets, setsForRowIdx(s,pr.idx).length)+1;
+    renderWorkoutBody();
+  };
+  container.appendChild(addBtn);
+  wrap.appendChild(container);
+}
+
+function buildClusterCard(s, pr, slotIdx, existing){
+  const card=document.createElement("div");
+  card.className="wo-card";
+  const stateKey=basicStateKey(pr,slotIdx);
+  const editingState=clusterInlineState[stateKey];
+  const editing=editingState && editingState.editing;
+  const plannedClusters = (existing && existing.clusterCount) || pr.clusterCount || 5;
+
+  if(existing && !editing){
+    card.classList.add("logged");
+    const extra=` <span class="wo-card-extra">×${existing.clusterCount||plannedClusters} clusters</span>`;
+    card.appendChild(buildLoggedSummary(slotIdx, existing, extra, false));
+    const actions=document.createElement("div");actions.className="wo-card-actions";
+    const editBtn=document.createElement("button");editBtn.type="button";editBtn.className="wo-card-btn-edit";editBtn.textContent="Edit";
+    editBtn.onclick=()=>{
+      clusterInlineState[stateKey]={editing:true, weight:String(existing.weight), reps:String(existing.reps), clusters:String(existing.clusterCount||plannedClusters), rir:existing.rir};
+      renderWorkoutBody();
+    };
+    const delBtn=document.createElement("button");delBtn.type="button";delBtn.className="wo-card-btn-del";delBtn.innerHTML='<i class="ti ti-trash" aria-hidden="true"></i>';
+    delBtn.onclick=()=>deleteInlineSet(s, existing);
+    actions.appendChild(editBtn);actions.appendChild(delBtn);
+    card.appendChild(actions);
+    return card;
+  }
+
+  card.classList.add("editing");
+  if(!editingState){
+    const tgt=resolveSlotTarget(pr, slotIdx);
+    const lastSet=findLastSetForExercise(pr.ex, s.id);
+    clusterInlineState[stateKey]={
+      editing:true,
+      weight: existing?String(existing.weight) : tgt?String(tgt.weight) : lastSet?String(lastSet.weight) : "",
+      reps: existing?String(existing.reps) : tgt?String(tgt.reps) : "3",
+      clusters: String(existing?.clusterCount || pr.clusterCount || 5),
+      rir: existing?.rir
+    };
+  }
+  const st=clusterInlineState[stateKey];
+  const tgt=resolveSlotTarget(pr, slotIdx);
+
+  const headerRow=document.createElement("div");headerRow.className="wo-card-header";
+  const num=document.createElement("span");num.className="wo-card-slot-num";num.textContent=String(slotIdx+1);
+  headerRow.appendChild(num);
+  if(tgt){
+    const tgtHint=document.createElement("span");tgtHint.className="wo-card-tgt-hint";
+    tgtHint.textContent=`target ${fmtNum(tgt.weight)}×${tgt.reps}`;
+    headerRow.appendChild(tgtHint);
+  }
+  card.appendChild(headerRow);
+
+  // Weight × reps × clusters
+  const inputsRow=document.createElement("div");inputsRow.className="wo-card-inputs";
+  const wInp=document.createElement("input");
+  wInp.type="text";wInp.inputMode="decimal";wInp.pattern="[0-9]*\\.?[0-9]*";
+  wInp.className="wo-card-input wo-card-weight";wInp.value=st.weight;wInp.placeholder=tgt?String(tgt.weight):"weight";
+  wInp.autocomplete="off";wInp.setAttribute("data-lpignore","true");
+  wInp.oninput=e=>{st.weight=e.target.value};
+  inputsRow.appendChild(wInp);
+  inputsRow.appendChild(Object.assign(document.createElement("span"),{className:"wo-card-unit-label",textContent:prefs.preferredUnit}));
+  inputsRow.appendChild(Object.assign(document.createElement("span"),{className:"wo-card-x",textContent:"×"}));
+  const rInp=document.createElement("input");
+  rInp.type="text";rInp.inputMode="numeric";rInp.pattern="[0-9]*";
+  rInp.className="wo-card-input wo-card-reps";rInp.value=st.reps;rInp.placeholder=tgt?String(tgt.reps):"reps";
+  rInp.autocomplete="off";rInp.setAttribute("data-lpignore","true");
+  rInp.oninput=e=>{st.reps=e.target.value};
+  inputsRow.appendChild(rInp);
+  inputsRow.appendChild(Object.assign(document.createElement("span"),{className:"wo-card-unit-label",textContent:"reps"}));
+  card.appendChild(inputsRow);
+
+  // Clusters count row (separate so it doesn't crowd the main inputs)
+  const clustersRow=document.createElement("div");clustersRow.className="wo-card-extras-row";
+  const clustersLbl=document.createElement("span");clustersLbl.className="wo-card-extras-label";clustersLbl.textContent="Clusters:";
+  clustersRow.appendChild(clustersLbl);
+  const minus=document.createElement("button");minus.type="button";minus.className="wo-card-count-btn";minus.textContent="−";
+  minus.onclick=()=>{const n=parseInt(st.clusters,10)||1;if(n>1){st.clusters=String(n-1);renderWorkoutBody()}};
+  const numDisplay=document.createElement("span");numDisplay.className="wo-card-count-num";numDisplay.textContent=st.clusters;
+  const plus=document.createElement("button");plus.type="button";plus.className="wo-card-count-btn";plus.textContent="+";
+  plus.onclick=()=>{const n=parseInt(st.clusters,10)||1;if(n<10){st.clusters=String(n+1);renderWorkoutBody()}};
+  clustersRow.appendChild(minus);clustersRow.appendChild(numDisplay);clustersRow.appendChild(plus);
+  card.appendChild(clustersRow);
+
+  const trySave=()=>{
+    const w=parseFloat(st.weight);
+    const r=parseInt(st.reps,10);
+    const c=parseInt(st.clusters,10);
+    if(isNaN(w)||w<0||isNaN(r)||r<=0||isNaN(c)||c<=0)return;
+    saveInlineSet(s, pr, slotIdx, existing, {weight:w, reps:r, clusterCount:c, ...(st.rir!==undefined&&st.rir!==null?{rir:st.rir}:{})});
+    delete clusterInlineState[stateKey];
+  };
+
+  wInp.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();rInp.focus()}};
+  rInp.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();trySave()}};
+  rInp.onblur=()=>setTimeout(()=>{if(st.weight && st.reps)trySave()}, 150);
+
+  const actions=document.createElement("div");actions.className="wo-card-actions";
+  const saveBtn=document.createElement("button");saveBtn.type="button";saveBtn.className="wo-card-btn-save";saveBtn.textContent=existing?"Update":"Log set";
+  saveBtn.onclick=trySave;
+  actions.appendChild(saveBtn);
+  if(existing){
+    const cancelBtn=document.createElement("button");cancelBtn.type="button";cancelBtn.className="wo-card-btn-cancel";cancelBtn.textContent="Cancel";
+    cancelBtn.onclick=()=>{delete clusterInlineState[stateKey];renderWorkoutBody()};
+    actions.appendChild(cancelBtn);
+  }
+  card.appendChild(actions);
+
+  return card;
+}
+
+// ===== Rest-pause inline cards =====
+// Rest-pause: same weight throughout. Initial set to failure, then N mini-sets to
+// failure with short rest (10-20s) between. We log initial reps as `reps` and
+// mini-set rep counts as `miniSetReps` (same schema as myo-rep, distinguished by `type`).
+function renderRestPauseInlineCards(wrap, s, pr){
+  const logged=setsForRowIdx(s,pr.idx);
+  const slotCount=Math.max(pr.plannedSets, logged.length);
+  const container=document.createElement("div");
+  container.className="wo-card-container";
+  for(let k=0;k<slotCount;k++){
+    container.appendChild(buildRestPauseCard(s, pr, k, logged[k]||null));
+  }
+  const addBtn=document.createElement("button");
+  addBtn.className="wo-add-set";addBtn.type="button";
+  addBtn.innerHTML='<i class="ti ti-plus"></i> Add rest-pause set';
+  addBtn.onclick=()=>{
+    pr.plannedSets=Math.max(pr.plannedSets, setsForRowIdx(s,pr.idx).length)+1;
+    renderWorkoutBody();
+  };
+  container.appendChild(addBtn);
+  wrap.appendChild(container);
+}
+
+function buildRestPauseCard(s, pr, slotIdx, existing){
+  const card=document.createElement("div");
+  card.className="wo-card";
+  const stateKey=basicStateKey(pr,slotIdx);
+  const editingState=restPauseInlineState[stateKey];
+  const editing=editingState && editingState.editing;
+  const plannedMinis = pr.miniSetCount || 3;
+
+  if(existing && !editing){
+    card.classList.add("logged");
+    const minis = Array.isArray(existing.miniSetReps)&&existing.miniSetReps.length>0 ? `+${existing.miniSetReps.join(",")}` : "";
+    card.appendChild(buildLoggedSummary(slotIdx, existing, minis, false));
+    const actions=document.createElement("div");actions.className="wo-card-actions";
+    const editBtn=document.createElement("button");editBtn.type="button";editBtn.className="wo-card-btn-edit";editBtn.textContent="Edit";
+    editBtn.onclick=()=>{
+      restPauseInlineState[stateKey]={
+        editing:true,
+        weight:String(existing.weight),
+        reps:String(existing.reps),
+        miniReps: existing.miniSetReps ? existing.miniSetReps.map(String).concat(Array(Math.max(0, plannedMinis-existing.miniSetReps.length)).fill("")) : Array(plannedMinis).fill(""),
+        rir:existing.rir
+      };
+      renderWorkoutBody();
+    };
+    const delBtn=document.createElement("button");delBtn.type="button";delBtn.className="wo-card-btn-del";delBtn.innerHTML='<i class="ti ti-trash" aria-hidden="true"></i>';
+    delBtn.onclick=()=>deleteInlineSet(s, existing);
+    actions.appendChild(editBtn);actions.appendChild(delBtn);
+    card.appendChild(actions);
+    return card;
+  }
+
+  card.classList.add("editing");
+  if(!editingState){
+    const tgt=resolveSlotTarget(pr, slotIdx);
+    const lastSet=findLastSetForExercise(pr.ex, s.id);
+    restPauseInlineState[stateKey]={
+      editing:true,
+      weight: existing?String(existing.weight) : tgt?String(tgt.weight) : lastSet?String(lastSet.weight) : "",
+      reps: existing?String(existing.reps) : tgt?String(tgt.reps) : "",
+      miniReps: Array(plannedMinis).fill(""),
+      rir: existing?.rir
+    };
+  }
+  const st=restPauseInlineState[stateKey];
+  const tgt=resolveSlotTarget(pr, slotIdx);
+
+  const headerRow=document.createElement("div");headerRow.className="wo-card-header";
+  const num=document.createElement("span");num.className="wo-card-slot-num";num.textContent=String(slotIdx+1);
+  headerRow.appendChild(num);
+  if(tgt){
+    const tgtHint=document.createElement("span");tgtHint.className="wo-card-tgt-hint";
+    tgtHint.textContent=`target ${fmtNum(tgt.weight)}×${tgt.reps}`;
+    headerRow.appendChild(tgtHint);
+  }
+  card.appendChild(headerRow);
+
+  // Weight × initial reps
+  const inputsRow=document.createElement("div");inputsRow.className="wo-card-inputs";
+  const wInp=document.createElement("input");
+  wInp.type="text";wInp.inputMode="decimal";wInp.pattern="[0-9]*\\.?[0-9]*";
+  wInp.className="wo-card-input wo-card-weight";wInp.value=st.weight;wInp.placeholder=tgt?String(tgt.weight):"weight";
+  wInp.autocomplete="off";wInp.setAttribute("data-lpignore","true");
+  wInp.oninput=e=>{st.weight=e.target.value};
+  inputsRow.appendChild(wInp);
+  inputsRow.appendChild(Object.assign(document.createElement("span"),{className:"wo-card-unit-label",textContent:prefs.preferredUnit}));
+  inputsRow.appendChild(Object.assign(document.createElement("span"),{className:"wo-card-x",textContent:"×"}));
+  const rInp=document.createElement("input");
+  rInp.type="text";rInp.inputMode="numeric";rInp.pattern="[0-9]*";
+  rInp.className="wo-card-input wo-card-reps";rInp.value=st.reps;rInp.placeholder="initial reps";
+  rInp.autocomplete="off";rInp.setAttribute("data-lpignore","true");
+  rInp.oninput=e=>{st.reps=e.target.value};
+  inputsRow.appendChild(rInp);
+  inputsRow.appendChild(Object.assign(document.createElement("span"),{className:"wo-card-unit-label",textContent:"reps to failure"}));
+  card.appendChild(inputsRow);
+
+  // Mini-sets row
+  const miniRow=document.createElement("div");miniRow.className="wo-card-mini-row";
+  const miniLabel=document.createElement("span");miniLabel.className="wo-card-mini-label";miniLabel.textContent="Mini-sets to failure:";
+  miniRow.appendChild(miniLabel);
+  const miniInputsWrap=document.createElement("div");miniInputsWrap.className="wo-card-mini-inputs";
+  st.miniReps.forEach((val, mi)=>{
+    const inp=document.createElement("input");
+    inp.type="text";inp.inputMode="numeric";inp.pattern="[0-9]*";
+    inp.className="wo-card-mini-input";inp.value=val;inp.placeholder="?";
+    inp.autocomplete="off";inp.setAttribute("data-lpignore","true");
+    inp.oninput=e=>{st.miniReps[mi]=e.target.value};
+    inp.onkeydown=e=>{
+      if(e.key==="Enter"){
+        e.preventDefault();
+        // Move to next mini input or save if last
+        const nextInp=miniInputsWrap.querySelectorAll(".wo-card-mini-input")[mi+1];
+        if(nextInp)nextInp.focus();
+        else trySave();
+      }
+    };
+    miniInputsWrap.appendChild(inp);
+  });
+  miniRow.appendChild(miniInputsWrap);
+  // Mini-set count -/+ controls
+  const countCtrls=document.createElement("span");countCtrls.className="wo-card-mini-ctrls";
+  const cMinus=document.createElement("button");cMinus.type="button";cMinus.className="wo-card-count-btn";cMinus.textContent="−";
+  cMinus.onclick=()=>{if(st.miniReps.length>1){st.miniReps.pop();renderWorkoutBody()}};
+  const cPlus=document.createElement("button");cPlus.type="button";cPlus.className="wo-card-count-btn";cPlus.textContent="+";
+  cPlus.onclick=()=>{if(st.miniReps.length<8){st.miniReps.push("");renderWorkoutBody()}};
+  countCtrls.appendChild(cMinus);countCtrls.appendChild(cPlus);
+  miniRow.appendChild(countCtrls);
+  card.appendChild(miniRow);
+
+  const trySave=()=>{
+    const w=parseFloat(st.weight);
+    const r=parseInt(st.reps,10);
+    if(isNaN(w)||w<0||isNaN(r)||r<=0)return;
+    const miniSetReps=st.miniReps.map(v=>{
+      const n=parseInt(v,10);
+      return isNaN(n)||n<=0 ? null : n;
+    }).filter(v=>v!==null);
+    saveInlineSet(s, pr, slotIdx, existing, {weight:w, reps:r, miniSetReps, ...(st.rir!==undefined&&st.rir!==null?{rir:st.rir}:{})});
+    delete restPauseInlineState[stateKey];
+  };
+
+  wInp.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();rInp.focus()}};
+  rInp.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();const firstMini=miniInputsWrap.querySelector(".wo-card-mini-input");if(firstMini)firstMini.focus();else trySave()}};
+
+  const actions=document.createElement("div");actions.className="wo-card-actions";
+  const saveBtn=document.createElement("button");saveBtn.type="button";saveBtn.className="wo-card-btn-save";saveBtn.textContent=existing?"Update":"Log set";
+  saveBtn.onclick=trySave;
+  actions.appendChild(saveBtn);
+  if(existing){
+    const cancelBtn=document.createElement("button");cancelBtn.type="button";cancelBtn.className="wo-card-btn-cancel";cancelBtn.textContent="Cancel";
+    cancelBtn.onclick=()=>{delete restPauseInlineState[stateKey];renderWorkoutBody()};
+    actions.appendChild(cancelBtn);
+  }
+  card.appendChild(actions);
+
+  return card;
 }
 
 // In-memory state for inline myo-rep editors. Keyed by "rowIdx_slotIdx".
@@ -3686,7 +4269,7 @@ function buildMyoCard(s, pr, slotIdx, existing){
     summary.className="myo-card-summary";
     const miniText=Array.isArray(existing.miniSetReps)&&existing.miniSetReps.length>0
       ? `+${existing.miniSetReps.join(",")}` : "";
-    summary.innerHTML=`<div class="myo-card-summary-main">${fmtNum(existing.weight)}${existing.unit||prefs.preferredUnit} × <b>${existing.reps}</b>${miniText}</div>${existing.rir!==undefined?`<div class="myo-card-summary-rir">@${existing.rir} RIR</div>`:""}`;
+    summary.innerHTML=`<div class="myo-card-summary-main"><span class="wo-card-check" aria-hidden="true"><i class="ti ti-check"></i></span> ${fmtNum(existing.weight)}${existing.unit||prefs.preferredUnit} × <b>${existing.reps}</b>${miniText}</div>${existing.rir!==undefined?`<div class="myo-card-summary-rir">@${existing.rir} RIR</div>`:""}`;
     const actions=document.createElement("div");actions.className="myo-card-actions";
     const editBtn=document.createElement("button");editBtn.type="button";editBtn.className="myo-card-edit";editBtn.textContent="Edit";
     editBtn.onclick=()=>{
@@ -3951,7 +4534,7 @@ function buildDropCard(s, pr, slotIdx, existing){
     const tier=getDropTierMult(drops.length);
     const summary=document.createElement("div");
     summary.className="drop-card-summary";
-    summary.innerHTML=`<div class="drop-card-summary-main">${parts.join(" → ")}</div><div class="drop-card-summary-meta">${drops.length} drop${drops.length===1?"":"s"} (×${tier})${existing.rir!==undefined?` · @${existing.rir} RIR`:""}</div>`;
+    summary.innerHTML=`<div class="drop-card-summary-main"><span class="wo-card-check" aria-hidden="true"><i class="ti ti-check"></i></span><span>${parts.join(" → ")}</span></div><div class="drop-card-summary-meta">${drops.length} drop${drops.length===1?"":"s"} (×${tier})${existing.rir!==undefined?` · @${existing.rir} RIR`:""}</div>`;
     const actions=document.createElement("div");actions.className="drop-card-actions";
     const editBtn=document.createElement("button");editBtn.type="button";editBtn.className="drop-card-edit";editBtn.textContent="Edit";
     editBtn.onclick=()=>{dropInlineState[stateKey]={editing:true};renderWorkoutBody()};
@@ -4670,18 +5253,34 @@ function renderDay(dayId){
       btn.className="start-workout"+(inProg?" start-workout-resume":"");
       btn.textContent=inProg?"Resume workout":"Start workout";
       btn.onclick=()=>{
-        if(inProg){openWorkoutModal(inProg.id);return}
-        // Check if an in-progress session exists for any OTHER day, warn first
-        const otherActive=activeSession();
-        if(otherActive){
-          const lbl=otherActive.blockName+(otherActive.dayLabel?" — "+otherActive.dayLabel:"");
-          if(!confirm(`There's an in-progress workout for "${lbl}". Discard it and start this one?`))return;
-          abandonSession(otherActive.id);
+        // Guard against double-tap: disable immediately so a second click while
+        // we're creating the session doesn't trigger a duplicate.
+        if(btn.disabled)return;
+        btn.disabled=true;
+        try{
+          if(inProg){openWorkoutModal(inProg.id);return}
+          const otherActive=activeSession();
+          if(otherActive){
+            const lbl=otherActive.blockName+(otherActive.dayLabel?" — "+otherActive.dayLabel:"");
+            if(!confirm(`There's an in-progress workout for "${lbl}". Discard it and start this one?`))return;
+            abandonSession(otherActive.id);
+          }
+          const sess=createSessionFromPlan(curBlock,dayId);
+          openWorkoutModal(sess.id);
+          // Defensive: verify the modal actually opened. If it didn't (e.g. session
+          // creation failed or modal element missing), re-enable the button so the
+          // user isn't stuck with a dead button.
+          setTimeout(()=>{
+            const open=document.getElementById("workout-bg")?.classList.contains("open");
+            if(!open){btn.disabled=false}
+          }, 200);
+          // Re-render this day so the button now says "Resume"
+          renderDay(dayId);
+        } catch(err) {
+          console.error("Start workout failed:", err);
+          btn.disabled=false;
+          alert("Couldn't start the workout. Try again, and check the browser console for details.");
         }
-        const sess=createSessionFromPlan(curBlock,dayId);
-        openWorkoutModal(sess.id);
-        // Re-render this day so the button now says "Resume"
-        renderDay(dayId);
       };
       el.appendChild(btn);
     }
@@ -4745,10 +5344,19 @@ function renderDay(dayId){
     const num=document.createElement("span");num.className="s-num";num.textContent=row.sets;
     const plus=document.createElement("button");plus.className="s-btn";plus.textContent="+";plus.type="button";
     attachRepeatPress(minus,()=>{
-      if(dayData.rows[i].sets>0){dayData.rows[i].sets--;num.textContent=dayData.rows[i].sets;updateDayTabLabel(dayId);renderSummary();autoSave()}
+      if(dayData.rows[i].sets>0){
+        dayData.rows[i].sets--;
+        // Full row re-render so the pill row reflects the new set count.
+        renderDay(dayId);
+        updateDayTabLabel(dayId);renderSummary();autoSave();
+      }
     });
     attachRepeatPress(plus,()=>{
-      if(dayData.rows[i].sets<MAX_SETS){dayData.rows[i].sets++;num.textContent=dayData.rows[i].sets;updateDayTabLabel(dayId);renderSummary();autoSave()}
+      if(dayData.rows[i].sets<MAX_SETS){
+        dayData.rows[i].sets++;
+        renderDay(dayId);
+        updateDayTabLabel(dayId);renderSummary();autoSave();
+      }
     });
     num.onclick=()=>openNumpad(dayId,i,num);
     // Long-press the number to open the target editor (optional weight/reps target)
@@ -4997,6 +5605,9 @@ function openSetTypePopover(rowDiv,dayId,rowIndex,chipEl,onChange){
       mem[curBlock].days[dayId].rows[rowIndex].type=key;
       onChange();
       closeSetTypePopover();
+      // Re-render the day so the pill row visualization adapts to the new set type
+      // (e.g. from straight pills to drop sequences with ↓ pills).
+      renderDay(dayId);
       renderSummary();
       autoSave();
     };
