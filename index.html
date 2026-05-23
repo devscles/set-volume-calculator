@@ -439,12 +439,21 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .start-workout:active{opacity:0.85}
 .start-workout-resume{background:var(--warn-text);color:var(--bg)}
 
-/* Target hint shown on planner rows. Tappable to open the target editor. */
-.row-target-hint{font-size:11px;margin-top:4px;padding:3px 6px;border:none;background:transparent;cursor:pointer;font-family:inherit;text-align:left;border-radius:4px;justify-self:start;font-variant-numeric:tabular-nums;display:inline-block}
-.row-target-hint:active{background:var(--bg2)}
-.row-target-hint.has-target{color:var(--accent);font-weight:500}
-.row-target-hint.no-target{color:var(--text3);font-style:italic;opacity:0.7}
-.row-target-hint.no-target:hover{opacity:1}
+/* === Pill row: visual representation of planned sets, with per-set targets === */
+.pill-row{display:flex;flex-direction:column;gap:4px;margin-top:4px;padding:2px 0}
+.pill-line{display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+.set-pill{padding:5px 11px;border-radius:999px;border:0.5px solid var(--border);background:transparent;font-size:12px;color:var(--text3);font-family:inherit;cursor:pointer;font-variant-numeric:tabular-nums;line-height:1.2;display:inline-flex;align-items:center;gap:4px;touch-action:manipulation;transition:background-color 0.12s var(--ease)}
+.set-pill:active{background:var(--bg2)}
+.set-pill.has-target{border-color:var(--accent);background:var(--accent-bg, var(--bg2));color:var(--accent);font-weight:500}
+.set-pill.no-target{font-style:italic;opacity:0.85}
+.set-pill.no-target:hover{opacity:1}
+.set-pill.drop-pill{padding:5px 9px 5px 7px;font-style:normal}
+.set-pill.drop-pill i{font-size:11px;opacity:0.85}
+.set-pill i.ti-star{font-size:10px;opacity:0.85}
+.pill-count-ctrls{display:inline-flex;align-items:center;gap:4px;margin-left:4px}
+.pill-count-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.04em;margin-right:2px}
+.pill-count-btn{width:22px;height:22px;border-radius:4px;border:0.5px solid var(--border2);background:transparent;font-size:13px;color:var(--text2);cursor:pointer;font-family:inherit;line-height:1;padding:0;touch-action:manipulation}
+.pill-count-btn:active{background:var(--bg2)}
 
 /* Custom exercise editor */
 .ce-modal{background:var(--bg);border-radius:12px;padding:16px;width:100%;max-width:340px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 8px 32px var(--shadow)}
@@ -3210,14 +3219,28 @@ function createSessionFromPlan(blockId, dayId){
     blockName:block.name||("Block "+blockId),
     dayLabel:day.label||"",
     status:"in_progress",
-    plannedRows: day.rows.filter(r=>r.ex&&r.sets>0).map((r,i)=>({
-      idx:i,
-      ex:r.ex,
-      type:rowType(r),
-      plannedSets:r.sets,
-      target:r.target||null,
-      linkedToPrev:!!r.linkedToPrev
-    })),
+    plannedRows: day.rows.filter(r=>r.ex&&r.sets>0).map((r,i)=>{
+      // Snapshot the plan into a workout-friendly shape. We carry per-set targets so the
+      // workout can show "target X×Y" for each set/sequence, and carry the planned structural
+      // counts (drops/mini-sets/clusters) so the workout interface starts at the right size.
+      const targets = Array.isArray(r.targets) ? r.targets.slice(0, r.sets)
+                    : (r.target ? [r.target] : []);
+      const pr={
+        idx:i,
+        ex:r.ex,
+        type:rowType(r),
+        plannedSets:r.sets,
+        targets,
+        // Legacy `target` field — preserved as the first set's target for any consumer
+        // that hasn't been updated to read `targets[]` yet.
+        target: targets[0]||null,
+        linkedToPrev:!!r.linkedToPrev
+      };
+      if(typeof r.dropCount==="number")pr.dropCount=r.dropCount;
+      if(typeof r.miniSetCount==="number")pr.miniSetCount=r.miniSetCount;
+      if(typeof r.clusterCount==="number")pr.clusterCount=r.clusterCount;
+      return pr;
+    }),
     sets:[]
   };
   sessions.push(sess);
@@ -3358,9 +3381,12 @@ function renderChipStrip(wrap, s, pr){
   for(let k=0;k<slotCount;k++){
     const chip=document.createElement("button");chip.className="wo-set-chip";chip.type="button";
     const log=logged[k]||null;
+    // Per-set planned target — falls back to legacy single target if targets[] absent
+    const tgt = (Array.isArray(pr.targets)&&pr.targets[k]) ? pr.targets[k]
+              : (k===0&&pr.target ? pr.target : null);
     if(log){
       chip.classList.add("logged");
-      if(pr.target&&pr.target.reps&&log.reps<pr.target.reps)chip.classList.add("miss");
+      if(tgt&&tgt.reps&&log.reps<tgt.reps)chip.classList.add("miss");
       let repText=String(log.reps);
       if(log.type==="myorep"&&Array.isArray(log.miniSetReps)&&log.miniSetReps.length>0){
         repText=`${log.reps}+${log.miniSetReps.join(",")}`;
@@ -3368,8 +3394,8 @@ function renderChipStrip(wrap, s, pr){
       chip.innerHTML=`<div>${fmtNum(log.weight)}×${repText}</div>${log.rir!==undefined?`<div class="wo-set-target">@${log.rir} RIR</div>`:""}`;
     } else {
       chip.classList.add("empty");
-      if(pr.target){
-        chip.innerHTML=`<div>—</div><div class="wo-set-target">target ${fmtNum(pr.target.weight)}×${pr.target.reps}</div>`;
+      if(tgt){
+        chip.innerHTML=`<div>—</div><div class="wo-set-target">target ${fmtNum(tgt.weight)}×${tgt.reps}</div>`;
       } else {
         chip.innerHTML=`<div>—</div>`;
       }
@@ -3455,15 +3481,18 @@ function buildMyoCard(s, pr, slotIdx, existing){
   // Initialize state for this slot if needed
   if(!myorepInlineState[stateKey]){
     myorepInlineState[stateKey]={editing:true, weight:"", activation:"", miniReps:newDefaultMiniSets()};
-    // Pre-fill from existing → target → last set this session → last set ever
+    // Per-sequence target for this slot
+    const myoSlotTgt = (Array.isArray(pr.targets)&&pr.targets[slotIdx]) ? pr.targets[slotIdx]
+                    : (slotIdx===0&&pr.target ? pr.target : null);
+    // Pre-fill from existing → slot target → last set this session → last set ever
     if(existing){
       myorepInlineState[stateKey].weight=String(existing.weight);
       myorepInlineState[stateKey].activation=String(existing.reps);
       myorepInlineState[stateKey].miniReps = existing.miniSetReps ? [...existing.miniSetReps].concat(Array(Math.max(0,4-existing.miniSetReps.length)).fill(null)) : newDefaultMiniSets();
       if(existing.rir!==undefined)myorepInlineState[stateKey].rir=existing.rir;
-    } else if(pr.target){
-      myorepInlineState[stateKey].weight=String(pr.target.weight);
-      myorepInlineState[stateKey].activation=String(pr.target.reps);
+    } else if(myoSlotTgt){
+      myorepInlineState[stateKey].weight=String(myoSlotTgt.weight);
+      myorepInlineState[stateKey].activation=String(myoSlotTgt.reps);
     } else {
       const lastSet=findLastSetForExercise(pr.ex, s.id);
       const prevThisSession=s.sets.filter(st=>st.rowIdx===pr.idx).pop();
@@ -3501,12 +3530,15 @@ function buildMyoCard(s, pr, slotIdx, existing){
     startRestTimer(20);
   }
 
+  // Per-slot target (looked up once for placeholders below)
+  const myoCardTgt = (Array.isArray(pr.targets)&&pr.targets[slotIdx]) ? pr.targets[slotIdx]
+                    : (slotIdx===0&&pr.target ? pr.target : null);
   // Weight row
   const wRow=document.createElement("div");wRow.className="myo-card-row";
   const wLbl=document.createElement("label");wLbl.textContent=`Weight (${prefs.preferredUnit})`;
   const wInp=document.createElement("input");wInp.type="text";wInp.inputMode="decimal";wInp.pattern="[0-9]*\\.?[0-9]*";
   wInp.autocomplete="off";wInp.setAttribute("data-form-type","other");wInp.setAttribute("data-lpignore","true");
-  wInp.value=st.weight;wInp.placeholder=pr.target?String(pr.target.weight):"—";
+  wInp.value=st.weight;wInp.placeholder=myoCardTgt?String(myoCardTgt.weight):"—";
   wInp.oninput=e=>{st.weight=e.target.value};
   wInp.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();e.target.blur()}};
   wRow.appendChild(wLbl);wRow.appendChild(wInp);
@@ -3517,7 +3549,7 @@ function buildMyoCard(s, pr, slotIdx, existing){
   const aLbl=document.createElement("label");aLbl.textContent="Activation reps";
   const aInp=document.createElement("input");aInp.type="text";aInp.inputMode="numeric";aInp.pattern="[0-9]*";
   aInp.autocomplete="off";aInp.setAttribute("data-form-type","other");aInp.setAttribute("data-lpignore","true");
-  aInp.value=st.activation;aInp.placeholder=pr.target?String(pr.target.reps):"—";
+  aInp.value=st.activation;aInp.placeholder=myoCardTgt?String(myoCardTgt.reps):"—";
   aInp.oninput=e=>{st.activation=e.target.value};
   aInp.onchange=e=>maybeStartShortTimer(e.target);
   // On Enter: dismiss the keyboard rather than advancing focus to the next input.
@@ -3598,7 +3630,9 @@ function saveMyorepInline(s, pr, slotIdx, existing){
     unit:prefs.preferredUnit, timestamp:new Date().toISOString()
   };
   if(st.rir!==undefined&&st.rir!==null)rec.rir=st.rir;
-  if(pr.target){rec.targetWeight=pr.target.weight;rec.targetReps=pr.target.reps}
+  const myoTgt = (Array.isArray(pr.targets)&&pr.targets[slotIdx]) ? pr.targets[slotIdx]
+                : (slotIdx===0&&pr.target ? pr.target : null);
+  if(myoTgt){rec.targetWeight=myoTgt.weight;rec.targetReps=myoTgt.reps}
   if(existing){
     const idx=s.sets.indexOf(existing);
     if(idx>=0)s.sets[idx]={...s.sets[idx],...rec};
@@ -3714,21 +3748,23 @@ function buildDropCard(s, pr, slotIdx, existing){
       st0.reps=[existing.reps, ...(existing.dropReps||[])];
       if(existing.rir!==undefined)st0.rir=existing.rir;
     } else {
-      // Default: 1 initial + 4 drops = 5 slots
-      st0.weights=new Array(1+DROP_DEFAULT_COUNT).fill(null);
-      st0.reps=new Array(1+DROP_DEFAULT_COUNT).fill(null);
-      // Pre-fill initial weight from target → last in session → last ever
+      // Initial slot count: planned dropCount (if set in the planner) else DROP_DEFAULT_COUNT
+      const initialDrops = (typeof pr.dropCount==="number" && pr.dropCount>=0) ? pr.dropCount : DROP_DEFAULT_COUNT;
+      st0.weights=new Array(1+initialDrops).fill(null);
+      st0.reps=new Array(1+initialDrops).fill(null);
+      // Per-sequence target for this slot
+      const dropSlotTgt = (Array.isArray(pr.targets)&&pr.targets[slotIdx]) ? pr.targets[slotIdx]
+                        : (slotIdx===0&&pr.target ? pr.target : null);
       const lastSet=findLastSetForExercise(pr.ex, s.id);
       const prevThisSession=s.sets.filter(st=>st.rowIdx===pr.idx).pop();
       const seed=prevThisSession||lastSet;
-      if(pr.target){
-        st0.weights[0]=pr.target.weight;
-        st0.reps[0]=pr.target.reps;
+      if(dropSlotTgt){
+        st0.weights[0]=dropSlotTgt.weight;
+        st0.reps[0]=dropSlotTgt.reps;
       } else if(seed){
         st0.weights[0]=seed.weight;
         st0.reps[0]=seed.reps;
       }
-      // Cascade any auto-fillable downstream weights based on the initial weight
       cascadeDropWeights(st0.weights, prefs.preferredUnit);
     }
     dropInlineState[stateKey]=st0;
@@ -3880,7 +3916,9 @@ function saveDropInline(s, pr, slotIdx, existing){
     timestamp: new Date().toISOString()
   };
   if(st.rir!==undefined&&st.rir!==null)rec.rir=st.rir;
-  if(pr.target){rec.targetWeight=pr.target.weight;rec.targetReps=pr.target.reps}
+  const dropTgt = (Array.isArray(pr.targets)&&pr.targets[slotIdx]) ? pr.targets[slotIdx]
+                : (slotIdx===0&&pr.target ? pr.target : null);
+  if(dropTgt){rec.targetWeight=dropTgt.weight;rec.targetReps=dropTgt.reps}
   if(existing){
     const idx=s.sets.indexOf(existing);
     if(idx>=0)s.sets[idx]={...s.sets[idx],...rec};
@@ -3973,16 +4011,52 @@ function doSwap(newEx){
 document.getElementById("swap-bg").addEventListener("click",e=>{if(e.target.id==="swap-bg")closeSwapPicker()});
 
 // ===== Target editor (plan-time per-row weight/reps target) =====
+// Returns the target for a specific set index within a row, or null if none.
+// Handles both the new shape (row.targets[setIdx]) and the legacy shape (row.target → set 0).
+function getRowTarget(row, setIdx){
+  if(!row)return null;
+  if(Array.isArray(row.targets))return row.targets[setIdx]||null;
+  if(row.target&&setIdx===0)return row.target; // legacy fallback
+  return null;
+}
+// Set a target for a specific set within a row; lazily creates the targets array.
+function setRowTarget(row, setIdx, target){
+  if(!Array.isArray(row.targets)){
+    // Migrate any legacy single target into the array form
+    row.targets = row.target ? [row.target] : [];
+    delete row.target;
+  }
+  // Pad with nulls if setIdx is past the current length
+  while(row.targets.length<=setIdx)row.targets.push(null);
+  row.targets[setIdx]=target;
+  // If everything is null/empty, drop the array entirely to keep storage clean
+  if(row.targets.every(t=>!t))delete row.targets;
+}
+// Remove a target for a specific set within a row.
+function clearRowTarget(row, setIdx){
+  if(Array.isArray(row.targets)){
+    row.targets[setIdx]=null;
+    if(row.targets.every(t=>!t))delete row.targets;
+  } else if(row.target && setIdx===0){
+    delete row.target;
+  }
+}
+
 let targetCtx=null;
-function openTargetEditor(dayId, rowIdx){
+function openTargetEditor(dayId, rowIdx, setIdx){
   const row=mem[curBlock].days[dayId].rows[rowIdx];
-  if(!row.ex){return} // can't set target without an exercise
-  targetCtx={dayId, rowIdx};
-  document.getElementById("target-title").textContent=row.ex;
+  if(!row.ex){return}
+  if(typeof setIdx!=="number")setIdx=0; // backward-compat: legacy callers default to set 0
+  targetCtx={dayId, rowIdx, setIdx};
+  const existing=getRowTarget(row, setIdx);
+  // Title shows exercise + which set/sequence this target is for (if more than one)
+  const totalSets=row.sets||1;
+  const setLabel=totalSets>1?` — set ${setIdx+1} of ${totalSets}`:"";
+  document.getElementById("target-title").textContent=row.ex+setLabel;
   document.getElementById("target-unit").textContent=prefs.preferredUnit;
-  document.getElementById("target-weight").value=row.target?row.target.weight:"";
-  document.getElementById("target-reps").value=row.target?row.target.reps:"";
-  document.getElementById("target-clear").style.display=row.target?"":"none";
+  document.getElementById("target-weight").value=existing?existing.weight:"";
+  document.getElementById("target-reps").value=existing?existing.reps:"";
+  document.getElementById("target-clear").style.display=existing?"":"none";
   document.getElementById("target-bg").classList.add("open");
   setTimeout(()=>document.getElementById("target-weight").focus(),60);
 }
@@ -3994,26 +4068,23 @@ function saveTarget(){
   if(!targetCtx)return;
   const w=parseFloat(document.getElementById("target-weight").value);
   const r=parseInt(document.getElementById("target-reps").value,10);
-  if(isNaN(w)&&isNaN(r)){
-    // Both empty — treat as clear
-    clearTarget();
-    return;
-  }
+  if(isNaN(w)&&isNaN(r)){clearTarget();return}
   if(isNaN(w)||w<0||isNaN(r)||r<=0){
     alert("Please enter a valid weight and reps (or leave both blank to clear).");
     return;
   }
-  const row=mem[curBlock].days[targetCtx.dayId].rows[targetCtx.rowIdx];
-  row.target={weight:w, reps:r, unit:prefs.preferredUnit};
+  const ctx=targetCtx;
+  const row=mem[curBlock].days[ctx.dayId].rows[ctx.rowIdx];
+  setRowTarget(row, ctx.setIdx, {weight:w, reps:r, unit:prefs.preferredUnit});
   closeTargetEditor();
-  renderDay(targetCtx?.dayId||curTab);
+  renderDay(ctx.dayId);
   autoSave();
 }
 function clearTarget(){
   if(!targetCtx)return;
   const ctx=targetCtx;
   const row=mem[curBlock].days[ctx.dayId].rows[ctx.rowIdx];
-  delete row.target;
+  clearRowTarget(row, ctx.setIdx);
   closeTargetEditor();
   renderDay(ctx.dayId);
   autoSave();
@@ -4030,10 +4101,15 @@ function openLogSet(plannedRow, slotIdx, existing){
   document.getElementById("logset-title").textContent=plannedRow.ex+(isMyo?" (myo-rep)":"");
   // Compute last-session set for this exercise (across any past session, most recent first)
   const lastSet=findLastSetForExercise(plannedRow.ex, s.id);
+  // Per-slot target: prefer targets[slotIdx], fall back to set 0, else null
+  const slotTarget = (Array.isArray(plannedRow.targets)&&plannedRow.targets[slotIdx]) ? plannedRow.targets[slotIdx]
+                  : (slotIdx===0&&plannedRow.target ? plannedRow.target : null);
+  // Stash on context so the rest of this function can refer to it
+  logSetCtx.slotTarget=slotTarget;
   // Target / hint display
   const targetEl=document.getElementById("logset-target");
-  if(plannedRow.target){
-    targetEl.innerHTML=`target <b>${fmtNum(plannedRow.target.weight)}${plannedRow.target.unit||prefs.preferredUnit} × ${plannedRow.target.reps}</b>`;
+  if(slotTarget){
+    targetEl.innerHTML=`target <b>${fmtNum(slotTarget.weight)}${slotTarget.unit||prefs.preferredUnit} × ${slotTarget.reps}</b>`;
   } else if(lastSet){
     const ago=relativeDateText(new Date(lastSet.timestamp));
     targetEl.innerHTML=`last time (${ago}): <b>${fmtSetReps(lastSet)}</b>`;
@@ -4046,12 +4122,12 @@ function openLogSet(plannedRow, slotIdx, existing){
   document.getElementById("logset-straight-row").style.display=isMyo?"none":"";
   document.getElementById("logset-myorep-row").style.display=isMyo?"":"none";
 
-  // Pre-fill weight (priority: existing → target → last set in session → last set ever)
+  // Pre-fill weight (priority: existing → slot target → last set in session → last set ever)
   const weightInput=document.getElementById("logset-weight");
   if(existing){
     weightInput.value=existing.weight;
-  } else if(plannedRow.target){
-    weightInput.value=plannedRow.target.weight;
+  } else if(slotTarget){
+    weightInput.value=slotTarget.weight;
   } else {
     const prev=s.sets.filter(st=>st.rowIdx===plannedRow.idx).pop();
     if(prev)weightInput.value=prev.weight;
@@ -4060,13 +4136,12 @@ function openLogSet(plannedRow, slotIdx, existing){
   }
 
   if(isMyo){
-    // Activation reps + mini-sets
     const actInput=document.getElementById("logset-activation");
     if(existing){
-      actInput.value=existing.reps; // activation reps stored in `reps`
+      actInput.value=existing.reps;
       logSetCtx.miniReps = existing.miniSetReps ? [...existing.miniSetReps] : [];
-    } else if(plannedRow.target){
-      actInput.value=plannedRow.target.reps;
+    } else if(slotTarget){
+      actInput.value=slotTarget.reps;
       logSetCtx.miniReps = newDefaultMiniSets();
     } else if(lastSet&&lastSet.type==="myorep"){
       actInput.value=lastSet.reps;
@@ -4077,12 +4152,11 @@ function openLogSet(plannedRow, slotIdx, existing){
     }
     renderMiniSetInputs();
   } else {
-    // Straight reps
     const repsInput=document.getElementById("logset-reps");
     if(existing){
       repsInput.value=existing.reps;
-    } else if(plannedRow.target){
-      repsInput.value=plannedRow.target.reps;
+    } else if(slotTarget){
+      repsInput.value=slotTarget.reps;
     } else {
       const prev=s.sets.filter(st=>st.rowIdx===plannedRow.idx).pop();
       if(prev)repsInput.value=prev.reps;
@@ -4258,7 +4332,9 @@ function saveLoggedSet(){
   };
   if(miniSetReps!==null)setRec.miniSetReps=miniSetReps;
   if(logSetCtx.rir!==undefined&&logSetCtx.rir!==null)setRec.rir=logSetCtx.rir;
-  if(pr.target){setRec.targetWeight=pr.target.weight;setRec.targetReps=pr.target.reps}
+  // Use slot-specific target if available, else fall back to legacy single target
+  const tgt = logSetCtx.slotTarget || pr.target;
+  if(tgt){setRec.targetWeight=tgt.weight;setRec.targetReps=tgt.reps}
 
   if(logSetCtx.existing){
     const idx=s.sets.indexOf(logSetCtx.existing);
@@ -4461,22 +4537,135 @@ function renderDay(dayId){
 
     div.appendChild(picker);div.appendChild(linkBtn);div.appendChild(chip);div.appendChild(ctrl);
 
-    // Target hint: always render a tappable spot below the row when an exercise is selected.
-    // If a target is set, show the value; if not, show a faint "+ set target" link.
-    if(row.ex){
-      const hint=document.createElement("button");
-      hint.type="button";
-      hint.className=row.target?"row-target-hint has-target":"row-target-hint no-target";
-      hint.style.gridColumn="1 / -1";
-      hint.textContent=row.target
-        ?`🎯 ${fmtNum(row.target.weight)}${row.target.unit||prefs.preferredUnit} × ${row.target.reps}`
-        :`+ set target`;
-      hint.onclick=e=>{e.stopPropagation();openTargetEditor(dayId,i)};
-      div.appendChild(hint);
+    // Pill row: visual representation of the planned set scheme, with per-set tappable targets.
+    // Renders one pill per set (straight/AMRAP) or one pill per sequence (drop/myorep/etc).
+    // Only shows when an exercise is selected and at least one set is planned.
+    if(row.ex && row.sets>0){
+      const pillRow=renderPillRow(row, dayId, i);
+      if(pillRow)div.appendChild(pillRow);
     }
 
     el.appendChild(div);
   });
+}
+
+// === Pill row renderer ===
+// Builds the visual representation of planned sets for a row. Tap pills to set targets;
+// tap −/+ to adjust the count of internal-structure (drops, mini-sets, clusters) per sequence.
+function renderPillRow(row, dayId, rowIdx){
+  const wrap=document.createElement("div");
+  wrap.className="pill-row";
+  wrap.style.gridColumn="1 / -1";
+  const type=rowType(row);
+  const sets=row.sets||1;
+  if(type==="straight" || type==="amrap"){
+    // One pill per set; no internal structure
+    const lineEl=document.createElement("div");lineEl.className="pill-line";
+    for(let s=0;s<sets;s++){
+      lineEl.appendChild(buildSetPill(row, dayId, rowIdx, s, {amrap:type==="amrap"}));
+    }
+    wrap.appendChild(lineEl);
+  } else if(type==="drop"){
+    // One line per sequence; each line has [initial pill] [↓ drop pills...] [drop −/+ controls]
+    const dropCount=Math.max(0,Math.min(7,row.dropCount??3));
+    if(typeof row.dropCount!=="number")row.dropCount=dropCount;
+    for(let s=0;s<sets;s++){
+      const lineEl=document.createElement("div");lineEl.className="pill-line";
+      // Initial pill
+      lineEl.appendChild(buildSetPill(row, dayId, rowIdx, s, {label:"initial"}));
+      // Drop pills (visual-only; tapping them currently doesn't open a separate target editor —
+      // drop weights/reps are entered during the workout via cascade)
+      for(let d=0;d<dropCount;d++){
+        const drop=document.createElement("button");
+        drop.type="button";
+        drop.className="set-pill drop-pill no-target";
+        drop.innerHTML='<i class="ti ti-arrow-down" aria-hidden="true"></i>';
+        drop.title="Drop weight (entered at workout time, auto-cascaded from initial)";
+        drop.onclick=e=>e.preventDefault(); // no-op for now; drop targets aren't user-settable here
+        lineEl.appendChild(drop);
+      }
+      // Show the drops −/+ controls only on the first sequence line (one set of controls per row)
+      if(s===0){
+        lineEl.appendChild(buildCountControls("drops", row, dayId, rowIdx, "dropCount", 1, 7));
+      }
+      wrap.appendChild(lineEl);
+    }
+  } else if(type==="myorep" || type==="restpause" || type==="cluster"){
+    // One pill per sequence (the structure is internal to each pill).
+    // Pills show "weight × activation + miniReps" when target is set; placeholder otherwise.
+    const countKey = type==="myorep" ? "miniSetCount" : (type==="restpause" ? "miniSetCount" : "clusterCount");
+    const defaultCount = type==="myorep" ? 4 : (type==="restpause" ? 3 : 5);
+    const maxCount = type==="cluster" ? 10 : 8;
+    if(typeof row[countKey]!=="number")row[countKey]=defaultCount;
+    const internalN=Math.max(1,Math.min(maxCount,row[countKey]));
+    for(let s=0;s<sets;s++){
+      const lineEl=document.createElement("div");lineEl.className="pill-line";
+      lineEl.appendChild(buildSetPill(row, dayId, rowIdx, s, {extended:type, internalN}));
+      // Internal-count controls on first sequence only
+      if(s===0){
+        const label = type==="cluster" ? "clusters" : "mini-sets";
+        lineEl.appendChild(buildCountControls(label, row, dayId, rowIdx, countKey, 1, maxCount));
+      }
+      wrap.appendChild(lineEl);
+    }
+  }
+  return wrap;
+}
+
+// Build a single tappable set pill.
+// opts: {amrap?, label?, extended?, internalN?}
+function buildSetPill(row, dayId, rowIdx, setIdx, opts){
+  opts=opts||{};
+  const tgt=getRowTarget(row, setIdx);
+  const btn=document.createElement("button");
+  btn.type="button";
+  btn.className="set-pill"+(tgt?" has-target":" no-target");
+  const u=tgt?(tgt.unit||prefs.preferredUnit):prefs.preferredUnit;
+  if(tgt){
+    // Filled state — show the target
+    let text=`${fmtNum(tgt.weight)}×${tgt.reps}`;
+    if(opts.extended==="myorep" || opts.extended==="restpause"){
+      const placeholder = opts.extended==="restpause" ? "?" : String(Math.max(1,Math.floor(tgt.reps/3)));
+      const minis = Array(opts.internalN).fill(placeholder).join(",");
+      text = `${text} + ${minis}`;
+    } else if(opts.extended==="cluster"){
+      text = `${text} ×${opts.internalN}`;
+    }
+    btn.innerHTML = opts.amrap ? `${text} <i class="ti ti-star" aria-hidden="true"></i>` : text;
+  } else {
+    // Empty state — placeholder text
+    let placeholder;
+    if(opts.label){placeholder=opts.label}
+    else if(opts.extended==="myorep"){placeholder=`activation + ${opts.internalN} mini-sets`}
+    else if(opts.extended==="restpause"){placeholder=`initial + ${opts.internalN} to failure`}
+    else if(opts.extended==="cluster"){placeholder=`weight × reps × ${opts.internalN}`}
+    else {placeholder=String(setIdx+1)}
+    btn.innerHTML = opts.amrap ? `${placeholder} <i class="ti ti-star" aria-hidden="true"></i>` : placeholder;
+  }
+  btn.onclick=e=>{e.preventDefault();e.stopPropagation();openTargetEditor(dayId, rowIdx, setIdx)};
+  return btn;
+}
+
+// Build inline -/+ controls for adjusting a per-row count field (dropCount, miniSetCount, etc).
+function buildCountControls(label, row, dayId, rowIdx, fieldKey, minVal, maxVal){
+  const wrap=document.createElement("span");
+  wrap.className="pill-count-ctrls";
+  const lbl=document.createElement("span");lbl.className="pill-count-label";lbl.textContent=label;
+  wrap.appendChild(lbl);
+  const minus=document.createElement("button");minus.type="button";minus.className="pill-count-btn";minus.textContent="−";
+  minus.onclick=e=>{
+    e.preventDefault();e.stopPropagation();
+    const cur=row[fieldKey]||0;
+    if(cur>minVal){row[fieldKey]=cur-1;renderDay(dayId);autoSave()}
+  };
+  const plus=document.createElement("button");plus.type="button";plus.className="pill-count-btn";plus.textContent="+";
+  plus.onclick=e=>{
+    e.preventDefault();e.stopPropagation();
+    const cur=row[fieldKey]||0;
+    if(cur<maxVal){row[fieldKey]=cur+1;renderDay(dayId);autoSave()}
+  };
+  wrap.appendChild(minus);wrap.appendChild(plus);
+  return wrap;
 }
 
 // Compute per-row superset group info. Returns an array same length as rows where each entry is
@@ -4600,13 +4789,15 @@ function updateDayTabLabel(dayId){
 
 function exMuscles(name){return EX_BY_NAME[name]||{}}
 
-// Multiplier for a PLANNED row. Drop sets default to tier 2 (≈ 2 drops) since planned
-// rows don't yet have a dropCount; this keeps the Summary's Planned and Actual modes
-// consistent for the typical case. Logged sets compute their own multiplier from
-// the actual dropCount via getSetTypeMult(key, setRecord).
+// Multiplier for a PLANNED row. For drop sets, uses the row's planned dropCount
+// (set via the planner pill row); falls back to tier 2 (≈ 2 drops) if unset.
+// Other types use their flat multiplier.
 function plannedRowMult(row){
   const t=rowType(row);
-  if(t==="drop")return getDropTierMult(2);
+  if(t==="drop"){
+    const n = (typeof row.dropCount==="number" && row.dropCount>0) ? row.dropCount : 2;
+    return getDropTierMult(n);
+  }
   return getSetTypeMult(t);
 }
 
