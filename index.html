@@ -20,23 +20,24 @@
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-feature-settings:"cv11","ss01"}
 body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .top-bar{padding:12px 14px 0;flex-shrink:0}
-.block-bar{display:flex;gap:6px;align-items:flex-start;margin-bottom:10px;flex-wrap:nowrap;min-width:0}
-.block-scroll-area{flex:1;min-width:0;max-height:88px;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:thin;padding:2px}
-.block-scroll-area::-webkit-scrollbar{width:3px}
+.block-bar{display:flex;gap:6px;align-items:center;margin-bottom:10px;flex-wrap:nowrap;min-width:0}
+.block-scroll-area{flex:1;min-width:0;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:thin;padding:2px 0;display:flex;align-items:center;gap:6px}
+.block-scroll-area::-webkit-scrollbar{height:3px}
 .block-scroll-area::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
-.block-buttons{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.block-buttons{display:flex;gap:6px;align-items:center;flex-wrap:nowrap;flex-shrink:0}
 .block-btn{padding:5px 11px;font-size:12px;font-weight:500;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text2);cursor:pointer;white-space:nowrap;flex-shrink:0;font-family:inherit;max-width:160px;overflow:hidden;text-overflow:ellipsis}
 .block-btn.active{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
-.block-mgmt-actions{display:flex;gap:4px;flex-shrink:0;align-items:center;height:32px}
-.app-actions{display:flex;gap:6px;flex-shrink:0;align-items:center;height:32px;padding-left:6px;border-left:0.5px solid var(--border)}
+.block-mgmt-actions{display:flex;gap:4px;flex-shrink:0;align-items:center;height:32px;margin-left:2px}
+.block-bar-divider{width:1px;height:18px;background:var(--border);flex-shrink:0;margin:0 2px}
+.app-actions{display:flex;gap:6px;flex-shrink:0;align-items:center;height:32px}
 .icon-btn{padding:6px 10px;font-size:15px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text2);cursor:pointer;display:flex;align-items:center;min-height:32px;font-family:inherit}
 .icon-btn:active{background:var(--bg2)}
 .icon-btn:disabled{opacity:0.35;cursor:not-allowed}
-.save-status{font-size:11px;color:var(--text3);margin-left:6px;white-space:nowrap}
+.save-status{font-size:11px;color:var(--text3);white-space:nowrap;flex-shrink:0}
 .save-status.saved{color:var(--success-text)}
 .block-label-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
 .block-label-row label{font-size:11px;color:var(--text2);white-space:nowrap;text-transform:uppercase;letter-spacing:0.05em}
-.editable-label{font-size:13px;font-weight:500;border:none;border-bottom:0.5px solid var(--border2);background:transparent;color:var(--text);padding:2px 0;width:100%;outline:none}
+.editable-label{font-size:13px;font-weight:500;border:none;border-bottom:0.5px solid var(--border2);background:transparent;color:var(--text);padding:2px 0;flex:1;min-width:0;outline:none}
 .tabs{display:flex;border-bottom:0.5px solid var(--border);flex-shrink:0}
 .tab{flex:1;padding:8px 1px;font-size:12px;font-weight:500;text-align:center;cursor:pointer;border:none;background:none;color:var(--text2);border-bottom:2px solid transparent;margin-bottom:-1px;line-height:1.2;min-height:44px;min-width:0;overflow:hidden;font-family:inherit;transition:color 0.15s var(--ease),border-color 0.15s var(--ease)}
 .tab.active{color:var(--accent);border-bottom-color:var(--accent)}
@@ -48,8 +49,8 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .tab-sum{flex:1;padding:8px 1px;font-size:12px;font-weight:500;text-align:center;cursor:pointer;border:none;background:none;color:var(--text2);border-bottom:2px solid transparent;margin-bottom:-1px;min-height:44px;min-width:0;font-family:inherit;transition:color 0.15s var(--ease),border-color 0.15s var(--ease)}
 .tabs.compact .tab-sum{font-size:11px}
 .tab-sum.active{color:var(--accent);border-bottom-color:var(--accent)}
-.day-mgr{display:flex;align-items:center;gap:8px;padding:0 14px;margin-bottom:8px;font-size:11px;color:var(--text2);flex-shrink:0}
-.day-mgr-label{text-transform:uppercase;letter-spacing:0.05em;font-weight:500;margin-right:auto}
+.day-mgr{display:flex;align-items:center;gap:8px;padding:0 14px;margin-bottom:8px;font-size:11px;color:var(--text2);flex-shrink:0;min-height:30px}
+.day-mgr-label{text-transform:uppercase;letter-spacing:0.05em;font-weight:500}
 .day-mgr-btn{width:28px;height:28px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit;touch-action:manipulation}
 .day-mgr-btn:active{background:var(--bg2)}
 .day-mgr-btn:disabled{opacity:0.35;cursor:not-allowed}
@@ -61,18 +62,22 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .backup-banner button{padding:5px 10px;font-size:11px;font-weight:500;border-radius:var(--radius);border:0.5px solid var(--warn-text);background:transparent;color:var(--warn-text);cursor:pointer;font-family:inherit;flex-shrink:0}
 .backup-banner button:first-of-type{background:var(--warn-text);color:var(--warn-bg);font-weight:600}
 
-/* === Dynamic status strip === */
-/* Sits below the day tabs. Left: contextual text. Right: muscle activity indicators (only notable muscles shown). */
-.status-strip{display:flex;align-items:center;gap:8px;padding:5px 12px;font-size:11px;color:var(--text2);border-bottom:0.5px solid var(--border);background:var(--bg);flex-shrink:0;min-height:26px}
-.status-text{flex:1;min-width:0;text-align:left;background:transparent;border:none;color:inherit;font:inherit;cursor:pointer;padding:2px 0;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* === Status strip (own row between block-label and day-mgr) ===
+   Left: contextual text; right: muscle pips (only notable muscles shown). */
+.status-strip{display:flex;align-items:center;gap:8px;padding:5px 10px;margin:0 0 8px;font-size:11px;color:var(--text2);background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);flex-shrink:0;min-height:28px}
+.status-strip:empty{display:none}
+.status-text{flex:1;min-width:0;text-align:left;background:transparent;border:none;color:var(--text2);font:inherit;font-size:11px;cursor:pointer;padding:2px 0;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.status-text:empty{display:none}
 .status-text:active{opacity:0.7}
-.status-muscles{display:flex;align-items:center;gap:5px;flex-shrink:0}
+/* Muscle pips: only notable muscles (red/yellow = behind, green = ahead). Hidden if no notable muscles. */
+.status-muscles{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.status-muscles:empty{display:none}
 .muscle-pip{display:inline-flex;align-items:center;gap:3px;padding:2px 6px;border-radius:999px;font-size:10px;line-height:1;cursor:pointer;border:0.5px solid transparent;background:transparent;font-family:inherit;color:var(--text2);font-weight:500}
 .muscle-pip-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
 .muscle-pip.low .muscle-pip-dot{background:var(--danger-text)}
 .muscle-pip.medium .muscle-pip-dot{background:var(--warn-text)}
 .muscle-pip.high .muscle-pip-dot{background:var(--success-text)}
-.muscle-pip:active{background:var(--bg2)}
+.muscle-pip:active{background:var(--bg)}
 /* Brief highlight when scrolled to from the status strip */
 .muscle-card-highlight{outline:1.5px solid var(--accent);outline-offset:2px;transition:outline-color 0.3s var(--ease)}
 
@@ -501,27 +506,38 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 </head>
 <body>
 <div class="top-bar">
+  <!-- Row 1: block strip (scrollable) with block-specific actions inline; app actions pinned to the right -->
   <div class="block-bar" id="block-bar">
     <div class="block-scroll-area" id="block-scroll-area">
       <div class="block-buttons" id="block-buttons"></div>
+      <!-- Block-specific actions live INSIDE the scroll area so they appear directly after the block buttons.
+           The scroll area as a whole flexes; once it fills, content scrolls horizontally within it. -->
+      <div class="block-mgmt-actions">
+        <button class="icon-btn" onclick="addBlock()" title="Add new block" aria-label="Add new block">＋</button>
+        <button class="icon-btn" onclick="confirmDeleteBlock()" title="Delete this block" aria-label="Delete this block"><i class="ti ti-trash"></i></button>
+        <button class="icon-btn" onclick="confirmResetBlock()" title="Reset this block" aria-label="Reset this block"><i class="ti ti-refresh"></i></button>
+      </div>
     </div>
-    <div class="block-mgmt-actions">
-      <button class="icon-btn" onclick="addBlock()" title="Add new block" aria-label="Add new block">＋</button>
-      <button class="icon-btn" onclick="confirmDeleteBlock()" title="Delete this block" aria-label="Delete this block">🗑</button>
-      <button class="icon-btn" onclick="confirmResetBlock()" title="Reset this block" aria-label="Reset this block"><i class="ti ti-refresh"></i></button>
-    </div>
+    <!-- App-level actions, pinned to the right edge -->
+    <div class="block-bar-divider" aria-hidden="true"></div>
     <div class="app-actions">
       <button class="icon-btn" onclick="openHistory()" title="History" aria-label="Open history"><i class="ti ti-chart-line"></i></button>
       <button class="icon-btn" onclick="openSettings()" title="Settings" aria-label="Open settings"><i class="ti ti-settings"></i></button>
     </div>
-    <span class="save-status saved" id="save-status">Saved</span>
   </div>
+  <!-- Row 2: block name + Saved indicator, compact -->
   <div class="block-label-row">
     <label>Block&nbsp;name&nbsp;</label>
     <input class="editable-label" id="block-name-input" type="text" placeholder="e.g. Hypertrophy Phase" oninput="onBlockNameInput(this.value)">
+    <span class="save-status saved" id="save-status">Saved</span>
   </div>
 </div>
-<!-- Days +/- controls: between block name editor (above) and day tabs (below) -->
+<!-- Row 3: dedicated status strip — context text + muscle activity dots -->
+<div class="status-strip" id="status-strip" style="display:none">
+  <button class="status-text" id="status-strip-text" type="button"></button>
+  <div class="status-muscles" id="status-strip-muscles"></div>
+</div>
+<!-- Row 4: Days +/- controls (compact, no extras) -->
 <div class="day-mgr" id="day-mgr">
   <span class="day-mgr-label">Days</span>
   <button class="day-mgr-btn" id="day-remove" title="Remove last day" aria-label="Remove last day">−</button>
@@ -530,12 +546,6 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 </div>
 <div class="tabs" id="tabs-bar">
   <button class="tab-sum" id="tab-sum" onclick="showTab('sum')">Summary</button>
-</div>
-<!-- Dynamic status strip: left side shows contextual text, right side shows muscle activity dots.
-     Tap text → open History (or in-progress workout); tap a dot → jump to that muscle in Summary. -->
-<div class="status-strip" id="status-strip" style="display:none">
-  <button class="status-text" id="status-strip-text" type="button"></button>
-  <div class="status-muscles" id="status-strip-muscles"></div>
 </div>
 <!-- Backup reminder banner (shown if it's been >14 days since last backup) -->
 <div class="backup-banner" id="backup-banner" style="display:none">
@@ -1636,6 +1646,23 @@ function pickBlockPlaceholder(blockId){
   let h=0;
   for(let i=0;i<blockId.length;i++)h=((h<<5)-h+blockId.charCodeAt(i))|0;
   return BLOCK_NAME_PLACEHOLDERS[Math.abs(h)%BLOCK_NAME_PLACEHOLDERS.length];
+}
+
+// Rotating day-label placeholders — same idea as block placeholders, but for individual days.
+// Mix of mainstream split names + a few light jokes for variety.
+const DAY_LABEL_PLACEHOLDERS=[
+  // Mainstream
+  "Push","Pull","Legs","Upper","Lower","Chest & Back","Arms & Delts","Quads","Hamstrings & Glutes",
+  "Full Body","Posterior Chain","Anterior Chain",
+  // Whimsical
+  "Vanity Day","Mirror Muscles","Functional-ish","Leg Day (Skipped)","Pump Day","Ego Lifting"
+];
+function pickDayPlaceholder(blockId, dayIdx){
+  // Hash block ID, then offset by dayIdx * 7 (prime, co-prime to placeholder count) so days within
+  // a block get well-distributed placeholders and don't all collide on the same one.
+  let h=0;
+  for(let i=0;i<blockId.length;i++)h=((h<<5)-h+blockId.charCodeAt(i))|0;
+  return DAY_LABEL_PLACEHOLDERS[Math.abs(h+dayIdx*7)%DAY_LABEL_PLACEHOLDERS.length];
 }
 
 function syncBlockButtons(){
@@ -3247,15 +3274,15 @@ function findInProgressSession(){
 
 // Render the status strip. Called on app boot, after any session change, and on tab switches.
 function renderStatusStrip(){
-  const strip=document.getElementById("status-strip");
   const textEl=document.getElementById("status-strip-text");
   const musclesEl=document.getElementById("status-strip-muscles");
-  if(!strip||!textEl||!musclesEl)return;
+  if(!textEl||!musclesEl)return;
 
-  // Single calculation, used by both sides
   const volStatus=calcStatusStripVolume();
 
-  // --- Left side: contextual text ---
+  // --- Left side: only show context that isn't already visible elsewhere in the UI ---
+  // Day count, sets/wk, etc. are already shown by the day tabs and the Summary tab,
+  // so we DON'T repeat them here. Instead: surface workout state + recency only.
   const inProgress=findInProgressSession();
   let textContent="";
   let textAction=null;
@@ -3264,12 +3291,13 @@ function renderStatusStrip(){
     const blockName=inProgress.blockName||"Workout";
     const dayLabel=inProgress.dayLabel||"";
     const minsAgo=Math.max(0,Math.floor((Date.now()-new Date(inProgress.date).getTime())/60000));
-    const ago = minsAgo<60 ? `${minsAgo} min ago` : `${Math.floor(minsAgo/60)}h ago`;
-    textContent = `${blockName}${dayLabel?" · "+dayLabel:""} in progress · started ${ago}`;
+    const ago = minsAgo<60 ? `${minsAgo}m ago` : `${Math.floor(minsAgo/60)}h ago`;
+    textContent = `${blockName}${dayLabel?" · "+dayLabel:""} in progress · ${ago}`;
     textAction = ()=>{ if(typeof openWorkoutModal==="function")openWorkoutModal(inProgress.id) };
   } else {
+    // Surface info that isn't shown elsewhere: total planned weekly set volume (with intensifier multipliers)
+    // and how long since the last workout. Volume number is the whole point of the app, so it's first.
     const ids=curDayIds();
-    const plannedDayCount=ids.filter(d=>mem[curBlock].days[d].rows.some(r=>r.ex&&r.sets>0)).length;
     let weeklySets=0;
     ids.forEach(d=>{
       mem[curBlock].days[d].rows.forEach(r=>{
@@ -3277,25 +3305,24 @@ function renderStatusStrip(){
       });
     });
     const parts=[];
-    if(plannedDayCount>0)parts.push(`${plannedDayCount} day${plannedDayCount===1?"":"s"} planned`);
-    if(weeklySets>0)parts.push(`~${Math.round(weeklySets)} sets/wk`);
+    if(weeklySets>0)parts.push(`~${Math.round(weeklySets)} sets/wk planned`);
     if(volStatus.lastSessionDate){
       const daysAgo=Math.floor((Date.now()-volStatus.lastSessionDate.getTime())/(24*60*60*1000));
       if(daysAgo===0)parts.push("trained today");
       else if(daysAgo===1)parts.push("trained yesterday");
       else parts.push(`${daysAgo}d since last workout`);
-    } else {
+    } else if(weeklySets>0){
       parts.push("no workouts logged yet");
     }
     textContent = parts.join(" · ");
     textAction = ()=>{ if(typeof openHistory==="function")openHistory() };
   }
+  // If text is empty AND no notable muscles, the strip self-hides via :empty rule on the container.
   textEl.textContent=textContent;
   textEl.onclick=textAction;
 
-  // --- Right side: muscle indicators ---
-  // Same threshold logic as renderSummary, scaled to a 14-day window (scale = 2)
-  const scale=2;
+  // --- Right side: muscle indicators (only notable muscles shown) ---
+  const scale=2; // 14-day window vs the planner's 7-day weekly thresholds
   const HIGH=15*scale, LOW=6*scale, NEUTRAL_LOW=10*scale;
   function classify(t){
     if(t>=HIGH)return "high";
@@ -3309,13 +3336,12 @@ function renderStatusStrip(){
     const cls=classify(t);
     if(cls!=="neutral")notable.push({muscle:m, cls, total:t});
   });
-  // Sort: red first (most urgent), then yellow, then green
   notable.sort((a,b)=>{
     const order={low:0, medium:1, high:2};
     if(order[a.cls]!==order[b.cls])return order[a.cls]-order[b.cls];
     return a.total-b.total;
   });
-  const MAX_PIPS=6;
+  const MAX_PIPS=5; // tighter cap since this lives inline now
   const shown=notable.slice(0,MAX_PIPS);
   musclesEl.innerHTML="";
   shown.forEach(({muscle,cls})=>{
@@ -3330,7 +3356,7 @@ function renderStatusStrip(){
     pip.onclick=()=>{showTab("sum");setTimeout(()=>scrollToMuscleInSummary(muscle),50);};
     musclesEl.appendChild(pip);
   });
-  // Show the strip only if there's something to display
+  // Show the strip when it has anything to display; hide when fully empty
   strip.style.display = (textContent || shown.length>0) ? "" : "none";
 }
 
@@ -4614,8 +4640,10 @@ document.getElementById("logset-bg").addEventListener("click",e=>{if(e.target.id
 function renderDay(dayId){
   closeAllDropdowns();const dayData=mem[curBlock].days[dayId];
   const el=document.getElementById(dayId);el.innerHTML="";
+  // Position of this day within the current block, used for placeholder rotation
+  const dayIdx=curDayIds().indexOf(dayId);
   const labelRow=document.createElement("div");labelRow.className="day-label-row";
-  const inp=document.createElement("input");inp.className="editable-label";inp.type="text";inp.value=dayData.label;inp.placeholder="Label (e.g. Push)";
+  const inp=document.createElement("input");inp.className="editable-label";inp.type="text";inp.value=dayData.label;inp.placeholder="Label (e.g. "+pickDayPlaceholder(curBlock,dayIdx)+")";
   inp.oninput=e=>{dayData.label=e.target.value;updateDayTabLabel(dayId);autoSave()};
   labelRow.appendChild(inp);el.appendChild(labelRow);
 
