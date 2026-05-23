@@ -522,6 +522,44 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .logset-rir-chip{min-width:30px;padding:5px 8px;font-size:12px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text2);cursor:pointer;font-family:inherit;font-variant-numeric:tabular-nums}
 .logset-rir-chip.active{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
 
+/* === Multi-set target editor (v2) === */
+/* The new target modal replaces the single-set editor with a per-set form
+   that adapts its body to the row's set type. */
+.target-modal-v2{max-width:360px;width:100%;display:flex;flex-direction:column;max-height:85vh}
+.target-modal-header{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:10px}
+.target-modal-header .logset-title{text-align:left;margin-bottom:2px}
+.target-modal-sub{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.04em}
+.target-modal-close{background:transparent;border:none;color:var(--text3);font-size:18px;padding:2px 6px;cursor:pointer;flex-shrink:0;line-height:1}
+.target-modal-close:active{color:var(--text)}
+.target-modal-body{overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:6px;margin-bottom:10px;padding:1px}
+.target-modal-note{font-size:11px;color:var(--text3);font-style:italic;line-height:1.4;margin-bottom:10px;display:flex;align-items:flex-start;gap:4px}
+.target-modal-note i{font-size:11px;margin-top:2px;flex-shrink:0}
+/* Per-set row: shared base used by straight/AMRAP/cluster etc. */
+.tgt-set-row{display:flex;align-items:center;gap:6px;padding:8px 8px 8px 10px;border-radius:8px;border:0.5px solid var(--border);background:var(--bg)}
+.tgt-set-row.focused{border-color:var(--accent);background:var(--accent-bg, var(--bg2))}
+.tgt-set-row .tgt-set-num{font-size:11px;color:var(--text3);min-width:14px;flex-shrink:0}
+.tgt-set-row.focused .tgt-set-num{color:var(--accent);font-weight:500}
+.tgt-set-row input{padding:6px 8px;font-size:13px;border:0.5px solid var(--border2);border-radius:6px;background:var(--bg2);color:var(--text);outline:none;font-family:inherit;font-variant-numeric:tabular-nums;-moz-appearance:textfield;min-width:0}
+.tgt-set-row input.tgt-w{width:64px;text-align:right}
+.tgt-set-row input.tgt-r{width:48px;text-align:center}
+.tgt-set-row input:focus{border-color:var(--accent)}
+.tgt-set-row input::placeholder{color:var(--text3);font-style:italic}
+.tgt-set-row .tgt-unit,.tgt-set-row .tgt-x,.tgt-set-row .tgt-suffix{font-size:11px;color:var(--text3);flex-shrink:0}
+.tgt-set-row .tgt-suffix{flex:1}
+.tgt-set-row.focused .tgt-unit,.tgt-set-row.focused .tgt-x,.tgt-set-row.focused .tgt-suffix{color:var(--accent)}
+.tgt-set-row .tgt-clear{background:transparent;border:none;color:var(--text3);font-size:12px;padding:4px;cursor:pointer;flex-shrink:0;line-height:1}
+.tgt-set-row .tgt-clear:active{color:var(--danger-text)}
+/* Sequence card: used by drop/myo/restpause/cluster (multi-line per sequence) */
+.tgt-seq-card{padding:10px;border-radius:8px;border:0.5px solid var(--border);background:var(--bg);display:flex;flex-direction:column;gap:6px}
+.tgt-seq-card.focused{border-color:var(--accent);background:var(--accent-bg, var(--bg2))}
+.tgt-seq-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:2px}
+.tgt-seq-card.focused .tgt-seq-label{color:var(--accent);font-weight:500}
+.tgt-seq-line{display:flex;align-items:center;gap:6px}
+.tgt-seq-line .tgt-seq-key{font-size:10px;color:var(--text3);min-width:54px;display:inline-flex;align-items:center;gap:3px}
+.tgt-seq-card.focused .tgt-seq-line .tgt-seq-key{color:var(--accent)}
+.tgt-seq-line .tgt-seq-key i{font-size:10px;opacity:0.85}
+.tgt-seq-footer{font-size:10px;color:var(--text3);font-style:italic;padding-top:2px;opacity:0.85}
+
 /* "Start workout" button on day panels */
 .start-workout{display:block;width:100%;margin:0 0 12px;padding:12px;font-size:14px;font-weight:600;border-radius:var(--radius);border:none;background:var(--accent);color:var(--accent-text);cursor:pointer;font-family:inherit;touch-action:manipulation}
 .start-workout:active{opacity:0.85}
@@ -793,24 +831,22 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 </div>
 
 <!-- Target editor modal (plan-time: weight/reps target per exercise row) -->
+<!-- Multi-set target editor: lets the user plan weight/reps targets for all sets in a
+     row at once. Body is rendered dynamically based on the row's set type. -->
 <div class="modal-bg input-modal" id="target-bg">
-  <div class="modal target-modal">
-    <div class="logset-title" id="target-title">Target</div>
-    <div class="logset-target">Optional weight × reps target for this exercise. Pre-fills the log modal during workouts.</div>
-    <div class="logset-fields">
-      <div class="logset-field">
-        <label>Weight (<span id="target-unit">lb</span>)</label>
-        <input type="text" inputmode="decimal" pattern="[0-9]*\.?[0-9]*" id="target-weight" placeholder="—" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-form-type="other" data-lpignore="true">
+  <div class="modal target-modal target-modal-v2">
+    <div class="target-modal-header">
+      <div>
+        <div class="logset-title" id="target-title">Target</div>
+        <div class="target-modal-sub" id="target-sub"></div>
       </div>
-      <div class="logset-field">
-        <label>Reps</label>
-        <input type="text" inputmode="numeric" pattern="[0-9]*" id="target-reps" placeholder="—" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-form-type="other" data-lpignore="true">
-      </div>
+      <button class="target-modal-close" type="button" onclick="closeTargetEditor()" aria-label="Close"><i class="ti ti-x" aria-hidden="true"></i></button>
     </div>
+    <div class="target-modal-body" id="target-body"></div>
+    <div class="target-modal-note" id="target-note"></div>
     <div class="modal-actions">
       <button onclick="closeTargetEditor()">Cancel</button>
-      <button class="danger" id="target-clear" onclick="clearTarget()" style="display:none">Clear</button>
-      <button class="primary" onclick="saveTarget()">Save</button>
+      <button class="primary" onclick="saveTargetMulti()">Save targets</button>
     </div>
   </div>
 </div>
@@ -4697,6 +4733,14 @@ function buildDropCard(s, pr, slotIdx, existing){
       if(dropSlotTgt){
         st0.weights[0]=dropSlotTgt.weight;
         st0.reps[0]=dropSlotTgt.reps;
+        // Seed user-planned drop weights (if any) before cascade. The cascade fills any
+        // remaining nulls with the ~20% step-down.
+        if(Array.isArray(dropSlotTgt.dropWeights)){
+          for(let d=0;d<dropSlotTgt.dropWeights.length && d+1<st0.weights.length;d++){
+            const v=dropSlotTgt.dropWeights[d];
+            if(v!=null && v!=="")st0.weights[d+1]=v;
+          }
+        }
       } else if(seed){
         st0.weights[0]=seed.weight;
         st0.reps[0]=seed.reps;
@@ -4978,49 +5022,374 @@ function clearRowTarget(row, setIdx){
   }
 }
 
-let targetCtx=null;
+let targetCtx=null; // {dayId, rowIdx, focusSetIdx, type, draft: [{...}]}
+// Open the multi-set target editor focused on a specific set/sequence index.
+// Builds a body appropriate to the row's set type and pre-populates from existing targets.
 function openTargetEditor(dayId, rowIdx, setIdx){
   const row=mem[curBlock].days[dayId].rows[rowIdx];
-  if(!row.ex){return}
-  if(typeof setIdx!=="number")setIdx=0; // backward-compat: legacy callers default to set 0
-  targetCtx={dayId, rowIdx, setIdx};
-  const existing=getRowTarget(row, setIdx);
-  // Title shows exercise + which set/sequence this target is for (if more than one)
-  const totalSets=row.sets||1;
-  const setLabel=totalSets>1?` — set ${setIdx+1} of ${totalSets}`:"";
-  document.getElementById("target-title").textContent=row.ex+setLabel;
-  document.getElementById("target-unit").textContent=prefs.preferredUnit;
-  document.getElementById("target-weight").value=existing?existing.weight:"";
-  document.getElementById("target-reps").value=existing?existing.reps:"";
-  document.getElementById("target-clear").style.display=existing?"":"none";
+  if(!row.ex)return;
+  if(typeof setIdx!=="number")setIdx=0;
+  const type=rowType(row);
+  const totalSeqs=row.sets||1;
+  // Build a working draft array: one entry per sequence, copied from existing targets
+  const draft=[];
+  for(let i=0;i<totalSeqs;i++){
+    const t=getRowTarget(row,i);
+    draft.push(t?{...t, dropWeights: Array.isArray(t.dropWeights)?[...t.dropWeights]:undefined}:null);
+  }
+  targetCtx={dayId, rowIdx, focusSetIdx:Math.max(0,Math.min(totalSeqs-1,setIdx)), type, row, draft};
+
+  // Header text
+  const info=getSetTypeInfo(type);
+  document.getElementById("target-title").textContent=row.ex;
+  const sub=document.getElementById("target-sub");
+  let seqWord = (type==="straight"||type==="amrap") ? "sets" : "sequences";
+  let subText = `${info.label} · ${totalSeqs} ${seqWord}`;
+  if(type==="drop")subText += ` · ${row.dropCount||3} drops`;
+  if(type==="myorep"||type==="restpause")subText += ` · ${row.miniSetCount||(type==="myorep"?4:3)} mini-sets`;
+  if(type==="cluster")subText += ` · ${row.clusterCount||5} clusters`;
+  sub.textContent=subText;
+
+  // Render body
+  renderTargetBody();
+
+  // Note (varies per type)
+  const note=document.getElementById("target-note");
+  const noteMap={
+    straight: "Leave a set empty to inherit the previous set's values when saved.",
+    amrap: "Reps target is your goal — push past it if you can.",
+    drop: "Drop reps aren't planned — each drop goes to failure. Empty drop weights cascade ~20% down.",
+    myorep: "Mini-set reps aren't planned — each mini-set goes to failure.",
+    restpause: "Mini-set reps aren't planned — each mini-set goes to failure.",
+    cluster: "All clusters use the same weight and rep count."
+  };
+  note.innerHTML = `<i class="ti ti-info-circle" aria-hidden="true"></i><span>${noteMap[type]||""}</span>`;
+
   document.getElementById("target-bg").classList.add("open");
-  setTimeout(()=>document.getElementById("target-weight").focus(),60);
+  // Focus the weight input on the focused row, after the modal renders
+  setTimeout(()=>{
+    const focused=document.querySelector("#target-body .tgt-w-focused");
+    if(focused)focused.focus();
+  },80);
 }
+
 function closeTargetEditor(){
   targetCtx=null;
   document.getElementById("target-bg").classList.remove("open");
 }
-function saveTarget(){
+
+// Build the per-set-type body. Each type-renderer reads from targetCtx.draft and
+// builds input elements that write back to draft on every change.
+function renderTargetBody(){
+  const body=document.getElementById("target-body");
+  body.innerHTML="";
   if(!targetCtx)return;
-  const w=parseFloat(document.getElementById("target-weight").value);
-  const r=parseInt(document.getElementById("target-reps").value,10);
-  if(isNaN(w)&&isNaN(r)){clearTarget();return}
-  if(isNaN(w)||w<0||isNaN(r)||r<=0){
-    alert("Please enter a valid weight and reps (or leave both blank to clear).");
-    return;
+  const t=targetCtx.type;
+  if(t==="straight"||t==="amrap"){
+    renderTargetBodyStraight(body, t==="amrap");
+  } else if(t==="drop"){
+    renderTargetBodyDrop(body);
+  } else if(t==="myorep"||t==="restpause"){
+    renderTargetBodyMyoOrRestPause(body, t);
+  } else if(t==="cluster"){
+    renderTargetBodyCluster(body);
   }
-  const ctx=targetCtx;
-  const row=mem[curBlock].days[ctx.dayId].rows[ctx.rowIdx];
-  setRowTarget(row, ctx.setIdx, {weight:w, reps:r, unit:prefs.preferredUnit});
-  closeTargetEditor();
-  renderDay(ctx.dayId);
-  autoSave();
 }
-function clearTarget(){
+
+// Shared helper: build a weight input. `value` is current draft value, `onChange` writes back.
+function buildTargetWeightInput(value, onChange, opts){
+  opts=opts||{};
+  const inp=document.createElement("input");
+  inp.type="text";inp.inputMode="decimal";inp.pattern="[0-9]*\\.?[0-9]*";
+  inp.autocomplete="off";inp.setAttribute("data-form-type","other");inp.setAttribute("data-lpignore","true");
+  inp.className="tgt-w"+(opts.focused?" tgt-w-focused":"");
+  if(opts.placeholder!=null)inp.placeholder=String(opts.placeholder);
+  if(value!=null&&value!=="")inp.value=String(value);
+  inp.oninput=()=>onChange(inp.value.trim());
+  return inp;
+}
+function buildTargetRepsInput(value, onChange, opts){
+  opts=opts||{};
+  const inp=document.createElement("input");
+  inp.type="text";inp.inputMode="numeric";inp.pattern="[0-9]*";
+  inp.autocomplete="off";inp.setAttribute("data-form-type","other");inp.setAttribute("data-lpignore","true");
+  inp.className="tgt-r";
+  if(opts.placeholder!=null)inp.placeholder=String(opts.placeholder);
+  if(value!=null&&value!=="")inp.value=String(value);
+  inp.oninput=()=>onChange(inp.value.trim());
+  return inp;
+}
+
+// === Straight / AMRAP body ===
+// One row per set: [set#] [weight] lb × [reps] reps [clear×]
+// Empty sets show the previous set's value as a faded placeholder ("inherit on save").
+function renderTargetBodyStraight(body, isAmrap){
+  const ctx=targetCtx;
+  const sets=ctx.row.sets||1;
+  for(let i=0;i<sets;i++){
+    const focused=(i===ctx.focusSetIdx);
+    const row=document.createElement("div");
+    row.className="tgt-set-row"+(focused?" focused":"");
+    // Placeholder = previous set's draft value (so leaving blank = "inherit on save")
+    const prev=i>0?ctx.draft[i-1]:null;
+    const wPh=prev?.weight!=null?String(prev.weight):"—";
+    const rPh=prev?.reps!=null?String(prev.reps):"—";
+    const cur=ctx.draft[i];
+    const num=document.createElement("span");num.className="tgt-set-num";num.textContent=String(i+1);
+    row.appendChild(num);
+    row.appendChild(buildTargetWeightInput(cur?.weight, v=>{
+      ensureDraftEntry(i); ctx.draft[i].weight=v;
+    }, {focused, placeholder:wPh}));
+    const u=document.createElement("span");u.className="tgt-unit";u.textContent=prefs.preferredUnit;
+    row.appendChild(u);
+    const x=document.createElement("span");x.className="tgt-x";x.textContent="×";
+    row.appendChild(x);
+    row.appendChild(buildTargetRepsInput(cur?.reps, v=>{
+      ensureDraftEntry(i); ctx.draft[i].reps=v;
+    }, {placeholder:rPh}));
+    const sfx=document.createElement("span");sfx.className="tgt-suffix";
+    sfx.innerHTML = isAmrap ? `reps <i class="ti ti-star" aria-hidden="true" style="font-size:10px;opacity:0.7"></i>` : "reps";
+    row.appendChild(sfx);
+    // Clear-this-row button (only when this set has a target)
+    if(cur && (cur.weight!=null||cur.reps!=null)){
+      const clr=document.createElement("button");clr.type="button";clr.className="tgt-clear";clr.innerHTML='<i class="ti ti-x" aria-hidden="true"></i>';clr.title="Clear this set";
+      clr.onclick=()=>{ctx.draft[i]=null;renderTargetBody()};
+      row.appendChild(clr);
+    }
+    body.appendChild(row);
+  }
+}
+
+// === Drop body ===
+// Per-sequence card: [initial weight × initial reps] then a stacked list of drop weights
+// (one per row.dropCount). Drop weights show the cascade as a faint placeholder; user can override.
+function renderTargetBodyDrop(body){
+  const ctx=targetCtx;
+  const seqs=ctx.row.sets||1;
+  const dropN=Math.max(1,Math.min(7,ctx.row.dropCount||3));
+  for(let i=0;i<seqs;i++){
+    const focused=(i===ctx.focusSetIdx);
+    const card=document.createElement("div");
+    card.className="tgt-seq-card"+(focused?" focused":"");
+    const lbl=document.createElement("div");lbl.className="tgt-seq-label";lbl.textContent=`Sequence ${i+1}`;
+    card.appendChild(lbl);
+    const cur=ctx.draft[i];
+    // Initial line
+    const initLine=document.createElement("div");initLine.className="tgt-seq-line";
+    const k1=document.createElement("span");k1.className="tgt-seq-key";k1.textContent="initial";
+    initLine.appendChild(k1);
+    initLine.appendChild(buildTargetWeightInput(cur?.weight, v=>{
+      ensureDraftEntry(i); ctx.draft[i].weight=v;
+      // Re-render this body so cascaded drop placeholders update
+      renderTargetBody();
+    }, {focused, placeholder:"—"}));
+    const u=document.createElement("span");u.className="tgt-unit";u.textContent=prefs.preferredUnit;
+    initLine.appendChild(u);
+    const x=document.createElement("span");x.className="tgt-x";x.textContent="×";
+    initLine.appendChild(x);
+    initLine.appendChild(buildTargetRepsInput(cur?.reps, v=>{
+      ensureDraftEntry(i); ctx.draft[i].reps=v;
+    }, {placeholder:"—"}));
+    const sfx=document.createElement("span");sfx.className="tgt-suffix";sfx.textContent="reps";
+    initLine.appendChild(sfx);
+    card.appendChild(initLine);
+    // Drop lines — one per dropCount. Compute cascaded placeholders from the initial weight.
+    // Build a synthetic weights[] array with initial + user-set drop weights, then cascade nulls
+    // to show what the auto-fill would produce.
+    const synth=[parseFloat(cur?.weight)||null];
+    const userDrops=cur?.dropWeights||[];
+    for(let d=0;d<dropN;d++){
+      const v=userDrops[d];
+      synth.push(v!=null&&v!==""?parseFloat(v):null);
+    }
+    const placeholders=[...synth];
+    cascadeDropWeights(placeholders, prefs.preferredUnit);
+    for(let d=0;d<dropN;d++){
+      const line=document.createElement("div");line.className="tgt-seq-line";
+      const k=document.createElement("span");k.className="tgt-seq-key";
+      k.innerHTML='<i class="ti ti-arrow-down" aria-hidden="true"></i>drop '+(d+1);
+      line.appendChild(k);
+      const ph=placeholders[d+1];
+      const phText=(ph!=null&&!isNaN(ph))?String(ph):"—";
+      line.appendChild(buildTargetWeightInput(userDrops[d], v=>{
+        ensureDraftEntry(i);
+        if(!Array.isArray(ctx.draft[i].dropWeights))ctx.draft[i].dropWeights=new Array(dropN).fill(null);
+        ctx.draft[i].dropWeights[d]=v;
+        renderTargetBody();
+      }, {placeholder:phText}));
+      const u2=document.createElement("span");u2.className="tgt-unit";u2.textContent=prefs.preferredUnit;
+      line.appendChild(u2);
+      const x2=document.createElement("span");x2.className="tgt-x";x2.textContent="×";
+      line.appendChild(x2);
+      const fail=document.createElement("span");fail.className="tgt-suffix";fail.style.fontStyle="italic";fail.textContent="to failure";
+      line.appendChild(fail);
+      card.appendChild(line);
+    }
+    // Clear button (sequence-level)
+    if(cur && (cur.weight!=null||cur.reps!=null||(cur.dropWeights||[]).some(x=>x!=null))){
+      const footer=document.createElement("div");footer.className="tgt-seq-footer";
+      const clr=document.createElement("button");clr.type="button";clr.className="tgt-clear";
+      clr.innerHTML='<i class="ti ti-x" aria-hidden="true"></i> Clear sequence';
+      clr.style.background="transparent";clr.style.border="none";clr.style.color="var(--text3)";clr.style.cursor="pointer";clr.style.fontSize="11px";clr.style.padding="2px 0";clr.style.fontFamily="inherit";
+      clr.onclick=()=>{ctx.draft[i]=null;renderTargetBody()};
+      footer.appendChild(clr);
+      card.appendChild(footer);
+    }
+    body.appendChild(card);
+  }
+}
+
+// === Myo-rep / Rest-pause body ===
+// Per-sequence card: weight, then "activation reps" (for myo) or "initial reps" (for rest-pause).
+// No mini-set rep fields — they're always to failure.
+function renderTargetBodyMyoOrRestPause(body, type){
+  const ctx=targetCtx;
+  const seqs=ctx.row.sets||1;
+  const miniN = ctx.row.miniSetCount || (type==="myorep"?4:3);
+  const repsLabel = type==="myorep" ? "activation" : "initial";
+  const footerText = type==="myorep"
+    ? `+ ${miniN} mini-sets to failure (~5s rest each)`
+    : `+ ${miniN} mini-sets to failure (~15-20s rest each)`;
+  for(let i=0;i<seqs;i++){
+    const focused=(i===ctx.focusSetIdx);
+    const card=document.createElement("div");
+    card.className="tgt-seq-card"+(focused?" focused":"");
+    const lbl=document.createElement("div");lbl.className="tgt-seq-label";lbl.textContent=`Sequence ${i+1}`;
+    card.appendChild(lbl);
+    const cur=ctx.draft[i];
+    // Weight line
+    const wLine=document.createElement("div");wLine.className="tgt-seq-line";
+    const k1=document.createElement("span");k1.className="tgt-seq-key";k1.textContent="weight";
+    wLine.appendChild(k1);
+    wLine.appendChild(buildTargetWeightInput(cur?.weight, v=>{
+      ensureDraftEntry(i); ctx.draft[i].weight=v;
+    }, {focused, placeholder:"—"}));
+    const u=document.createElement("span");u.className="tgt-unit";u.textContent=prefs.preferredUnit;
+    wLine.appendChild(u);
+    card.appendChild(wLine);
+    // Reps line
+    const rLine=document.createElement("div");rLine.className="tgt-seq-line";
+    const k2=document.createElement("span");k2.className="tgt-seq-key";k2.textContent=repsLabel;
+    rLine.appendChild(k2);
+    rLine.appendChild(buildTargetRepsInput(cur?.reps, v=>{
+      ensureDraftEntry(i); ctx.draft[i].reps=v;
+    }, {placeholder:"—"}));
+    const sfx=document.createElement("span");sfx.className="tgt-suffix";sfx.textContent="reps";
+    rLine.appendChild(sfx);
+    card.appendChild(rLine);
+    // Footer
+    const ftr=document.createElement("div");ftr.className="tgt-seq-footer";ftr.textContent=footerText;
+    card.appendChild(ftr);
+    // Clear
+    if(cur && (cur.weight!=null||cur.reps!=null)){
+      const clr=document.createElement("button");clr.type="button";clr.className="tgt-clear";
+      clr.innerHTML='<i class="ti ti-x" aria-hidden="true"></i> Clear sequence';
+      clr.style.background="transparent";clr.style.border="none";clr.style.color="var(--text3)";clr.style.cursor="pointer";clr.style.fontSize="11px";clr.style.padding="2px 0";clr.style.fontFamily="inherit";clr.style.alignSelf="flex-start";
+      clr.onclick=()=>{ctx.draft[i]=null;renderTargetBody()};
+      card.appendChild(clr);
+    }
+    body.appendChild(card);
+  }
+}
+
+// === Cluster body ===
+// Per-sequence: weight + reps per cluster + cluster count (all plannable).
+function renderTargetBodyCluster(body){
+  const ctx=targetCtx;
+  const seqs=ctx.row.sets||1;
+  const clusterN=ctx.row.clusterCount||5;
+  for(let i=0;i<seqs;i++){
+    const focused=(i===ctx.focusSetIdx);
+    const card=document.createElement("div");
+    card.className="tgt-seq-card"+(focused?" focused":"");
+    const lbl=document.createElement("div");lbl.className="tgt-seq-label";lbl.textContent=`Sequence ${i+1}`;
+    card.appendChild(lbl);
+    const cur=ctx.draft[i];
+    // Weight line
+    const wLine=document.createElement("div");wLine.className="tgt-seq-line";
+    const k1=document.createElement("span");k1.className="tgt-seq-key";k1.textContent="weight";
+    wLine.appendChild(k1);
+    wLine.appendChild(buildTargetWeightInput(cur?.weight, v=>{
+      ensureDraftEntry(i); ctx.draft[i].weight=v;
+    }, {focused, placeholder:"—"}));
+    const u=document.createElement("span");u.className="tgt-unit";u.textContent=prefs.preferredUnit;
+    wLine.appendChild(u);
+    card.appendChild(wLine);
+    // Reps per cluster
+    const rLine=document.createElement("div");rLine.className="tgt-seq-line";
+    const k2=document.createElement("span");k2.className="tgt-seq-key";k2.textContent="reps/cluster";
+    rLine.appendChild(k2);
+    rLine.appendChild(buildTargetRepsInput(cur?.reps, v=>{
+      ensureDraftEntry(i); ctx.draft[i].reps=v;
+    }, {placeholder:"—"}));
+    const sfx=document.createElement("span");sfx.className="tgt-suffix";sfx.textContent=`× ${clusterN} clusters`;
+    rLine.appendChild(sfx);
+    card.appendChild(rLine);
+    if(cur && (cur.weight!=null||cur.reps!=null)){
+      const clr=document.createElement("button");clr.type="button";clr.className="tgt-clear";
+      clr.innerHTML='<i class="ti ti-x" aria-hidden="true"></i> Clear sequence';
+      clr.style.background="transparent";clr.style.border="none";clr.style.color="var(--text3)";clr.style.cursor="pointer";clr.style.fontSize="11px";clr.style.padding="2px 0";clr.style.fontFamily="inherit";clr.style.alignSelf="flex-start";
+      clr.onclick=()=>{ctx.draft[i]=null;renderTargetBody()};
+      card.appendChild(clr);
+    }
+    body.appendChild(card);
+  }
+}
+
+// Helper: ensure ctx.draft[i] is an object so per-field writes succeed.
+function ensureDraftEntry(i){
+  if(!targetCtx)return;
+  if(!targetCtx.draft[i])targetCtx.draft[i]={unit:prefs.preferredUnit};
+  else if(!targetCtx.draft[i].unit)targetCtx.draft[i].unit=prefs.preferredUnit;
+}
+
+// Multi-set save: validates each non-empty draft entry, applies "inherit from previous"
+// for straight/AMRAP empty rows, then writes back to row.targets[].
+function saveTargetMulti(){
   if(!targetCtx)return;
   const ctx=targetCtx;
   const row=mem[curBlock].days[ctx.dayId].rows[ctx.rowIdx];
-  clearRowTarget(row, ctx.setIdx);
+  const type=ctx.type;
+  const seqs=row.sets||1;
+  // Build the final targets array
+  const finalTargets=new Array(seqs).fill(null);
+  // For straight/AMRAP: inherit from previous when both weight & reps are blank
+  let lastFilled=null;
+  for(let i=0;i<seqs;i++){
+    const d=ctx.draft[i];
+    if(!d || (d.weight==null||d.weight==="") && (d.reps==null||d.reps==="") && !(d.dropWeights||[]).some(x=>x!=null&&x!=="")){
+      // Empty — for straight/AMRAP, inherit from previous if there's one
+      if((type==="straight"||type==="amrap") && lastFilled){
+        finalTargets[i]={...lastFilled};
+      }
+      continue;
+    }
+    const w=parseFloat(d.weight);
+    const r=parseInt(d.reps,10);
+    // For drop sets, drops-only with no initial weight/reps is invalid
+    if(isNaN(w)||w<=0||isNaN(r)||r<=0){
+      alert(`Sequence ${i+1}: please enter a valid weight and reps (or leave blank to clear).`);
+      return;
+    }
+    const t={weight:w, reps:r, unit:prefs.preferredUnit};
+    // Drop weights for drop type
+    if(type==="drop" && Array.isArray(d.dropWeights)){
+      const dw=d.dropWeights.map(x=>{
+        if(x==null||x==="")return null;
+        const v=parseFloat(x);
+        return isNaN(v)?null:v;
+      });
+      // Only keep dropWeights if any are user-set (non-null)
+      if(dw.some(x=>x!=null))t.dropWeights=dw;
+    }
+    finalTargets[i]=t;
+    lastFilled=t;
+  }
+  // Write back: use setRowTarget for each, with clears for nulls
+  for(let i=0;i<seqs;i++){
+    if(finalTargets[i])setRowTarget(row, i, finalTargets[i]);
+    else clearRowTarget(row, i);
+  }
   closeTargetEditor();
   renderDay(ctx.dayId);
   autoSave();
@@ -5550,15 +5919,25 @@ function renderPillRow(row, dayId, rowIdx){
       const lineEl=document.createElement("div");lineEl.className="pill-line";
       // Initial pill
       lineEl.appendChild(buildSetPill(row, dayId, rowIdx, s, {label:"initial"}));
-      // Drop pills (visual-only; tapping them currently doesn't open a separate target editor —
-      // drop weights/reps are entered during the workout via cascade)
+      // Drop pills — tappable. Each opens the target editor focused on this sequence
+      // so the user can edit the drop weights. Filled pills show the user-set weight;
+      // empty ones show just the ↓ glyph (the cascade fills them at workout time).
+      const seqTgt=getRowTarget(row, s);
+      const userDrops=(seqTgt&&Array.isArray(seqTgt.dropWeights))?seqTgt.dropWeights:[];
       for(let d=0;d<dropCount;d++){
         const drop=document.createElement("button");
         drop.type="button";
-        drop.className="set-pill drop-pill no-target";
-        drop.innerHTML='<i class="ti ti-arrow-down" aria-hidden="true"></i>';
-        drop.title="Drop weight (entered at workout time, auto-cascaded from initial)";
-        drop.onclick=e=>e.preventDefault(); // no-op for now; drop targets aren't user-settable here
+        const userW=userDrops[d];
+        const hasW=userW!=null&&userW!=="";
+        drop.className="set-pill drop-pill"+(hasW?" has-target":" no-target");
+        if(hasW){
+          drop.innerHTML=`<i class="ti ti-arrow-down" aria-hidden="true"></i>${fmtNum(userW)}`;
+          drop.title=`Drop ${d+1}: ${fmtNum(userW)}${prefs.preferredUnit} (tap to edit)`;
+        } else {
+          drop.innerHTML='<i class="ti ti-arrow-down" aria-hidden="true"></i>';
+          drop.title=`Drop ${d+1} (tap to set; defaults to ~20% cascade)`;
+        }
+        drop.onclick=e=>{e.preventDefault();e.stopPropagation();openTargetEditor(dayId, rowIdx, s)};
         lineEl.appendChild(drop);
       }
       // Show the drops −/+ controls only on the first sequence line (one set of controls per row)
