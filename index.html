@@ -61,6 +61,21 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .backup-banner button{padding:5px 10px;font-size:11px;font-weight:500;border-radius:var(--radius);border:0.5px solid var(--warn-text);background:transparent;color:var(--warn-text);cursor:pointer;font-family:inherit;flex-shrink:0}
 .backup-banner button:first-of-type{background:var(--warn-text);color:var(--warn-bg);font-weight:600}
 
+/* === Dynamic status strip === */
+/* Sits below the day tabs. Left: contextual text. Right: muscle activity indicators (only notable muscles shown). */
+.status-strip{display:flex;align-items:center;gap:8px;padding:5px 12px;font-size:11px;color:var(--text2);border-bottom:0.5px solid var(--border);background:var(--bg);flex-shrink:0;min-height:26px}
+.status-text{flex:1;min-width:0;text-align:left;background:transparent;border:none;color:inherit;font:inherit;cursor:pointer;padding:2px 0;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.status-text:active{opacity:0.7}
+.status-muscles{display:flex;align-items:center;gap:5px;flex-shrink:0}
+.muscle-pip{display:inline-flex;align-items:center;gap:3px;padding:2px 6px;border-radius:999px;font-size:10px;line-height:1;cursor:pointer;border:0.5px solid transparent;background:transparent;font-family:inherit;color:var(--text2);font-weight:500}
+.muscle-pip-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.muscle-pip.low .muscle-pip-dot{background:var(--danger-text)}
+.muscle-pip.medium .muscle-pip-dot{background:var(--warn-text)}
+.muscle-pip.high .muscle-pip-dot{background:var(--success-text)}
+.muscle-pip:active{background:var(--bg2)}
+/* Brief highlight when scrolled to from the status strip */
+.muscle-card-highlight{outline:1.5px solid var(--accent);outline-offset:2px;transition:outline-color 0.3s var(--ease)}
+
 /* Settings buttons */
 .settings-btn{padding:8px 14px;font-size:13px;font-weight:500;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);cursor:pointer;font-family:inherit;touch-action:manipulation}
 .settings-btn:active{background:var(--bg2)}
@@ -515,6 +530,12 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 </div>
 <div class="tabs" id="tabs-bar">
   <button class="tab-sum" id="tab-sum" onclick="showTab('sum')">Summary</button>
+</div>
+<!-- Dynamic status strip: left side shows contextual text, right side shows muscle activity dots.
+     Tap text → open History (or in-progress workout); tap a dot → jump to that muscle in Summary. -->
+<div class="status-strip" id="status-strip" style="display:none">
+  <button class="status-text" id="status-strip-text" type="button"></button>
+  <div class="status-muscles" id="status-strip-muscles"></div>
 </div>
 <!-- Backup reminder banner (shown if it's been >14 days since last backup) -->
 <div class="backup-banner" id="backup-banner" style="display:none">
@@ -1441,6 +1462,8 @@ function autoSave(){
       localStorage.setItem(storageKey(curBlock),JSON.stringify(mem[curBlock]));
       status.textContent="Saved";
       status.classList.add("saved");
+      // The status strip's "planned" stats depend on the current block plan; refresh them.
+      if(typeof renderStatusStrip==="function")renderStatusStrip();
     }catch(e){
       status.textContent="Save failed";
       status.classList.remove("saved");
@@ -1598,9 +1621,28 @@ function rebuildBlockButtons(){
   });
 }
 
+// Block-name placeholders rotate on each block switch — a mix of legit phase names and a few jokes
+// so the empty-state input has some character. Seeded by block ID so the same block always shows
+// the same placeholder during a session (less jarring than truly random).
+const BLOCK_NAME_PLACEHOLDERS=[
+  // Serious
+  "Hypertrophy Phase","Volume Block","Intensification","Realization Phase","Mass Block",
+  "Peak Week","Strength Block","Deload","Push/Pull/Legs","Upper/Lower",
+  // Whimsical
+  "Calf Week","Bra Splat","Operation Symmetry","Mirror Muscle Mayhem","The Pump Chronicles","Mostly Cardio"
+];
+function pickBlockPlaceholder(blockId){
+  // Stable hash from block ID so each block has a consistent placeholder
+  let h=0;
+  for(let i=0;i<blockId.length;i++)h=((h<<5)-h+blockId.charCodeAt(i))|0;
+  return BLOCK_NAME_PLACEHOLDERS[Math.abs(h)%BLOCK_NAME_PLACEHOLDERS.length];
+}
+
 function syncBlockButtons(){
   rebuildBlockButtons();
-  document.getElementById("block-name-input").value=mem[curBlock].name||"";
+  const nameInput=document.getElementById("block-name-input");
+  nameInput.value=mem[curBlock].name||"";
+  nameInput.placeholder="e.g. "+pickBlockPlaceholder(curBlock);
   rebuildTabsAndPanels();
   syncDayTabs();
   syncDayMgr();
@@ -1664,6 +1706,7 @@ function switchBlock(b){
   // Keep curTab valid for the new block
   if(curTab!=="sum"&&!ids.includes(curTab))curTab=ids[0]||"sum";
   showTab(curTab);
+  renderStatusStrip();
   const status=document.getElementById("save-status");status.textContent="Saved";status.classList.add("saved");
 }
 function showTab(id){
@@ -1674,6 +1717,7 @@ function showTab(id){
     const panel=document.getElementById(tid);if(panel)panel.classList.toggle("active",tid===id);
   });
   if(id==="sum")renderSummary();
+  renderStatusStrip();
 }
 
 // Day-manager: add/remove days
@@ -3159,6 +3203,164 @@ function calcActualVolume(){
   return {totals, sessionsCounted:counted, firstDate, lastDate, source:"flexify"};
 }
 
+// ===== Dynamic status strip =====
+// Combines a contextual text status (left) with a compact muscle activity report (right).
+// Uses a 14-day window; thresholds scaled 2× from Pak's MED guidelines.
+const STATUS_WINDOW_DAYS=14;
+
+// Calculate per-muscle volumes from logged sets over the last STATUS_WINDOW_DAYS days.
+// Mirrors calcActualVolume's logic but with a shorter window and bypassing in-progress sessions.
+function calcStatusStripVolume(){
+  const now=new Date();
+  const cutoff=new Date(now.getTime()-STATUS_WINDOW_DAYS*24*60*60*1000);
+  const totals={};ALL_MUS.forEach(m=>totals[m]=0);
+  let lastSessionDate=null;
+  const source=prefs.actualSource||"sessions";
+  if(source==="sessions"){
+    sessions.forEach(s=>{
+      if(s.status==="in_progress")return;
+      s.sets.forEach(st=>{
+        const t=new Date(st.timestamp||s.date);
+        if(t<cutoff)return;
+        const mults=exMuscles(st.ex);
+        const mult=getSetTypeMult(st.type||"straight", st);
+        Object.entries(mults).forEach(([m,w])=>{totals[m]=(totals[m]||0)+w*mult});
+        if(!lastSessionDate||t>lastSessionDate)lastSessionDate=t;
+      });
+    });
+  } else {
+    flexifyHistory.forEach(rec=>{
+      if(rec.date<cutoff)return;
+      if(!rec.ours)return;
+      const mults=exMuscles(rec.ours);
+      Object.entries(mults).forEach(([m,w])=>{totals[m]=(totals[m]||0)+w});
+      if(!lastSessionDate||rec.date>lastSessionDate)lastSessionDate=rec.date;
+    });
+  }
+  return {totals, lastSessionDate};
+}
+
+// Find a currently-active (in-progress) session, if any.
+function findInProgressSession(){
+  return sessions.find(s=>s.status==="in_progress");
+}
+
+// Render the status strip. Called on app boot, after any session change, and on tab switches.
+function renderStatusStrip(){
+  const strip=document.getElementById("status-strip");
+  const textEl=document.getElementById("status-strip-text");
+  const musclesEl=document.getElementById("status-strip-muscles");
+  if(!strip||!textEl||!musclesEl)return;
+
+  // Single calculation, used by both sides
+  const volStatus=calcStatusStripVolume();
+
+  // --- Left side: contextual text ---
+  const inProgress=findInProgressSession();
+  let textContent="";
+  let textAction=null;
+
+  if(inProgress){
+    const blockName=inProgress.blockName||"Workout";
+    const dayLabel=inProgress.dayLabel||"";
+    const minsAgo=Math.max(0,Math.floor((Date.now()-new Date(inProgress.date).getTime())/60000));
+    const ago = minsAgo<60 ? `${minsAgo} min ago` : `${Math.floor(minsAgo/60)}h ago`;
+    textContent = `${blockName}${dayLabel?" · "+dayLabel:""} in progress · started ${ago}`;
+    textAction = ()=>{ if(typeof openWorkoutModal==="function")openWorkoutModal(inProgress.id) };
+  } else {
+    const ids=curDayIds();
+    const plannedDayCount=ids.filter(d=>mem[curBlock].days[d].rows.some(r=>r.ex&&r.sets>0)).length;
+    let weeklySets=0;
+    ids.forEach(d=>{
+      mem[curBlock].days[d].rows.forEach(r=>{
+        if(r.ex&&r.sets>0)weeklySets += r.sets * plannedRowMult(r);
+      });
+    });
+    const parts=[];
+    if(plannedDayCount>0)parts.push(`${plannedDayCount} day${plannedDayCount===1?"":"s"} planned`);
+    if(weeklySets>0)parts.push(`~${Math.round(weeklySets)} sets/wk`);
+    if(volStatus.lastSessionDate){
+      const daysAgo=Math.floor((Date.now()-volStatus.lastSessionDate.getTime())/(24*60*60*1000));
+      if(daysAgo===0)parts.push("trained today");
+      else if(daysAgo===1)parts.push("trained yesterday");
+      else parts.push(`${daysAgo}d since last workout`);
+    } else {
+      parts.push("no workouts logged yet");
+    }
+    textContent = parts.join(" · ");
+    textAction = ()=>{ if(typeof openHistory==="function")openHistory() };
+  }
+  textEl.textContent=textContent;
+  textEl.onclick=textAction;
+
+  // --- Right side: muscle indicators ---
+  // Same threshold logic as renderSummary, scaled to a 14-day window (scale = 2)
+  const scale=2;
+  const HIGH=15*scale, LOW=6*scale, NEUTRAL_LOW=10*scale;
+  function classify(t){
+    if(t>=HIGH)return "high";
+    if(t<LOW)return "low";
+    if(t<NEUTRAL_LOW)return "medium";
+    return "neutral";
+  }
+  const notable=[];
+  ALL_MUS.forEach(m=>{
+    const t=volStatus.totals[m]||0;
+    const cls=classify(t);
+    if(cls!=="neutral")notable.push({muscle:m, cls, total:t});
+  });
+  // Sort: red first (most urgent), then yellow, then green
+  notable.sort((a,b)=>{
+    const order={low:0, medium:1, high:2};
+    if(order[a.cls]!==order[b.cls])return order[a.cls]-order[b.cls];
+    return a.total-b.total;
+  });
+  const MAX_PIPS=6;
+  const shown=notable.slice(0,MAX_PIPS);
+  musclesEl.innerHTML="";
+  shown.forEach(({muscle,cls})=>{
+    const pip=document.createElement("button");
+    pip.type="button";
+    pip.className=`muscle-pip ${cls}`;
+    pip.title=`${muscle}: ${cls==="low"?"behind":cls==="medium"?"below target":"ahead"}`;
+    const dot=document.createElement("span");dot.className="muscle-pip-dot";
+    const lbl=document.createElement("span");
+    lbl.textContent=shortMuscleLabel(muscle);
+    pip.appendChild(dot);pip.appendChild(lbl);
+    pip.onclick=()=>{showTab("sum");setTimeout(()=>scrollToMuscleInSummary(muscle),50);};
+    musclesEl.appendChild(pip);
+  });
+  // Show the strip only if there's something to display
+  strip.style.display = (textContent || shown.length>0) ? "" : "none";
+}
+
+// Shorter labels for the status strip pips (full names are too long for the compact view).
+function shortMuscleLabel(m){
+  const short={
+    "Front Delt":"F.Delt",
+    "Side Delt":"S.Delt",
+    "Rear Delt":"R.Delt",
+    "Hamstrings":"Hams",
+    "Erectors":"Erect",
+    "Obliques":"Obl"
+  };
+  return short[m]||m;
+}
+
+// Scroll the Summary panel to a specific muscle's card after switching to that tab.
+function scrollToMuscleInSummary(muscle){
+  const sg=document.getElementById("sg");
+  if(!sg)return;
+  // The summary cards have data-muscle attributes (added when rendering)
+  const card=sg.querySelector(`[data-muscle="${CSS.escape(muscle)}"]`);
+  if(card){
+    card.scrollIntoView({behavior:"smooth", block:"center"});
+    // Briefly highlight it
+    card.classList.add("muscle-card-highlight");
+    setTimeout(()=>card.classList.remove("muscle-card-highlight"), 1500);
+  }
+}
+
 // ===== Native tracking: sessions =====
 // A session is one completed (or in-progress) workout, immutable history.
 // Schema:
@@ -3200,9 +3402,12 @@ function loadSessions(){
     }
   }catch(e){sessions=[]}
 }
-function saveSessions(){try{localStorage.setItem(SESSIONS_KEY,JSON.stringify(sessions))}catch(e){
-  console.error("Failed to save sessions; storage may be full");
-}}
+function saveSessions(){
+  try{localStorage.setItem(SESSIONS_KEY,JSON.stringify(sessions))}
+  catch(e){console.error("Failed to save sessions; storage may be full")}
+  // Status strip reflects logged sets, so re-render whenever sessions change.
+  if(typeof renderStatusStrip==="function")renderStatusStrip();
+}
 
 // Returns the currently-in-progress session, if any.
 function activeSession(){return sessions.find(s=>s.status==="in_progress")||null}
