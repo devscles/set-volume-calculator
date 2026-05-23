@@ -397,6 +397,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .drop-step-input.reps{font-size:12px}
 .drop-card-controls{display:flex;align-items:center;gap:6px;justify-content:flex-end;margin-top:8px}
 .drop-card-controls-label{font-size:11px;color:var(--text2);margin-right:auto}
+.drop-plateau-notice{font-size:10px;color:var(--text2);background:var(--bg);border:0.5px solid var(--border);border-radius:4px;padding:6px 8px;margin-bottom:8px;line-height:1.35;font-style:italic;opacity:0.9}
 
 /* Log-set modal */
 .logset-modal{max-width:340px}
@@ -458,6 +459,8 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .ce-mus-btn.primary{background:var(--text);color:var(--bg);border-color:var(--text);font-weight:500}
 .ce-mus-btn.secondary{background:var(--bg2);color:var(--text);border-color:var(--text2);font-weight:500}
 .ce-hint{font-size:11px;color:var(--text3);margin-top:4px;line-height:1.4}
+.ce-link-btn{background:none;border:none;padding:4px 0;margin-top:4px;font-size:11px;color:var(--accent);cursor:pointer;font-family:inherit;text-decoration:underline}
+.ce-link-btn:active{opacity:0.7}
 .ce-error{font-size:11px;color:var(--danger-text);margin-top:4px;min-height:14px}
 .ce-actions{display:flex;gap:8px;margin-top:12px;flex-shrink:0}
 .ce-actions button{flex:1;padding:10px;font-size:14px;font-weight:500;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);cursor:pointer;font-family:inherit;touch-action:manipulation}
@@ -573,7 +576,8 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
       <div class="ce-field">
         <label class="ce-label">Name</label>
         <input class="ce-input" id="ce-name" type="text" placeholder="e.g. Bulgarian Split Squat" maxlength="60">
-        <div class="ce-hint" id="ce-name-hint" style="display:none">Built-in exercise — name cannot be changed.</div>
+        <div class="ce-hint" id="ce-name-hint" style="display:none">Renaming a built-in exercise will update its name everywhere it appears, including past sessions.</div>
+        <button id="ce-reset-name" type="button" class="ce-link-btn" onclick="resetBuiltinNameOverride()" style="display:none">Reset name to default</button>
       </div>
       <div class="ce-field">
         <label class="ce-label">Primary muscles</label>
@@ -869,7 +873,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
         <ul>
           <li><b>Rest-pause (Marshall et al., 2012):</b> equated-volume comparisons show similar hypertrophy outcomes per equated rep. Rest-pause sequences allow ~50–100% more total reps than a straight set in the same time. We use <b>2.0×</b>.</li>
           <li><b>Myo-reps (Børge Fagerli, various):</b> coaching framings put a full myo-rep sequence at "2–3 traditional sets." We use <b>2.5×</b> as the midpoint. Crucially, <b>"1 myo-rep set" means one full activation+mini-sets sequence</b>, not each mini-set individually — otherwise the count would be wildly inflated.</li>
-          <li><b>Drop sets:</b> minimal direct hypertrophy research. A 1-drop sequence is roughly comparable to a normal set with a small bonus from the drop; a 3+ drop sequence is closer in fatigue to a rest-pause or myo-rep sequence. We tier this: <b>1.5× / 2.0× / 2.5×</b> for 1, 2, and 3+ drops.</li>
+          <li><b>Drop sets:</b> Coleman et al. (2022) meta-analysis and the Gonzalez et al. (2025) narrative review both report that <i>when volume is matched</i>, drop sets and traditional training produce equivalent hypertrophy and strength. Drop sets accomplish that matched volume in ~30–70% less time, which is their main practical advantage. Past that, the literature is thin — none of the included studies tested multi-drop sequences (3+) the way bodybuilders typically perform them. Our tiered estimates: <b>1 drop = 1.5×</b>, <b>2 drops = 2.0×</b>, <b>3 drops = 2.5×</b>, <b>4 drops = 2.75×</b>, <b>5+ drops = 3.0×</b> (plateau). The plateau reflects diminishing returns — each successive drop performs less work than the one before it (lighter load, fewer reps to failure) — and our genuine uncertainty about whether 6, 7, or more drops contribute meaningful additional stimulus. If you'd like the cap to behave differently (e.g. you find extended-drop sequences genuinely worth 3.5× or 4×), edit the tier 5 value in Settings.</li>
           <li><b>Cluster sets:</b> equated-volume research shows similar hypertrophy to traditional sets per equated rep, with potentially better mechanical performance. We use <b>1.5×</b> reflecting the modest additional reps cluster format allows.</li>
         </ul>
         <p><b>What we're guessing about:</b> the precise multiplier for each technique relative to a straight set. Individual response varies enormously based on training age, recovery, exercise selection, and how strictly the technique is performed. A poorly-executed myo-rep with long rests between mini-sets is essentially a straight set; a tightly-executed one with very short rest is much more.</p>
@@ -914,7 +918,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
           <li><b>Weight</b> graph: uses the initial (heaviest) weight, treated like any straight set</li>
           <li><b>Est 1RM</b> graph: uses the initial set's weight and reps (the heaviest single effort)</li>
           <li><b>Volume</b> graph: weight × total reps across the entire sequence (initial + all drops)</li>
-          <li><b>Sets</b> graph: contribution depends on drop count — 1 drop = 1.5 effective sets, 2 drops = 2.0, 3+ drops = 2.5 (see "Intensifier weighting" for details)</li>
+          <li><b>Sets</b> graph: contribution depends on drop count — 1 drop = 1.5, 2 drops = 2.0, 3 drops = 2.5, 4 drops = 2.75, 5+ drops = 3.0 (plateau). See "Intensifier weighting" for details and how to adjust these.</li>
         </ul>
         <p><b>How myo-reps feed the graphs:</b></p>
         <ul>
@@ -950,8 +954,8 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
         <p>Tap an exercise dropdown to pick from grouped categories (Chest, Back/Lats, etc.). The list scrolls and has a search field at the top.</p>
         <p>Each row has a small pencil (✎) icon that opens an editor where you can:</p>
         <ul>
-          <li><b>Built-in exercises:</b> adjust the primary/secondary muscle weights to your liking. The name is locked. If you've edited a built-in, a <i>Reset to default</i> button restores the original.</li>
-          <li><b>Custom exercises:</b> fully editable name and muscles. <i>Delete</i> removes the exercise and clears it from any row using it.</li>
+          <li><b>Built-in exercises:</b> adjust the primary/secondary muscle weights to your liking, and rename the exercise if the default name doesn't match your gym vocabulary. Renames propagate everywhere — planner rows, in-progress sessions, and past logged history. A <i>Reset to default</i> button restores the original muscle weights, and a separate <i>Reset name to default</i> button restores the original name.</li>
+          <li><b>Custom exercises:</b> fully editable name and muscles. Renames also propagate to all past sessions so your progression history stays connected. <i>Delete</i> removes the exercise and clears it from any row using it.</li>
         </ul>
         <p>Tap <b>＋ Add custom exercise</b> at the bottom of any dropdown to create a new one. Custom exercises appear in their own "Custom" group at the bottom.</p>
         <p><b>Muscle weights:</b> primary = 1.0 (the exercise's main target), secondary = 0.5 (a meaningful contributor). The summary multiplies your sets by these weights.</p>
@@ -1181,9 +1185,14 @@ const SET_TYPE_OVERRIDES_KEY="trainblock_set_type_overrides_v1";
 let setTypeMultipliers={}; // overrides; merged with defaults via getSetTypeMult
 
 // Drop set tiering: multiplier scales with number of drops in the sequence.
-// 1 drop ≈ 1.5 sets, 2 drops ≈ 2.0 sets, 3+ drops ≈ 2.5 sets.
+// Drop set tiering: multiplier scales with number of drops in the sequence.
+// 1 drop = 1.5, 2 drops = 2.0, 3 drops = 2.5, 4 drops = 2.75, 5+ drops = 3.0 (plateau).
+// The 5+ plateau reflects diminishing returns: each successive drop performs less work
+// than the one before (lighter load, fewer reps to failure), so beyond about 5 drops
+// the marginal volume contribution becomes very small.
 // Users can override these in Settings.
-const DROP_TIER_DEFAULTS={1:1.5, 2:2.0, 3:2.5};
+const DROP_TIER_DEFAULTS={1:1.5, 2:2.0, 3:2.5, 4:2.75, 5:3.0};
+const DROP_TIER_MAX=5; // tier plateaus here; logging 6+ drops counts the same as 5
 const DROP_TIER_KEY="trainblock_drop_tiers_v1";
 let dropTierMultipliers={};
 
@@ -1217,7 +1226,7 @@ function getSetTypeMult(key, setRecord){
   return (SET_TYPE_DEFAULTS[key]||SET_TYPE_DEFAULTS.straight).mult;
 }
 function getDropTierMult(dropCount){
-  const tier=Math.max(1, Math.min(3, dropCount));
+  const tier=Math.max(1, Math.min(DROP_TIER_MAX, dropCount));
   if(dropTierMultipliers[tier]!==undefined)return dropTierMultipliers[tier];
   return DROP_TIER_DEFAULTS[tier];
 }
@@ -1266,30 +1275,81 @@ function loadBuiltinOverrides(){
 function saveBuiltinOverrides(){
   try{localStorage.setItem(OVERRIDES_KEY,JSON.stringify(builtinOverrides))}catch(e){}
 }
+
+// Name overrides for built-in exercises. Map of original (canonical) name → user-chosen name.
+// Reverse map is rebuilt for O(1) lookup. Allows isBuiltinExercise() and getBuiltinOriginalMuscles()
+// to work whether the user supplies the new or old name.
+const BUILTIN_NAME_OVERRIDES_KEY="trainblock_builtin_name_overrides_v1";
+let builtinNameOverrides={};       // original → new
+let builtinNameReverseMap={};      // new → original
+function loadBuiltinNameOverrides(){
+  try{
+    const raw=localStorage.getItem(BUILTIN_NAME_OVERRIDES_KEY);
+    if(raw){
+      const parsed=JSON.parse(raw);
+      if(parsed&&typeof parsed==="object"&&!Array.isArray(parsed))builtinNameOverrides=parsed;
+    }
+  }catch(e){builtinNameOverrides={}}
+  rebuildNameReverseMap();
+}
+function rebuildNameReverseMap(){
+  builtinNameReverseMap={};
+  Object.entries(builtinNameOverrides).forEach(([orig,nw])=>{builtinNameReverseMap[nw]=orig});
+}
+function saveBuiltinNameOverrides(){
+  try{localStorage.setItem(BUILTIN_NAME_OVERRIDES_KEY,JSON.stringify(builtinNameOverrides))}catch(e){}
+  rebuildNameReverseMap();
+}
+// Resolve any name (canonical or user-renamed) back to its canonical (original) form.
+// Returns the input if not a known built-in rename target.
+function resolveBuiltinName(name){return builtinNameReverseMap[name]||name}
+// Get the user-facing display name for a built-in (rename if set, else original)
+function displayNameFor(name){
+  // If `name` IS the canonical and has a rename, show the rename.
+  // If `name` IS already a rename (or unrelated), show as-is.
+  return builtinNameOverrides[name]||name;
+}
+
 // Returns the original built-in muscle map for a name (unmodified), or null if not built-in.
+// Accepts either the canonical name or a user-renamed version.
 function getBuiltinOriginalMuscles(name){
+  const canon=resolveBuiltinName(name);
   for(const items of Object.values(BUILTIN_EX)){
-    for(const [n,m] of items)if(n===name)return m;
+    for(const [n,m] of items)if(n===canon)return m;
   }
   return null;
 }
-// Is this name a built-in exercise?
+// Is this name a built-in exercise? Accepts canonical or renamed.
 function isBuiltinExercise(name){return getBuiltinOriginalMuscles(name)!==null}
 
 // EX is a merged view of builtin (with overrides applied) + custom, rebuilt whenever any of them changes.
+// EX_BY_NAME is a flat lookup map for O(1) muscle lookups, since exMuscles() is called
+// inside hot loops (renderSummary walks ~10k lookups per render).
 let EX={};
+let EX_BY_NAME={};
 function rebuildEX(){
   EX={};
-  // Built-in groups first, applying any overrides in place (keeps order/grouping).
+  EX_BY_NAME={};
+  // Built-in groups first, applying muscle overrides + name overrides.
   Object.entries(BUILTIN_EX).forEach(([g,items])=>{
     EX[g]=items.map(([name,muscles])=>{
       const ov=builtinOverrides[name];
-      return [name, ov?ov:muscles];
+      const final = ov || muscles;
+      const displayName = builtinNameOverrides[name]||name;
+      EX_BY_NAME[displayName]=final;
+      // Also map the canonical name to the same muscles so lookups under either name resolve.
+      // This protects logged sets that still reference the canonical name from breaking
+      // if the user later renames an exercise.
+      if(displayName!==name)EX_BY_NAME[name]=final;
+      return [displayName, final];
     });
   });
   // Custom group last, only if there are any
   if(customExercises.length){
-    EX[CUSTOM_GROUP]=customExercises.map(e=>[e.name,e.muscles]);
+    EX[CUSTOM_GROUP]=customExercises.map(e=>{
+      EX_BY_NAME[e.name]=e.muscles;
+      return [e.name,e.muscles];
+    });
   }
 }
 
@@ -1590,7 +1650,7 @@ document.getElementById("delblock-bg").addEventListener("click",e=>{if(e.target.
 function switchBlock(b){
   curBlock=b;syncBlockButtons();
   const ids=curDayIds();
-  curDayIds().forEach(renderDay);
+  ids.forEach(renderDay);
   renderSummary();
   // Keep curTab valid for the new block
   if(curTab!=="sum"&&!ids.includes(curTab))curTab=ids[0]||"sum";
@@ -1679,6 +1739,8 @@ function closeNumpad(){numpadCtx=null;document.getElementById("numpad-bg").class
 function npPress(d){
   if(!numpadCtx)return;
   let v=numpadCtx.value;
+  // If current value is just "0", replace it with the new digit (so "0" then "5" gives "5").
+  // Otherwise append (so "5" then "0" gives "50"). Standard calculator/numpad behaviour.
   if(v==="0")v=d;else v+=d;
   if(parseInt(v,10)>MAX_SETS)v=String(MAX_SETS);
   numpadCtx.value=v;
@@ -1785,18 +1847,18 @@ function renderMultiplierEditors(){
     }
     grid.appendChild(row);
   });
-  // Drop tier grid
+  // Drop tier grid — one row per tier 1..DROP_TIER_MAX; highest tier shows "N+" label
   const dropGrid=document.getElementById("settings-drop-grid");
   if(!dropGrid)return;
   dropGrid.innerHTML="";
-  [1,2,3].forEach(tier=>{
+  for(let tier=1; tier<=DROP_TIER_MAX; tier++){
     const cur=getDropTierMult(tier);
     const row=document.createElement("div");
     row.className="mult-edit-row";
-    const label=tier===3?"3+ drops":`${tier} drop${tier===1?"":"s"}`;
+    const label=tier===DROP_TIER_MAX?`${tier}+ drops`:`${tier} drop${tier===1?"":"s"}`;
     row.innerHTML=`<div class="mult-edit-label"><b>${label}</b></div>`;
     const input=document.createElement("input");
-    input.type="number";input.step="0.1";input.min="0.1";input.max="10";
+    input.type="number";input.step="0.05";input.min="0.1";input.max="10";
     input.className="mult-edit-input";
     input.value=cur;
     input.onchange=e=>{
@@ -1813,7 +1875,7 @@ function renderMultiplierEditors(){
     const dflt=document.createElement("span");dflt.className="mult-edit-default";dflt.textContent=`default ${DROP_TIER_DEFAULTS[tier]}`;
     row.appendChild(dflt);
     dropGrid.appendChild(row);
-  });
+  }
 }
 
 function resetAllMultipliers(){
@@ -1852,7 +1914,9 @@ const BACKUP_KEYS=[
   "trainblock_list_v1",
   "trainblock_custom_v1",
   "trainblock_builtin_overrides_v1",
+  "trainblock_builtin_name_overrides_v1",
   "trainblock_set_type_overrides_v1",
+  "trainblock_drop_tiers_v1",
   "trainblock_flexify_history_v1",
   "trainblock_sessions_v1",
   "trainblock_prefs_v1"
@@ -2611,13 +2675,17 @@ function openCustomEditor(existingName){
   const selected=new Map();
   let nameVal="";
   const isBuiltin=existingName?isBuiltinExercise(existingName):false;
-  const hasOverride=isBuiltin&&!!builtinOverrides[existingName];
+  // For built-ins, resolve back to canonical so we use the right key for storage,
+  // regardless of whether the user opened via the canonical or renamed name.
+  const canonicalName=isBuiltin?resolveBuiltinName(existingName):existingName;
+  const hasMuscleOverride=isBuiltin&&!!builtinOverrides[canonicalName];
+  const hasNameOverride=isBuiltin&&!!builtinNameOverrides[canonicalName];
 
   if(existingName){
     if(isBuiltin){
-      // For built-in, populate from override if it exists, else from original.
-      const muscles=builtinOverrides[existingName]||getBuiltinOriginalMuscles(existingName);
-      nameVal=existingName;
+      const muscles=builtinOverrides[canonicalName]||getBuiltinOriginalMuscles(canonicalName);
+      // Display the current name (renamed if set, else canonical)
+      nameVal=builtinNameOverrides[canonicalName]||canonicalName;
       Object.entries(muscles).forEach(([m,w])=>selected.set(m,w));
     } else {
       const ex=customExercises.find(e=>e.name===existingName);
@@ -2627,23 +2695,22 @@ function openCustomEditor(existingName){
       }
     }
   }
-  ceCtx={editingName:existingName, isBuiltin, selected};
+  // Store both the display name (for the input) and the canonical name (for saving overrides)
+  ceCtx={editingName:existingName, canonicalName, isBuiltin, selected};
 
-  // Title reflects which mode we're in.
-  const title=existingName?(isBuiltin?"Edit exercise":"Edit exercise"):"New exercise";
-  document.getElementById("ce-title").textContent=title;
+  document.getElementById("ce-title").textContent=existingName?"Edit exercise":"New exercise";
   const nameInput=document.getElementById("ce-name");
   nameInput.value=nameVal;
-  nameInput.disabled=isBuiltin; // built-in names are locked
+  nameInput.disabled=false; // built-ins can now be renamed too
   document.getElementById("ce-name-hint").style.display=isBuiltin?"":"none";
+  document.getElementById("ce-reset-name").style.display=hasNameOverride?"":"none";
   // Delete is only for custom exercises (built-ins can't be deleted, only reset)
   document.getElementById("ce-delete").style.display=(existingName&&!isBuiltin)?"":"none";
-  // Reset-to-default is only for built-ins that have been overridden
-  document.getElementById("ce-reset").style.display=hasOverride?"":"none";
+  // Reset-muscles is only for built-ins that have been muscle-overridden
+  document.getElementById("ce-reset").style.display=hasMuscleOverride?"":"none";
   setCeError("");
   refreshMuscleButtons();
   document.getElementById("ce-bg").classList.add("open");
-  // Don't auto-focus the name on built-ins (it's disabled anyway) or on mobile
   if(!isBuiltin)setTimeout(()=>nameInput.focus(),100);
 }
 
@@ -2658,30 +2725,66 @@ function saveCustomExercise(){
   const muscles={};
   ceCtx.selected.forEach((w,m)=>{muscles[m]=w});
 
-  // Built-in: store or remove override based on whether weights match the original.
+  // === Built-in branch: muscle override + optional rename ===
   if(ceCtx.isBuiltin){
-    const original=getBuiltinOriginalMuscles(ceCtx.editingName);
+    const canon=ceCtx.canonicalName;
+    const original=getBuiltinOriginalMuscles(canon);
     const sameAsOriginal=musclesEqual(muscles,original);
     if(sameAsOriginal){
-      delete builtinOverrides[ceCtx.editingName];
+      delete builtinOverrides[canon];
     } else {
-      builtinOverrides[ceCtx.editingName]=muscles;
+      builtinOverrides[canon]=muscles;
     }
     saveBuiltinOverrides();
+
+    // Rename handling: read the input, validate, save name override, propagate to data.
+    const rawName=document.getElementById("ce-name").value.trim();
+    if(!rawName){setCeError("Name is required.");return}
+    if(rawName.length<2){setCeError("Name is too short.");return}
+    const oldDisplayName=builtinNameOverrides[canon]||canon;
+    if(rawName!==oldDisplayName){
+      // Conflict check against everything except the current exercise (canonical or current rename)
+      const lower=rawName.toLowerCase();
+      let conflict=false;
+      Object.entries(BUILTIN_EX).forEach(([,items])=>{
+        items.forEach(([n])=>{
+          if(n===canon)return; // ignore self
+          const display=builtinNameOverrides[n]||n;
+          if(display.toLowerCase()===lower)conflict=true;
+        });
+      });
+      customExercises.forEach(e=>{if(e.name.toLowerCase()===lower)conflict=true});
+      if(conflict){setCeError("An exercise with this name already exists.");return}
+
+      // Apply or remove rename
+      if(rawName===canon){
+        delete builtinNameOverrides[canon]; // back to default
+      } else {
+        builtinNameOverrides[canon]=rawName;
+      }
+      saveBuiltinNameOverrides();
+      // Propagate the rename across all stored data
+      propagateExerciseRename(oldDisplayName, rawName);
+    }
+
     rebuildEX();
     closeCustomEditor();
+    curDayIds().forEach(renderDay);
     renderSummary();
     return;
   }
 
-  // Custom: validate name and save/update.
+  // === Custom branch: validate name, save/update, propagate any rename ===
   const rawName=document.getElementById("ce-name").value.trim();
   if(!rawName){setCeError("Name is required.");return}
   if(rawName.length<2){setCeError("Name is too short.");return}
   const lowerName=rawName.toLowerCase();
   let conflict=false;
   Object.entries(BUILTIN_EX).forEach(([,items])=>{
-    items.forEach(([n])=>{if(n.toLowerCase()===lowerName)conflict=true});
+    items.forEach(([n])=>{
+      const display=builtinNameOverrides[n]||n;
+      if(display.toLowerCase()===lowerName)conflict=true;
+    });
   });
   customExercises.forEach(e=>{
     if(e.name===ceCtx.editingName)return;
@@ -2695,14 +2798,7 @@ function saveCustomExercise(){
       const oldName=customExercises[idx].name;
       customExercises[idx]={name:rawName,muscles};
       if(oldName!==rawName){
-        BLOCKS.forEach(b=>{
-          dayIdsOf(b).forEach(d=>{
-            mem[b].days[d].rows.forEach(row=>{
-              if(row.ex===oldName)row.ex=rawName;
-            });
-          });
-          try{localStorage.setItem(storageKey(b),JSON.stringify(mem[b]))}catch(e){}
-        });
+        propagateExerciseRename(oldName, rawName);
       }
     }
   } else {
@@ -2715,6 +2811,35 @@ function saveCustomExercise(){
   renderSummary();
 }
 
+// Walk all stored data and rewrite any reference from oldName to newName.
+// Covers planner blocks (rows[*].ex) and sessions (plannedRows[*].ex, sets[*].ex).
+// Persists changes immediately so a refresh won't lose them.
+function propagateExerciseRename(oldName, newName){
+  if(!oldName||!newName||oldName===newName)return;
+  // Planner blocks
+  BLOCKS.forEach(b=>{
+    if(!mem[b])return;
+    let touched=false;
+    dayIdsOf(b).forEach(d=>{
+      const day=mem[b].days[d];
+      if(!day)return;
+      day.rows.forEach(row=>{if(row.ex===oldName){row.ex=newName;touched=true}});
+    });
+    if(touched){try{localStorage.setItem(storageKey(b),JSON.stringify(mem[b]))}catch(e){}}
+  });
+  // Sessions: rename both the planned-row snapshots and the actual logged sets
+  let sessionsTouched=false;
+  sessions.forEach(s=>{
+    if(Array.isArray(s.plannedRows)){
+      s.plannedRows.forEach(pr=>{if(pr.ex===oldName){pr.ex=newName;sessionsTouched=true}});
+    }
+    if(Array.isArray(s.sets)){
+      s.sets.forEach(st=>{if(st.ex===oldName){st.ex=newName;sessionsTouched=true}});
+    }
+  });
+  if(sessionsTouched)saveSessions();
+}
+
 // Deep-equal check for muscle maps {Chest:1, "Front Delt":0.5, ...}
 function musclesEqual(a,b){
   if(!a||!b)return false;
@@ -2724,14 +2849,32 @@ function musclesEqual(a,b){
   return true;
 }
 
-// Clear an override for a built-in exercise (called from the editor).
+// Clear muscle override for a built-in exercise.
 function resetBuiltinOverride(){
-  if(!ceCtx||!ceCtx.isBuiltin||!ceCtx.editingName)return;
-  if(!confirm(`Reset "${ceCtx.editingName}" to its default muscle weights?`))return;
-  delete builtinOverrides[ceCtx.editingName];
+  if(!ceCtx||!ceCtx.isBuiltin||!ceCtx.canonicalName)return;
+  const display=builtinNameOverrides[ceCtx.canonicalName]||ceCtx.canonicalName;
+  if(!confirm(`Reset "${display}" to its default muscle weights?`))return;
+  delete builtinOverrides[ceCtx.canonicalName];
   saveBuiltinOverrides();
   rebuildEX();
   closeCustomEditor();
+  renderSummary();
+}
+
+// Clear name override for a built-in exercise (restores the original name).
+// Propagates the rename across all stored data so logged sets remain linked.
+function resetBuiltinNameOverride(){
+  if(!ceCtx||!ceCtx.isBuiltin||!ceCtx.canonicalName)return;
+  const canon=ceCtx.canonicalName;
+  const currentDisplay=builtinNameOverrides[canon];
+  if(!currentDisplay)return; // nothing to reset
+  if(!confirm(`Reset name back to "${canon}"?`))return;
+  delete builtinNameOverrides[canon];
+  saveBuiltinNameOverrides();
+  propagateExerciseRename(currentDisplay, canon);
+  rebuildEX();
+  closeCustomEditor();
+  curDayIds().forEach(renderDay);
   renderSummary();
 }
 
@@ -3061,7 +3204,7 @@ function createSessionFromPlan(blockId, dayId){
   const day=block.days[dayId];
   const now=new Date().toISOString();
   const sess={
-    id:"sess_"+Date.now(),
+    id:"sess_"+Date.now()+"_"+Math.floor(Math.random()*1000),
     date:now,
     blockId, dayId,
     blockName:block.name||("Block "+blockId),
@@ -3603,6 +3746,15 @@ function buildDropCard(s, pr, slotIdx, existing){
   labelRow.appendChild(meta);
   card.appendChild(labelRow);
 
+  // Plateau notice: shown when the user has more drops than DROP_TIER_MAX.
+  // The multiplier doesn't increase past the cap, but we still let the user log the data.
+  if(dropsCount>DROP_TIER_MAX){
+    const notice=document.createElement("div");
+    notice.className="drop-plateau-notice";
+    notice.textContent=`Multiplier caps at ${DROP_TIER_MAX} drops (×${getDropTierMult(DROP_TIER_MAX)}). Adjust in Settings if you'd like a different value.`;
+    card.appendChild(notice);
+  }
+
   // Grid of stacked cells. Each cell = one step (initial or a drop), containing:
   //   [Tag] / [Weight input] / [Reps input], stacked vertically.
   // The grid wraps when there are more cells than fit on one row, keeping weight above reps
@@ -4068,7 +4220,7 @@ function buildRirChips(){
 }
 function setActiveRir(val){
   document.querySelectorAll("#logset-rir-chips .logset-rir-chip").forEach(c=>{
-    c.classList.toggle("active", val!==null && c.dataset.val===String(val) || (val===5 && c.dataset.val==="5+"));
+    c.classList.toggle("active", (val!==null && c.dataset.val===String(val)) || (val===5 && c.dataset.val==="5+"));
   });
   if(logSetCtx)logSetCtx.rir=val;
 }
@@ -4157,7 +4309,7 @@ function updateRestTimerLabel(){
   if(left<=0){
     // Four substantial pulses (~600ms each) separated by short gaps. Total ~3s.
     // Catches attention in a noisy gym even when phone is in a pocket.
-    if(navigator.vibrate)navigator.vibrate([600,150,600,150,600,150,600]);
+    if(navigator.vibrate){try{navigator.vibrate([600,150,600,150,600,150,600])}catch(e){}}
     document.getElementById("workout-timer-label").textContent="Done!";
     setTimeout(()=>{stopRestTimer()},3500);
     clearInterval(restTimer.id);restTimer.id=null;
@@ -4380,7 +4532,7 @@ function attachLongPress(el,action,opts){
     timer=setTimeout(()=>{
       fired=true;
       // Haptic feedback where supported
-      if(navigator.vibrate)navigator.vibrate(20);
+      if(navigator.vibrate){try{navigator.vibrate(20)}catch(e){}}
       action();
     },HOLD_MS);
   });
@@ -4446,13 +4598,24 @@ function updateDayTabLabel(dayId){
   el.textContent=label?(n>0?`${label} (${n})`:label):(n>0?`(${n})`:"");
 }
 
-function exMuscles(name){for(const items of Object.values(EX)){for(const[n,m]of items){if(n===name)return m}}return{}}
+function exMuscles(name){return EX_BY_NAME[name]||{}}
+
+// Multiplier for a PLANNED row. Drop sets default to tier 2 (≈ 2 drops) since planned
+// rows don't yet have a dropCount; this keeps the Summary's Planned and Actual modes
+// consistent for the typical case. Logged sets compute their own multiplier from
+// the actual dropCount via getSetTypeMult(key, setRecord).
+function plannedRowMult(row){
+  const t=rowType(row);
+  if(t==="drop")return getDropTierMult(2);
+  return getSetTypeMult(t);
+}
+
 function calcDay(dayId){
   const totals={};ALL_MUS.forEach(m=>totals[m]=0);
   mem[curBlock].days[dayId].rows.forEach(row=>{
     if(!row.ex)return; // orphan-sets guard
     const mults=exMuscles(row.ex);
-    const tMult=getSetTypeMult(rowType(row));
+    const tMult=plannedRowMult(row);
     Object.entries(mults).forEach(([m,w])=>{totals[m]=(totals[m]||0)+row.sets*w*tMult});
   });
   return totals;
@@ -4462,7 +4625,7 @@ function calcDayBreakdown(dayId,muscle){
   mem[curBlock].days[dayId].rows.forEach(row=>{
     if(!row.ex||!row.sets)return;
     const mults=exMuscles(row.ex);
-    const tMult=getSetTypeMult(rowType(row));
+    const tMult=plannedRowMult(row);
     if(mults[muscle]){
       items.push({
         ex:row.ex,
@@ -4486,6 +4649,9 @@ function renderSummary(){
   const hasFinishedSessions=sessions.some(s=>s.status!=="in_progress"&&s.sets.length>0);
   const hasHistory=hasFinishedSessions||flexifyHistory.length>0;
   const actualDisabled=!hasHistory;
+  // Fall back to planned BEFORE rendering the toggle, so we never show "Actual" briefly
+  // active for one frame before flipping back.
+  if(summaryMode==="actual"&&!hasHistory)summaryMode="planned";
   el.innerHTML=`
     <div class="sum-toggle">
       <button id="sum-planned" class="${summaryMode==='planned'?'active':''}">Planned</button>
@@ -4497,8 +4663,6 @@ function renderSummary(){
 
   document.getElementById("sum-planned").onclick=()=>{summaryMode="planned";renderSummary()};
   document.getElementById("sum-actual").onclick=()=>{if(!actualDisabled){summaryMode="actual";renderSummary()}};
-
-  if(summaryMode==="actual"&&!hasHistory)summaryMode="planned";
 
   // Thresholds: planned mode = weekly targets; actual mode = 4× because it's a 4-week window.
   const scale=summaryMode==="actual"?4:1;
@@ -4654,6 +4818,7 @@ function renderSummary(){
 // Boot
 loadCustomExercises();
 loadBuiltinOverrides();
+loadBuiltinNameOverrides();
 loadSetTypeOverrides();
 loadPrefs();                  // user preferences (units, default rest)
 loadSessions();               // native workout history
