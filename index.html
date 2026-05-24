@@ -352,6 +352,10 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .swap-actions button{flex:1;padding:9px;font-size:13px;font-weight:500;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);cursor:pointer;font-family:inherit}
 .workout-finish-btn{flex:1;padding:11px 12px;font-size:13px;font-weight:600;border-radius:var(--radius);border:none;background:var(--text);color:var(--bg);cursor:pointer;font-family:inherit;touch-action:manipulation}
 .workout-finish-btn:active{opacity:0.85}
+/* Smaller, secondary, destructive — sits between timer and Finish */
+.workout-discard-btn{padding:11px;font-size:13px;border-radius:var(--radius);border:0.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;font-family:inherit;touch-action:manipulation;display:inline-flex;align-items:center;justify-content:center;line-height:1}
+.workout-discard-btn:active{color:var(--danger-text);border-color:var(--danger-text)}
+.workout-discard-btn i{font-size:14px}
 
 /* Exercise group within a workout */
 .wo-ex{margin-bottom:14px;padding:12px;border-radius:var(--radius);background:var(--bg2);position:relative;transition:background-color 0.15s var(--ease)}
@@ -593,6 +597,10 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .pill-count-btn:active{background:var(--bg2)}
 
 /* Custom exercise editor */
+/* Higher z-index than other modals so it sits ABOVE Settings when opened from
+   the Settings → Exercises list. Without this, equal z-index + later-in-DOM Settings
+   wins the stacking order and the editor renders invisibly underneath. */
+#ce-bg{z-index:210}
 .ce-modal{background:var(--bg);border-radius:12px;padding:16px;width:100%;max-width:340px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 8px 32px var(--shadow)}
 .ce-title{font-size:15px;font-weight:500;color:var(--text);text-align:center;margin-bottom:12px}
 .ce-body{overflow-y:auto;flex:1;padding-right:4px}
@@ -770,6 +778,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
     <div class="workout-body" id="workout-body"></div>
     <div class="workout-footer">
       <button class="workout-timer-btn" id="workout-timer-btn" onclick="toggleRestTimer()"><i class="ti ti-clock"></i> <span id="workout-timer-label">Rest 90s</span></button>
+      <button class="workout-discard-btn" onclick="confirmDiscardWorkout()" aria-label="Discard workout" title="Discard workout"><i class="ti ti-trash"></i></button>
       <button class="workout-finish-btn" onclick="confirmFinishWorkout()">Finish</button>
     </div>
     <div class="rest-duration-popover" id="rest-dur-popover"></div>
@@ -1920,7 +1929,11 @@ function showTab(id){
     const tab=document.getElementById("tab-"+tid);if(tab)tab.classList.toggle("active",tid===id);
     const panel=document.getElementById(tid);if(panel)panel.classList.toggle("active",tid===id);
   });
+  // Re-render the newly-active panel so it picks up any state changes that
+  // happened while a different tab was visible (e.g. session abandoned elsewhere,
+  // an exercise renamed, sets logged in another day's workout).
   if(id==="sum")renderSummary();
+  else if(mem[curBlock] && mem[curBlock].days[id])renderDay(id);
   renderStatusStrip();
 }
 
@@ -3825,6 +3838,12 @@ function abandonSession(sessId){
   if(idx<0)return;
   sessions.splice(idx,1); // discard rather than mark — user wanted to bail
   saveSessions();
+  // If the currently-visible day panel was showing a "Resume workout" button for
+  // the abandoned session, that button is now stale. Re-render the current day
+  // to refresh it back to "Start workout". renderDay is a no-op for the Summary tab.
+  if(curTab && curTab!=="sum" && mem[curBlock] && mem[curBlock].days[curTab]){
+    renderDay(curTab);
+  }
 }
 
 // ===== Workout modal =====
@@ -5042,6 +5061,19 @@ function confirmAbandonWorkout(){
     return;
   }
   if(confirm(`Close this workout? It has ${s.sets.length} logged set${s.sets.length===1?"":"s"} which will be kept as an in-progress session. You can return to it later.`)){
+    closeWorkoutModal();
+  }
+}
+// Explicit discard from inside the workout modal. Unlike × (which keeps it in-progress
+// for later resumption), Discard PERMANENTLY deletes the session and any logged sets.
+function confirmDiscardWorkout(){
+  const s=sessions.find(x=>x.id===curWorkoutSessId);
+  if(!s){closeWorkoutModal();return}
+  const msg = s.sets.length===0
+    ? "Discard this workout? Nothing's been logged, so nothing will be lost."
+    : `Discard this workout? ${s.sets.length} logged set${s.sets.length===1?"":"s"} will be permanently lost.`;
+  if(confirm(msg)){
+    abandonSession(s.id);
     closeWorkoutModal();
   }
 }
