@@ -5756,10 +5756,14 @@ function renderDay(dayId){
           const otherActive=activeSession();
           if(otherActive){
             const lbl=otherActive.blockName+(otherActive.dayLabel?" — "+otherActive.dayLabel:"");
-            if(!confirm(`There's an in-progress workout for "${lbl}". Discard it and start this one?`))return;
+            if(!confirm(`There's an in-progress workout for "${lbl}". Discard it and start this one?`)){
+              btn.disabled=false; // user canceled — re-enable
+              return;
+            }
             abandonSession(otherActive.id);
           }
           const sess=createSessionFromPlan(curBlock,dayId);
+          if(!sess||!sess.id)throw new Error("createSessionFromPlan returned no session");
           openWorkoutModal(sess.id);
           // Defensive: verify the modal actually opened. If it didn't (e.g. session
           // creation failed or modal element missing), re-enable the button so the
@@ -5773,7 +5777,9 @@ function renderDay(dayId){
         } catch(err) {
           console.error("Start workout failed:", err);
           btn.disabled=false;
-          alert("Couldn't start the workout. Try again, and check the browser console for details.");
+          // Surface the actual error message so the user (and us) have something concrete to act on.
+          const msg = err && err.message ? err.message : String(err);
+          alert("Couldn't start the workout:\n\n" + msg + "\n\n(Also logged to browser console.)");
         }
       };
       el.appendChild(btn);
