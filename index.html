@@ -3525,7 +3525,8 @@ function renderStatusStrip(){
     musclesEl.appendChild(pip);
   });
   // Show the strip when it has anything to display; hide when fully empty
-  strip.style.display = (textContent || shown.length>0) ? "" : "none";
+  const strip=document.getElementById("status-strip");
+  if(strip)strip.style.display = (textContent || shown.length>0) ? "" : "none";
 }
 
 // Shorter labels for the status strip pips (full names are too long for the compact view).
