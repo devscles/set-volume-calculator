@@ -4047,8 +4047,11 @@ function buildBasicCard(s, pr, slotIdx, existing){
       // Don't save silently bad values, but also don't alert on every blur — just leave the editor.
       return;
     }
-    saveInlineSet(s, pr, slotIdx, existing, {weight:w, reps:r, ...(st.rir!==undefined&&st.rir!==null?{rir:st.rir}:{})});
+    // Clear the editing state BEFORE saveInlineSet (which calls renderWorkoutBody).
+    // Otherwise the re-render still sees editing=true and rebuilds the editor view,
+    // hiding the newly-logged set from the user.
     delete basicInlineState[stateKey];
+    saveInlineSet(s, pr, slotIdx, existing, {weight:w, reps:r, ...(st.rir!==undefined&&st.rir!==null?{rir:st.rir}:{})});
   };
 
   // Enter key saves; blur of the reps input saves; weight blur does NOT save (waits for reps).
@@ -4200,8 +4203,8 @@ function buildClusterCard(s, pr, slotIdx, existing){
     const r=parseInt(st.reps,10);
     const c=parseInt(st.clusters,10);
     if(isNaN(w)||w<0||isNaN(r)||r<=0||isNaN(c)||c<=0)return;
-    saveInlineSet(s, pr, slotIdx, existing, {weight:w, reps:r, clusterCount:c, ...(st.rir!==undefined&&st.rir!==null?{rir:st.rir}:{})});
     delete clusterInlineState[stateKey];
+    saveInlineSet(s, pr, slotIdx, existing, {weight:w, reps:r, clusterCount:c, ...(st.rir!==undefined&&st.rir!==null?{rir:st.rir}:{})});
   };
 
   wInp.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();rInp.focus()}};
@@ -4361,8 +4364,8 @@ function buildRestPauseCard(s, pr, slotIdx, existing){
       const n=parseInt(v,10);
       return isNaN(n)||n<=0 ? null : n;
     }).filter(v=>v!==null);
-    saveInlineSet(s, pr, slotIdx, existing, {weight:w, reps:r, miniSetReps, ...(st.rir!==undefined&&st.rir!==null?{rir:st.rir}:{})});
     delete restPauseInlineState[stateKey];
+    saveInlineSet(s, pr, slotIdx, existing, {weight:w, reps:r, miniSetReps, ...(st.rir!==undefined&&st.rir!==null?{rir:st.rir}:{})});
   };
 
   wInp.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();rInp.focus()}};
