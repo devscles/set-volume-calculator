@@ -90,10 +90,21 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .muscle-ex-empty{padding:16px;text-align:center;color:var(--text3);font-style:italic;font-size:12px}
 
 /* Settings buttons */
-.settings-btn{padding:8px 14px;font-size:13px;font-weight:500;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);cursor:pointer;font-family:inherit;touch-action:manipulation}
+.settings-btn{padding:8px 14px;font-size:13px;font-weight:500;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);cursor:pointer;font-family:inherit;touch-action:manipulation;display:inline-flex;align-items:center;gap:4px}
 .settings-btn:active{background:var(--bg2)}
 .settings-btn.primary{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
 .settings-btn.primary:active{opacity:0.85}
+.settings-ex-filter{width:100%;box-sizing:border-box;padding:7px 10px;font-size:13px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);font-family:inherit;outline:none}
+.settings-ex-filter:focus{border-color:var(--accent)}
+.settings-ex-list{display:flex;flex-direction:column;gap:2px;margin:0 0 8px 16px;max-height:55vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.settings-ex-group{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;padding:8px 4px 4px;font-weight:500;position:sticky;top:0;background:var(--card);z-index:1}
+.settings-ex-item{display:flex;align-items:center;gap:8px;padding:8px 6px;border-radius:var(--radius);cursor:pointer;font-size:13px;color:var(--text);background:transparent;border:none;width:100%;text-align:left;font-family:inherit;touch-action:manipulation}
+.settings-ex-item:active{background:var(--bg2)}
+.settings-ex-item-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.settings-ex-item-badge{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.04em;padding:1px 5px;border-radius:3px;border:0.5px solid var(--border);background:transparent;flex-shrink:0}
+.settings-ex-item-badge.custom{color:var(--accent);border-color:var(--accent)}
+.settings-ex-item-edited{font-size:11px;color:var(--warn-text);flex-shrink:0}
+.settings-ex-empty{padding:16px 4px;font-size:12px;color:var(--text3);font-style:italic;text-align:center}
 
 /* Set type multiplier editor */
 .mult-edit-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:0.5px solid var(--border)}
@@ -892,6 +903,18 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
           <button class="settings-btn" onclick="document.getElementById('backup-import-file').click()">Import backup…</button>
         </div>
         <p class="help-note">Exports a single JSON file containing all blocks, sessions, custom exercises, edited muscle weights, set-type multipliers, Flexify history, and preferences. Importing replaces everything.</p>
+      </details>
+
+      <details class="help-section" id="settings-exercises-section">
+        <summary>Exercises</summary>
+        <p>Add, edit, rename, or delete exercises. Built-ins can be renamed and their muscle weights tuned to match your gym; custom exercises are fully editable.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 10px 16px">
+          <button class="settings-btn primary" onclick="openCustomEditor(null)"><i class="ti ti-plus" aria-hidden="true"></i> Add custom exercise</button>
+        </div>
+        <div style="margin:0 0 8px 16px">
+          <input type="search" id="settings-ex-filter" class="settings-ex-filter" placeholder="Filter exercises…" oninput="renderSettingsExerciseList()" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        </div>
+        <div id="settings-exercise-list" class="settings-ex-list"></div>
       </details>
 
       <details class="help-section">
@@ -2021,6 +2044,8 @@ function refreshSettingsUI(){
   document.querySelectorAll('input[name="weight-unit"]').forEach(r=>{r.checked=(r.value===prefs.preferredUnit)});
   // Set type multiplier editors
   renderMultiplierEditors();
+  // Exercise list (re-render every settings open so renames/additions show up)
+  renderSettingsExerciseList();
 }
 
 function renderMultiplierEditors(){
@@ -2100,6 +2125,89 @@ function resetAllMultipliers(){
   saveSetTypeOverrides();
   renderMultiplierEditors();
   renderSummary();
+}
+
+// === Settings → Exercises ===
+// Lists all exercises (built-ins grouped by category + customs in their own group).
+// Tap to open the editor. Filter input narrows the visible list.
+function renderSettingsExerciseList(){
+  const list=document.getElementById("settings-exercise-list");
+  if(!list)return;
+  const filterEl=document.getElementById("settings-ex-filter");
+  const filter=(filterEl?.value||"").trim().toLowerCase();
+  list.innerHTML="";
+
+  // Build the per-group structure: built-ins (in BUILTIN_EX order) + customs
+  const groups=[];
+  Object.entries(BUILTIN_EX).forEach(([groupName, entries])=>{
+    const items=entries.map(([canonical])=>({
+      canonical,
+      display: builtinNameOverrides[canonical]||canonical,
+      isCustom: false,
+      hasMuscleOverride: !!builtinOverrides[canonical],
+      hasNameOverride: !!builtinNameOverrides[canonical]
+    }));
+    groups.push({name:groupName, items});
+  });
+  if(customExercises.length>0){
+    groups.push({
+      name:"Custom",
+      items: customExercises.map(e=>({
+        canonical: e.name,
+        display: e.name,
+        isCustom: true,
+        hasMuscleOverride: false,
+        hasNameOverride: false
+      }))
+    });
+  }
+
+  let totalShown=0;
+  groups.forEach(group=>{
+    const matching = group.items.filter(it=>
+      !filter || it.display.toLowerCase().includes(filter) || it.canonical.toLowerCase().includes(filter)
+    );
+    if(matching.length===0)return;
+    const header=document.createElement("div");
+    header.className="settings-ex-group";
+    header.textContent=group.name;
+    list.appendChild(header);
+    matching.forEach(it=>{
+      const btn=document.createElement("button");
+      btn.type="button";
+      btn.className="settings-ex-item";
+      const nm=document.createElement("span");
+      nm.className="settings-ex-item-name";
+      nm.textContent=it.display;
+      btn.appendChild(nm);
+      if(it.isCustom){
+        const badge=document.createElement("span");
+        badge.className="settings-ex-item-badge custom";
+        badge.textContent="Custom";
+        btn.appendChild(badge);
+      } else if(it.hasMuscleOverride||it.hasNameOverride){
+        const edited=document.createElement("span");
+        edited.className="settings-ex-item-edited";
+        edited.title="This exercise has been customized (renamed or muscle weights edited)";
+        edited.innerHTML='<i class="ti ti-pencil" aria-hidden="true"></i>';
+        btn.appendChild(edited);
+      }
+      btn.onclick=()=>{
+        // Use the display name when opening the editor — openCustomEditor handles
+        // both canonical and renamed lookups via resolveBuiltinName.
+        openCustomEditor(it.display);
+      };
+      list.appendChild(btn);
+      totalShown++;
+    });
+  });
+
+  if(totalShown===0){
+    const empty=document.createElement("div");
+    empty.className="settings-ex-empty";
+    empty.textContent = filter ? `No exercises matching "${filter}".` : "No exercises yet.";
+    list.appendChild(empty);
+  }
 }
 function fmtRestDuration(sec){
   if(sec<60)return sec+"s";
@@ -2965,6 +3073,11 @@ function openCustomEditor(existingName){
 function closeCustomEditor(){
   ceCtx=null;
   document.getElementById("ce-bg").classList.remove("open");
+  // If Settings is open behind us, refresh its exercise list so adds/edits/renames show up.
+  const settingsBg=document.getElementById("settings-bg");
+  if(settingsBg && settingsBg.classList.contains("open")){
+    renderSettingsExerciseList();
+  }
 }
 
 function saveCustomExercise(){
@@ -4081,9 +4194,11 @@ function buildBasicCard(s, pr, slotIdx, existing){
   };
   card.appendChild(rirRow);
 
-  // Action row: Save + Cancel
+  // Action row: Save + Cancel. Label is always "Log set" — editing a previously-logged
+  // set goes through the dedicated Edit button on the logged summary, not this button,
+  // so there's no need to distinguish "Log" vs "Update" here.
   const actions=document.createElement("div");actions.className="wo-card-actions";
-  const saveBtn=document.createElement("button");saveBtn.type="button";saveBtn.className="wo-card-btn-save";saveBtn.textContent=existing?"Update":"Log set";
+  const saveBtn=document.createElement("button");saveBtn.type="button";saveBtn.className="wo-card-btn-save";saveBtn.textContent="Log set";
   saveBtn.onclick=trySave;
   actions.appendChild(saveBtn);
   if(existing){
@@ -4213,7 +4328,7 @@ function buildClusterCard(s, pr, slotIdx, existing){
   rInp.onblur=()=>setTimeout(()=>{if(st.weight && st.reps)trySave()}, 150);
 
   const actions=document.createElement("div");actions.className="wo-card-actions";
-  const saveBtn=document.createElement("button");saveBtn.type="button";saveBtn.className="wo-card-btn-save";saveBtn.textContent=existing?"Update":"Log set";
+  const saveBtn=document.createElement("button");saveBtn.type="button";saveBtn.className="wo-card-btn-save";saveBtn.textContent="Log set";
   saveBtn.onclick=trySave;
   actions.appendChild(saveBtn);
   if(existing){
@@ -4373,7 +4488,7 @@ function buildRestPauseCard(s, pr, slotIdx, existing){
   rInp.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();const firstMini=miniInputsWrap.querySelector(".wo-card-mini-input");if(firstMini)firstMini.focus();else trySave()}};
 
   const actions=document.createElement("div");actions.className="wo-card-actions";
-  const saveBtn=document.createElement("button");saveBtn.type="button";saveBtn.className="wo-card-btn-save";saveBtn.textContent=existing?"Update":"Log set";
+  const saveBtn=document.createElement("button");saveBtn.type="button";saveBtn.className="wo-card-btn-save";saveBtn.textContent="Log set";
   saveBtn.onclick=trySave;
   actions.appendChild(saveBtn);
   if(existing){
