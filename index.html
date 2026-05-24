@@ -454,8 +454,9 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .myo-card-label{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:0.04em;font-weight:600;margin-bottom:8px}
 .myo-card-label-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
 .myo-card-label-row .myo-card-label{margin-bottom:0}
-.myo-timer-toggle{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text2);cursor:pointer;user-select:none}
-.myo-timer-toggle input{margin:0;cursor:pointer;width:13px;height:13px;accent-color:var(--accent)}
+.myo-card-timer-btn{display:inline-flex;align-items:center;gap:3px;font-size:11px;color:var(--text2);background:transparent;border:0.5px solid var(--border2);border-radius:4px;padding:3px 8px;cursor:pointer;font-family:inherit;font-variant-numeric:tabular-nums;-webkit-user-select:none;user-select:none;touch-action:manipulation;line-height:1;flex-shrink:0;margin-left:auto}
+.myo-card-timer-btn:active{background:var(--bg2);color:var(--text)}
+.myo-card-timer-btn i{font-size:11px;opacity:0.8}
 .myo-card-row{display:flex;flex-direction:column;gap:4px;margin-bottom:8px}
 .myo-card-row label{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:0.04em;font-weight:500}
 .myo-card-row input{box-sizing:border-box;width:100%;padding:9px 8px;font-size:15px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);outline:none;font-family:inherit;text-align:center;font-variant-numeric:tabular-nums}
@@ -3745,7 +3746,7 @@ function closeMuscleExercises(){
 const SESSIONS_KEY="trainblock_sessions_v1";
 const PREFS_KEY="trainblock_prefs_v1";
 let sessions=[];
-let prefs={preferredUnit:"lb", defaultRestSec:90, actualSource:"sessions", lastBackupAt:null, backupReminderSnoozedUntil:null, flexifyMigrated:false, graphShowAllSets:false, myorepTimer:true};
+let prefs={preferredUnit:"lb", defaultRestSec:90, actualSource:"sessions", lastBackupAt:null, backupReminderSnoozedUntil:null, flexifyMigrated:false, graphShowAllSets:false};
 
 function loadPrefs(){
   try{
@@ -3760,7 +3761,6 @@ function loadPrefs(){
         if(typeof p.backupReminderSnoozedUntil==="string")prefs.backupReminderSnoozedUntil=p.backupReminderSnoozedUntil;
         if(p.flexifyMigrated===true)prefs.flexifyMigrated=true;
         if(typeof p.graphShowAllSets==="boolean")prefs.graphShowAllSets=p.graphShowAllSets;
-        if(typeof p.myorepTimer==="boolean")prefs.myorepTimer=p.myorepTimer;
       }
     }
   }catch(e){}
@@ -4437,6 +4437,13 @@ function buildRestPauseCard(s, pr, slotIdx, existing){
     tgtHint.textContent=`target ${fmtNum(tgt.weight)}×${tgt.reps}`;
     headerRow.appendChild(tgtHint);
   }
+  // Manual 20s timer button — same pattern as myo-rep cards.
+  // Tap when you finish a mini-set/initial set to start counting the short rest.
+  const rpTimerBtn=document.createElement("button");rpTimerBtn.type="button";rpTimerBtn.className="myo-card-timer-btn";
+  rpTimerBtn.innerHTML='<i class="ti ti-clock" aria-hidden="true"></i> 20s';
+  rpTimerBtn.title="Start a 20-second rest timer";
+  rpTimerBtn.onclick=e=>{e.preventDefault();e.stopPropagation();startRestTimer(20)};
+  headerRow.appendChild(rpTimerBtn);
   card.appendChild(headerRow);
 
   // Weight × initial reps
@@ -4623,22 +4630,15 @@ function buildMyoCard(s, pr, slotIdx, existing){
   const label=document.createElement("div");label.className="myo-card-label";
   label.textContent=`Sequence ${slotIdx+1}`;
   labelRow.appendChild(label);
-  const toggleLabel=document.createElement("label");toggleLabel.className="myo-timer-toggle";
-  const toggleInput=document.createElement("input");toggleInput.type="checkbox";
-  toggleInput.checked=!!prefs.myorepTimer;
-  toggleInput.onchange=e=>{prefs.myorepTimer=e.target.checked;savePrefs()};
-  const toggleText=document.createElement("span");toggleText.textContent="20s timer";
-  toggleLabel.appendChild(toggleInput);toggleLabel.appendChild(toggleText);
-  labelRow.appendChild(toggleLabel);
+  // Manual 20s timer button: tap when you finish a mini-set/activation to start counting.
+  // No auto-fire — fiddling with the app to enter numbers during a short rest is unwieldy,
+  // and most users will count off in their head anyway.
+  const timerBtn=document.createElement("button");timerBtn.type="button";timerBtn.className="myo-card-timer-btn";
+  timerBtn.innerHTML='<i class="ti ti-clock" aria-hidden="true"></i> 20s';
+  timerBtn.title="Start a 20-second rest timer";
+  timerBtn.onclick=e=>{e.preventDefault();e.stopPropagation();startRestTimer(20)};
+  labelRow.appendChild(timerBtn);
   card.appendChild(labelRow);
-
-  // Helper: fire short rest timer if toggle is on and input has a valid positive value
-  function maybeStartShortTimer(input){
-    if(!prefs.myorepTimer)return;
-    const n=parseInt(input.value,10);
-    if(isNaN(n)||n<=0)return;
-    startRestTimer(20);
-  }
 
   // Per-slot target (looked up once for placeholders below)
   const myoCardTgt = (Array.isArray(pr.targets)&&pr.targets[slotIdx]) ? pr.targets[slotIdx]
@@ -4654,14 +4654,13 @@ function buildMyoCard(s, pr, slotIdx, existing){
   wRow.appendChild(wLbl);wRow.appendChild(wInp);
   card.appendChild(wRow);
 
-  // Activation reps row — change event also fires the short rest timer
+  // Activation reps row
   const aRow=document.createElement("div");aRow.className="myo-card-row";
   const aLbl=document.createElement("label");aLbl.textContent="Activation reps";
   const aInp=document.createElement("input");aInp.type="text";aInp.inputMode="numeric";aInp.pattern="[0-9]*";
   aInp.autocomplete="off";aInp.setAttribute("data-form-type","other");aInp.setAttribute("data-lpignore","true");
   aInp.value=st.activation;aInp.placeholder=myoCardTgt?String(myoCardTgt.reps):"—";
   aInp.oninput=e=>{st.activation=e.target.value};
-  aInp.onchange=e=>maybeStartShortTimer(e.target);
   // On Enter: dismiss the keyboard rather than advancing focus to the next input.
   aInp.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();e.target.blur()}};
   aRow.appendChild(aLbl);aRow.appendChild(aInp);
@@ -4683,9 +4682,6 @@ function buildMyoCard(s, pr, slotIdx, existing){
       const n=parseInt(e.target.value,10);
       st.miniReps[i]=isNaN(n)?null:n;
     };
-    // 'change' fires after the user confirms (taps Enter/Done on keypad or blurs the field).
-    // Treat this as "I just completed that mini-set" → kick off the short rest timer.
-    m.onchange=e=>maybeStartShortTimer(e.target);
     // On Enter: dismiss the keyboard rather than advancing focus to the next mini-set input.
     m.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();e.target.blur()}};
     miniGrid.appendChild(m);
