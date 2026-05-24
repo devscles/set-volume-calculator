@@ -14,8 +14,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <style>
-:root{--bg:#ffffff;--bg2:#f5f4ef;--bg3:#ecebe5;--text:#1a1a1a;--text2:#6b6b6b;--text3:#a0a0a0;--border:rgba(0,0,0,0.12);--border2:rgba(0,0,0,0.22);--radius:8px;--danger-bg:#fcebeb;--danger-text:#9a2727;--warn-bg:#fcf3d6;--warn-text:#7a5400;--success-bg:#eaf3de;--success-text:#3b6d11;--shadow:rgba(0,0,0,0.15);--overlay:rgba(0,0,0,0.4);--accent:#1d5670;--accent-text:#ffffff;--ease:cubic-bezier(0.4,0,0.2,1)}
-@media(prefers-color-scheme:dark){:root{--bg:#1c1c1e;--bg2:#2c2c2e;--bg3:#3a3a3c;--text:#f2f2f7;--text2:#aeaeb2;--text3:#636366;--border:rgba(255,255,255,0.12);--border2:rgba(255,255,255,0.22);--danger-bg:#3a1a1a;--danger-text:#f09595;--warn-bg:#3a2e0f;--warn-text:#e6c45f;--success-bg:#1a2e10;--success-text:#97c459;--shadow:rgba(0,0,0,0.6);--overlay:rgba(0,0,0,0.65);--accent:#5fb7d4;--accent-text:#0a1a22}}
+:root{--bg:#ffffff;--bg2:#f5f4ef;--bg3:#ecebe5;--text:#1a1a1a;--text2:#6b6b6b;--text3:#a0a0a0;--border:rgba(0,0,0,0.12);--border2:rgba(0,0,0,0.22);--radius:8px;--danger-bg:#fcebeb;--danger-text:#9a2727;--warn-bg:#fcf3d6;--warn-text:#7a5400;--success-bg:#eaf3de;--success-text:#3b6d11;--high-bg:#ffd9a3;--high-text:#5a2a82;--shadow:rgba(0,0,0,0.15);--overlay:rgba(0,0,0,0.4);--accent:#1d5670;--accent-text:#ffffff;--ease:cubic-bezier(0.4,0,0.2,1)}
+@media(prefers-color-scheme:dark){:root{--bg:#1c1c1e;--bg2:#2c2c2e;--bg3:#3a3a3c;--text:#f2f2f7;--text2:#aeaeb2;--text3:#636366;--border:rgba(255,255,255,0.12);--border2:rgba(255,255,255,0.22);--danger-bg:#3a1a1a;--danger-text:#f09595;--warn-bg:#3a2e0f;--warn-text:#e6c45f;--success-bg:#1a2e10;--success-text:#97c459;--high-bg:#5a3a10;--high-text:#d4a5ff;--shadow:rgba(0,0,0,0.6);--overlay:rgba(0,0,0,0.65);--accent:#5fb7d4;--accent-text:#0a1a22}}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-feature-settings:"cv11","ss01"}
 body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
@@ -83,9 +83,18 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .muscle-ex-list{max-height:55vh;overflow-y:auto;margin:12px 0;border-top:0.5px solid var(--border);border-bottom:0.5px solid var(--border)}
 .muscle-ex-row{display:flex;align-items:center;justify-content:space-between;padding:8px 4px;font-size:13px;border-bottom:0.5px solid var(--border)}
 .muscle-ex-row:last-child{border-bottom:none}
-.muscle-ex-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-right:8px}
+/* Exercise is currently planned somewhere in the current block — subtle accent fill
+   and a small "in plan" indicator so the user can see at a glance what's already covered. */
+.muscle-ex-row.planned{background:var(--accent-bg, rgba(95,183,212,0.06));border-left:2px solid var(--accent);padding-left:6px}
+.muscle-ex-row.planned .muscle-ex-name{color:var(--accent);font-weight:500}
+.muscle-ex-planned-tag{font-size:9px;color:var(--accent);text-transform:uppercase;letter-spacing:0.04em;margin-left:6px;flex-shrink:0;opacity:0.85}
+.muscle-ex-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-right:8px;display:flex;align-items:center;min-width:0}
+.muscle-ex-name-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .muscle-ex-weight{font-size:11px;color:var(--text3);font-variant-numeric:tabular-nums;flex-shrink:0;padding:2px 7px;border-radius:999px;background:var(--bg2);border:0.5px solid var(--border)}
-.muscle-ex-weight.primary{color:var(--accent);border-color:var(--accent);background:transparent}
+/* Primary muscles (weight ≥ 1.0) get a distinct warm color to stand out from secondary contributors.
+   This communicates "this exercise hits this muscle as a primary mover" without overloading the
+   regular accent color (which we use elsewhere for selection/focus). */
+.muscle-ex-weight.primary{color:#e0a000;border-color:#e0a000;background:rgba(224,160,0,0.08)}
 .muscle-ex-group{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.04em;padding:8px 4px 4px;font-weight:500}
 .muscle-ex-empty{padding:16px;text-align:center;color:var(--text3);font-style:italic;font-size:12px}
 
@@ -191,38 +200,43 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .empty-state-text{font-size:12px;color:var(--text2);max-width:280px;margin:0 auto;line-height:1.5}
 .m-card{border-radius:var(--radius);padding:12px 14px;cursor:pointer;transition:transform 0.08s ease,opacity 0.08s ease,background-color 0.2s var(--ease);user-select:none;-webkit-user-select:none}
 .m-card:active{transform:scale(0.97);opacity:0.85}
-.m-card.neutral{background:var(--bg2)}
+/* Neutral band (10-14 sets/wk): solid working range, now styled with success palette
+   to communicate "you're on target" rather than the previous "neutral grey". */
+.m-card.neutral{background:var(--success-bg)}
 .m-card.low{background:var(--danger-bg)}
 .m-card.medium{background:var(--warn-bg)}
-.m-card.high{background:var(--success-bg)}
+/* High band (≥15 sets/wk): the "special" zone — bright orange background with purple text.
+   Visually stands apart from the working-range green to mark over-and-above effort. */
+.m-card.high{background:var(--high-bg)}
 .m-name{font-size:12px;margin-bottom:4px;display:flex;justify-content:space-between;align-items:center;font-weight:500;letter-spacing:0.01em}
-.m-card.neutral .m-name{color:var(--text2)}
+.m-card.neutral .m-name{color:var(--success-text)}
 .m-card.low .m-name{color:var(--danger-text)}
 .m-card.medium .m-name{color:var(--warn-text)}
-.m-card.high .m-name{color:var(--success-text)}
+.m-card.high .m-name{color:var(--high-text)}
 .m-vals{display:flex;gap:6px;align-items:baseline;flex-wrap:wrap}
 .m-total{font-size:26px;font-weight:600;line-height:1;letter-spacing:-0.02em;font-variant-numeric:tabular-nums}
-.m-card.neutral .m-total{color:var(--text)}
+.m-card.neutral .m-total{color:var(--success-text)}
 .m-card.low .m-total{color:var(--danger-text)}
 .m-card.medium .m-total{color:var(--warn-text)}
-.m-card.high .m-total{color:var(--success-text)}
+.m-card.high .m-total{color:var(--high-text)}
 .m-days{font-size:11px;color:var(--text3);word-spacing:-1px;line-height:1.3}
 .m-detail{display:none;margin-top:8px;padding-top:8px;border-top:0.5px solid rgba(0,0,0,0.1)}
 .m-card.low .m-detail{border-top-color:rgba(163,45,45,0.2)}
 .m-card.medium .m-detail{border-top-color:rgba(138,99,0,0.2)}
-.m-card.high .m-detail{border-top-color:rgba(59,109,17,0.2)}
+.m-card.neutral .m-detail{border-top-color:rgba(59,109,17,0.2)}
+.m-card.high .m-detail{border-top-color:rgba(90,42,130,0.25)}
 .m-card.open .m-detail{display:block;animation:detailFadeIn 0.16s var(--ease)}
 @keyframes detailFadeIn{from{opacity:0;transform:translateY(-2px)}to{opacity:1;transform:translateY(0)}}
 .m-detail-day{font-size:11px;font-weight:500;margin:5px 0 2px}
-.m-card.neutral .m-detail-day{color:var(--text2)}
+.m-card.neutral .m-detail-day{color:var(--success-text)}
 .m-card.low .m-detail-day{color:var(--danger-text)}
 .m-card.medium .m-detail-day{color:var(--warn-text)}
-.m-card.high .m-detail-day{color:var(--success-text)}
+.m-card.high .m-detail-day{color:var(--high-text)}
 .m-detail-ex{display:flex;justify-content:space-between;font-size:11px;padding:1px 0}
-.m-card.neutral .m-detail-ex{color:var(--text)}
+.m-card.neutral .m-detail-ex{color:var(--success-text)}
 .m-card.low .m-detail-ex{color:var(--danger-text)}
 .m-card.medium .m-detail-ex{color:var(--warn-text)}
-.m-card.high .m-detail-ex{color:var(--success-text)}
+.m-card.high .m-detail-ex{color:var(--high-text)}
 .chevron{font-size:11px;opacity:0.6;transition:transform 0.2s var(--ease)}
 .m-card.open .chevron{transform:rotate(180deg)}
 .total-card{grid-column:1/-1;background:var(--bg2);border-radius:var(--radius);padding:10px 12px;display:flex;justify-content:space-between;align-items:center;margin-top:2px}
@@ -276,8 +290,8 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .help-swatch{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;vertical-align:middle;border:0.5px solid var(--border)}
 .help-swatch.low{background:var(--danger-bg)}
 .help-swatch.medium{background:var(--warn-bg)}
-.help-swatch.neutral{background:var(--bg2)}
-.help-swatch.high{background:var(--success-bg)}
+.help-swatch.neutral{background:var(--success-bg)}
+.help-swatch.high{background:var(--high-bg)}
 
 /* === History view === */
 .help-header{display:flex;align-items:center;gap:8px}
@@ -555,11 +569,13 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .tgt-set-row.focused{border-color:var(--accent);background:var(--accent-bg, var(--bg2))}
 .tgt-set-row .tgt-set-num{font-size:11px;color:var(--text3);min-width:14px;flex-shrink:0}
 .tgt-set-row.focused .tgt-set-num{color:var(--accent);font-weight:500}
-.tgt-set-row input{padding:6px 8px;font-size:13px;border:0.5px solid var(--border2);border-radius:6px;background:var(--bg2);color:var(--text);outline:none;font-family:inherit;font-variant-numeric:tabular-nums;-moz-appearance:textfield;min-width:0}
-.tgt-set-row input.tgt-w{width:64px;text-align:right}
-.tgt-set-row input.tgt-r{width:48px;text-align:center}
-.tgt-set-row input:focus{border-color:var(--accent)}
-.tgt-set-row input::placeholder{color:var(--text3);font-style:italic}
+/* Inputs are styled the same regardless of container (set row OR sequence card).
+   Width rules apply to the .tgt-w / .tgt-r classes themselves, not nested inside a parent. */
+.tgt-w,.tgt-r{padding:6px 8px;font-size:13px;border:0.5px solid var(--border2);border-radius:6px;background:var(--bg2);color:var(--text);outline:none;font-family:inherit;font-variant-numeric:tabular-nums;-moz-appearance:textfield;min-width:0;flex-shrink:0}
+.tgt-w{width:72px;text-align:right}
+.tgt-r{width:56px;text-align:center}
+.tgt-w:focus,.tgt-r:focus{border-color:var(--accent)}
+.tgt-w::placeholder,.tgt-r::placeholder{color:var(--text3);font-style:italic}
 .tgt-set-row .tgt-unit,.tgt-set-row .tgt-x,.tgt-set-row .tgt-suffix{font-size:11px;color:var(--text3);flex-shrink:0}
 .tgt-set-row .tgt-suffix{flex:1}
 .tgt-set-row.focused .tgt-unit,.tgt-set-row.focused .tgt-x,.tgt-set-row.focused .tgt-suffix{color:var(--accent)}
@@ -570,10 +586,15 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .tgt-seq-card.focused{border-color:var(--accent);background:var(--accent-bg, var(--bg2))}
 .tgt-seq-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:2px}
 .tgt-seq-card.focused .tgt-seq-label{color:var(--accent);font-weight:500}
-.tgt-seq-line{display:flex;align-items:center;gap:6px}
+.tgt-seq-line{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .tgt-seq-line .tgt-seq-key{font-size:10px;color:var(--text3);min-width:54px;display:inline-flex;align-items:center;gap:3px}
 .tgt-seq-card.focused .tgt-seq-line .tgt-seq-key{color:var(--accent)}
 .tgt-seq-line .tgt-seq-key i{font-size:10px;opacity:0.85}
+/* Unit/×/suffix labels inside sequence lines */
+.tgt-seq-line .tgt-unit,.tgt-seq-line .tgt-x,.tgt-seq-line .tgt-suffix{font-size:11px;color:var(--text3);flex-shrink:0}
+.tgt-seq-card.focused .tgt-seq-line .tgt-unit,
+.tgt-seq-card.focused .tgt-seq-line .tgt-x,
+.tgt-seq-card.focused .tgt-seq-line .tgt-suffix{color:var(--accent)}
 .tgt-seq-footer{font-size:10px;color:var(--text3);font-style:italic;padding-top:2px;opacity:0.85}
 
 /* "Start workout" button on day panels */
@@ -3691,6 +3712,19 @@ function openMuscleExercises(muscle){
   const list=document.getElementById("muscle-ex-list");
   list.innerHTML="";
 
+  // Collect names of exercises currently planned (sets > 0) anywhere in the active block.
+  // Used to highlight rows the user has already incorporated, so they can see which ones
+  // they could add to improve coverage for this muscle.
+  const plannedNames=new Set();
+  const curBlk=mem[curBlock];
+  if(curBlk){
+    Object.values(curBlk.days||{}).forEach(day=>{
+      (day.rows||[]).forEach(r=>{
+        if(r.ex && r.sets>0)plannedNames.add(r.ex);
+      });
+    });
+  }
+
   // Walk EX (grouped) and collect any exercise where this muscle has weight > 0.
   // Grouping preserves the natural categorization (Chest, Back, Legs, etc.) the user already knows.
   const groups=[];
@@ -3699,7 +3733,7 @@ function openMuscleExercises(muscle){
     const hits=[];
     items.forEach(([name, muscles])=>{
       const w=muscles[muscle];
-      if(w&&w>0)hits.push({name, weight:w});
+      if(w&&w>0)hits.push({name, weight:w, planned:plannedNames.has(name)});
     });
     if(hits.length){
       // Sort within group by weight descending (heaviest contributors first)
@@ -3715,13 +3749,21 @@ function openMuscleExercises(muscle){
     list.appendChild(empty);
     sub.textContent=`Exercises that target ${muscle}.`;
   } else {
-    sub.textContent=`${totalCount} exercise${totalCount===1?"":"s"} target ${muscle}, sorted by contribution.`;
+    const plannedCount=groups.reduce((acc,g)=>acc+g.hits.filter(h=>h.planned).length,0);
+    const plannedNote = plannedCount>0 ? `, ${plannedCount} in current plan` : "";
+    sub.textContent=`${totalCount} exercise${totalCount===1?"":"s"} target ${muscle}${plannedNote}.`;
     groups.forEach(({groupName, hits})=>{
       const gl=document.createElement("div");gl.className="muscle-ex-group";gl.textContent=groupName;
       list.appendChild(gl);
-      hits.forEach(({name, weight})=>{
-        const row=document.createElement("div");row.className="muscle-ex-row";
-        const nm=document.createElement("span");nm.className="muscle-ex-name";nm.textContent=name;
+      hits.forEach(({name, weight, planned})=>{
+        const row=document.createElement("div");row.className="muscle-ex-row"+(planned?" planned":"");
+        const nm=document.createElement("span");nm.className="muscle-ex-name";
+        const nmText=document.createElement("span");nmText.className="muscle-ex-name-text";nmText.textContent=name;
+        nm.appendChild(nmText);
+        if(planned){
+          const tag=document.createElement("span");tag.className="muscle-ex-planned-tag";tag.textContent="in plan";
+          nm.appendChild(tag);
+        }
         const wt=document.createElement("span");wt.className="muscle-ex-weight"+(weight>=1?" primary":"");
         // Show as "×1.0" / "×0.5" — primary muscles at weight 1 stand out
         wt.textContent="×"+(weight%1===0?weight:weight.toFixed(2).replace(/0+$/,"").replace(/\.$/,""));
@@ -5325,11 +5367,14 @@ function renderTargetBodyDrop(body){
     const initLine=document.createElement("div");initLine.className="tgt-seq-line";
     const k1=document.createElement("span");k1.className="tgt-seq-key";k1.textContent="initial";
     initLine.appendChild(k1);
-    initLine.appendChild(buildTargetWeightInput(cur?.weight, v=>{
+    // Initial weight input: on input, just update the draft; on blur, re-render to refresh
+    // cascaded drop placeholders. Re-rendering on every keystroke destroys the input mid-typing,
+    // closing the mobile keyboard and clamping to single-digit entries.
+    const initWInp=buildTargetWeightInput(cur?.weight, v=>{
       ensureDraftEntry(i); ctx.draft[i].weight=v;
-      // Re-render this body so cascaded drop placeholders update
-      renderTargetBody();
-    }, {focused, placeholder:"—"}));
+    }, {focused, placeholder:"—"});
+    initWInp.addEventListener("blur",()=>renderTargetBody());
+    initLine.appendChild(initWInp);
     const u=document.createElement("span");u.className="tgt-unit";u.textContent=prefs.preferredUnit;
     initLine.appendChild(u);
     const x=document.createElement("span");x.className="tgt-x";x.textContent="×";
@@ -5358,12 +5403,15 @@ function renderTargetBodyDrop(body){
       line.appendChild(k);
       const ph=placeholders[d+1];
       const phText=(ph!=null&&!isNaN(ph))?String(ph):"—";
-      line.appendChild(buildTargetWeightInput(userDrops[d], v=>{
+      // Drop weight inputs: also blur-only re-render, so downstream cascaded placeholders update
+      // when you tab/blur away, but typing isn't interrupted.
+      const dropInp=buildTargetWeightInput(userDrops[d], v=>{
         ensureDraftEntry(i);
         if(!Array.isArray(ctx.draft[i].dropWeights))ctx.draft[i].dropWeights=new Array(dropN).fill(null);
         ctx.draft[i].dropWeights[d]=v;
-        renderTargetBody();
-      }, {placeholder:phText}));
+      }, {placeholder:phText});
+      dropInp.addEventListener("blur",()=>renderTargetBody());
+      line.appendChild(dropInp);
       const u2=document.createElement("span");u2.className="tgt-unit";u2.textContent=prefs.preferredUnit;
       line.appendChild(u2);
       const x2=document.createElement("span");x2.className="tgt-x";x2.textContent="×";
@@ -6380,8 +6428,8 @@ function renderSummary(){
   function classify(t){return t>=HIGH?"high":t<LOW?"low":t<NEUTRAL_LOW?"medium":"neutral"}
 
   document.getElementById("sum-legend").innerHTML=
-    `<span><span class="leg-dot" style="background:var(--success-text)"></span>≥${HIGH}</span>`+
-    `<span><span class="leg-dot" style="background:var(--text2)"></span>${NEUTRAL_LOW}–${HIGH-1}</span>`+
+    `<span><span class="leg-dot" style="background:var(--high-bg);border:0.5px solid var(--high-text)"></span>≥${HIGH}</span>`+
+    `<span><span class="leg-dot" style="background:var(--success-text)"></span>${NEUTRAL_LOW}–${HIGH-1}</span>`+
     `<span><span class="leg-dot" style="background:var(--warn-text)"></span>${LOW}–${MID_HIGH}</span>`+
     `<span><span class="leg-dot" style="background:var(--danger-text)"></span>&lt;${LOW}</span>`;
 
