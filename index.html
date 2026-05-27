@@ -2969,11 +2969,14 @@ function buildSvgGraph(sets){
   if(points.length===0)return svg;
 
   // Compute best-per-day points (always — used for trend line and "best only" view).
-  // In Est 1RM mode, prefer true 1RMs (reps===1) over higher Epley estimates from multi-rep sets:
-  // a measured single is more truthful than an estimate, even if the estimate computes higher.
+  // Also collect ALL points for each day, so the tooltip can expand to show every set,
+  // not just the chosen top set.
   const byDayBest={};
+  const byDayAll={};
   points.forEach(p=>{
     const d=new Date(p.t).toISOString().slice(0,10);
+    if(!byDayAll[d])byDayAll[d]=[];
+    byDayAll[d].push(p);
     const cur=byDayBest[d];
     const isTrue1rm = graphMetric==="estimated1rm" && p.src && p.src.reps===1;
     const curIsTrue1rm = cur && graphMetric==="estimated1rm" && cur.src && cur.src.reps===1;
@@ -2982,7 +2985,12 @@ function buildSvgGraph(sets){
     else if(isTrue1rm && !curIsTrue1rm)replace=true; // true 1RM always wins over estimate
     else if(!isTrue1rm && curIsTrue1rm)replace=false; // never let estimate win over true 1RM
     else if(p.m > cur.m)replace=true; // otherwise standard "highest metric wins"
-    if(replace)byDayBest[d]={t:p.t,m:p.m,src:p.src,isAggregate:p.isAggregate,daySets:p.daySets};
+    if(replace)byDayBest[d]={t:p.t,m:p.m,src:p.src,isAggregate:p.isAggregate,daySets:p.daySets,dayKey:d};
+  });
+  // Attach the full per-day set list to each best-per-day point. Aggregate (setCount) points
+  // already have their own daySets, so don't override.
+  Object.keys(byDayBest).forEach(d=>{
+    if(!byDayBest[d].daySets)byDayBest[d].allDayPoints=byDayAll[d];
   });
   const dailyMax=Object.values(byDayBest).sort((a,b)=>a.t-b.t);
 
@@ -3114,7 +3122,34 @@ function buildSvgGraph(sets){
       else line2=`~${Math.round(est1rm(s))}${s.unit||""} 1RM (est) · ${fmtNum(s.weight)}×${s.reps}`;
     }
     if(graphMetric==="volume")line2=`vol ${fmtNum((s.weight||0)*totalRepsForSet(s))} · ${fmtNum(s.weight)}×${repsShort}`;
+    // When this point has the full day's set list, show every set rather than just the best.
+    // The best set (the one represented by the dot) is marked with a leading ▸.
+    if(Array.isArray(p.allDayPoints) && p.allDayPoints.length>1){
+      const lines=[date, ""];
+      // Sort by timestamp so the order shown matches workout order
+      const sorted=[...p.allDayPoints].sort((a,b)=>a.t-b.t);
+      sorted.forEach(pt=>{
+        const st=pt.src;
+        const reps=fmtRepsOnly(st);
+        const marker = pt.src===s ? "▸ " : "  ";
+        const rir = (st.rir!==undefined && st.rir!==null) ? ` @${st.rir}R` : "";
+        lines.push(`${marker}${fmtNum(st.weight)}${st.unit||""}×${reps}${rir}`);
+      });
+      return lines;
+    }
     return [line2, date];
+  }
+
+  // Add an enlarged (radius 14) transparent circle on top of each data dot, so taps on or
+  // near the small visible dot reliably trigger the tooltip. SVG event handling targets
+  // whichever shape was hit, and a 28px diameter hit zone matches mobile tap-target guidelines.
+  // The transparent circle is added AFTER the visible dot so it sits on top in z-order.
+  function addHitTarget(cx, cy, onTap){
+    const hit=document.createElementNS("http://www.w3.org/2000/svg","circle");
+    hit.setAttribute("cx",cx);hit.setAttribute("cy",cy);hit.setAttribute("r","14");
+    hit.setAttribute("fill","transparent");hit.style.cursor="pointer";
+    hit.addEventListener("click",e=>{e.stopPropagation();onTap()});
+    svg.appendChild(hit);
   }
 
   // For setCount mode: simple line chart through points with bigger dots.
@@ -3140,8 +3175,9 @@ function buildSvgGraph(sets){
         c.setAttribute("fill","var(--accent)");
       }
       c.style.cursor="pointer";
-      c.addEventListener("click",e=>{e.stopPropagation();showTooltip(cx,cy,tipLines(p))});
       svg.appendChild(c);
+      // Enlarged invisible hit zone for reliable mobile tapping.
+      addHitTarget(cx, cy, ()=>showTooltip(cx,cy,tipLines(p)));
     });
   } else {
     // If showing all sets, scatter every set as faded dots underneath the trend line
@@ -3162,8 +3198,14 @@ function buildSvgGraph(sets){
         }
         c.setAttribute("fill","var(--accent)");c.setAttribute("opacity","0.4");
         c.style.cursor="pointer";
-        c.addEventListener("click",e=>{e.stopPropagation();showTooltip(cx,cy,tipLines(p))});
         svg.appendChild(c);
+        // Smaller hit zone (r=10) than the per-day dots so dense overlapping sets don't all
+        // capture the same tap — user can still scroll/swipe through clustered points.
+        const hit=document.createElementNS("http://www.w3.org/2000/svg","circle");
+        hit.setAttribute("cx",cx);hit.setAttribute("cy",cy);hit.setAttribute("r","10");
+        hit.setAttribute("fill","transparent");hit.style.cursor="pointer";
+        hit.addEventListener("click",e=>{e.stopPropagation();showTooltip(cx,cy,tipLines(p))});
+        svg.appendChild(hit);
       });
     }
     // Trend line: best-set-per-day
@@ -3188,8 +3230,8 @@ function buildSvgGraph(sets){
       }
       c.setAttribute("fill","var(--accent)");c.setAttribute("stroke","var(--bg)");c.setAttribute("stroke-width","1.5");
       c.style.cursor="pointer";
-      c.addEventListener("click",e=>{e.stopPropagation();showTooltip(cx,cy,tipLines(p))});
       svg.appendChild(c);
+      addHitTarget(cx, cy, ()=>showTooltip(cx,cy,tipLines(p)));
     });
   }
   // Tooltip on top
