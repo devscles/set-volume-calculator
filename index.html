@@ -205,17 +205,31 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 /* Pattern cards — simpler than muscle cards (no volume number; binary covered/not).
    covered = green palette (success); not = red (danger). Tap to expand the example list,
    long-press to open the exercise popup (mirrors muscle card behaviour). */
-.p-card{border-radius:var(--radius);padding:10px 12px;cursor:pointer;transition:transform 0.08s ease,opacity 0.08s ease;user-select:none;-webkit-user-select:none;display:flex;flex-direction:column;gap:4px}
+.p-card{border-radius:var(--radius);padding:10px 12px;cursor:pointer;transition:transform 0.08s ease,opacity 0.08s ease,background-color 0.2s var(--ease);user-select:none;-webkit-user-select:none;display:flex;flex-direction:column;gap:4px}
 .p-card:active{transform:scale(0.97);opacity:0.85}
 .p-card.covered{background:var(--success-bg)}
 .p-card.uncovered{background:var(--danger-bg)}
-.p-card .p-name{font-size:12px;font-weight:500;letter-spacing:0.01em}
+.p-card .p-name{font-size:12px;font-weight:500;letter-spacing:0.01em;display:flex;justify-content:space-between;align-items:center}
+.p-card .p-name .p-chev{font-size:10px;opacity:0.7;transition:transform 0.15s var(--ease);line-height:1}
+.p-card.open .p-name .p-chev{transform:rotate(180deg)}
 .p-card.covered .p-name{color:var(--success-text)}
 .p-card.uncovered .p-name{color:var(--danger-text)}
 .p-card .p-examples{font-size:10px;line-height:1.35;color:var(--text3);overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .p-card.uncovered .p-examples{font-style:italic;color:var(--danger-text);opacity:0.7}
 .p-card .p-count{font-size:10px;color:var(--text3);font-weight:500}
 .p-card.covered .p-count{color:var(--success-text);opacity:0.8}
+/* Expanded list: shown only when the card has .open. Hides the truncated examples line
+   and reveals the full list of covered exercises (or for uncovered, suggests options). */
+.p-card .p-expanded{display:none;font-size:11px;line-height:1.45;margin-top:6px;padding-top:6px;border-top:0.5px solid rgba(0,0,0,0.08)}
+.p-card.open .p-expanded{display:block;animation:detailFadeIn 0.16s var(--ease)}
+.p-card.open .p-examples{display:none}
+.p-card.covered.open .p-expanded{color:var(--success-text)}
+.p-card.uncovered.open .p-expanded{color:var(--danger-text);opacity:0.85}
+.p-card .p-expanded-row{display:flex;justify-content:space-between;gap:8px;padding:2px 0}
+.p-card .p-expanded-row .p-ex-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.p-card .p-expanded-row .p-ex-multi{font-size:9px;opacity:0.7;flex-shrink:0}
+.p-card .p-expanded-header{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:4px;opacity:0.85}
+.p-card.uncovered .p-expanded-uncov-msg{font-style:italic;font-size:11px;padding:2px 0}
 .leg-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:3px}
 .summary-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .empty-state{grid-column:1/-1;padding:36px 20px;text-align:center;border-radius:var(--radius);background:var(--bg2);border:0.5px dashed var(--border2)}
@@ -6818,6 +6832,8 @@ function renderPatternCards(ids, actualDisabled){
   const sg=document.getElementById("sg");
   const meta=document.getElementById("sum-meta");
   const legend=document.getElementById("sum-legend");
+  // Preserve which cards were open before re-render (e.g. after a Planned/Actual toggle).
+  const openPatterns=new Set(Array.from(document.querySelectorAll(".p-card.open")).map(el2=>el2.dataset.pattern));
   // Legend explains the binary scheme — much simpler than the muscle 4-tier
   legend.innerHTML=
     `<span><span class="leg-dot" style="background:var(--success-text)"></span>covered</span>`+
@@ -6835,26 +6851,64 @@ function renderPatternCards(ids, actualDisabled){
     const exercisesInPattern=BUILTIN_EX_PATTERNS[pattern]||[];
     const coveredInPattern=exercisesInPattern.filter(ex=>covered.has(ex));
     const cls = coveredInPattern.length>0 ? "covered" : "uncovered";
+    const isOpen=openPatterns.has(pattern);
     const card=document.createElement("div");
-    card.className="p-card "+cls;
+    card.className="p-card "+cls+(isOpen?" open":"");
     card.dataset.pattern=pattern;
-    const name=document.createElement("div");name.className="p-name";name.textContent=pattern;
+
+    // Name row + chevron indicator
+    const name=document.createElement("div");name.className="p-name";
+    name.innerHTML=`<span>${pattern}</span><span class="p-chev">▾</span>`;
     card.appendChild(name);
+
+    // Collapsed view: 1-2 line truncated examples
     const examples=document.createElement("div");examples.className="p-examples";
     if(coveredInPattern.length>0){
-      // Show first 3 covered exercises as examples
       examples.textContent = coveredInPattern.slice(0,3).join(", ") + (coveredInPattern.length>3 ? `, +${coveredInPattern.length-3} more` : "");
     } else {
       examples.textContent = summaryMode==="planned" ? "none in plan" : "none in last 4 wks";
     }
     card.appendChild(examples);
+
     if(coveredInPattern.length>0){
       const cnt=document.createElement("div");cnt.className="p-count";
       cnt.textContent=`${coveredInPattern.length} of ${exercisesInPattern.length} exercises`;
       card.appendChild(cnt);
     }
-    // Long-press opens the popup listing all exercises in this pattern,
-    // with the same "in plan" / "trained recently" highlighting as the muscle popup.
+
+    // Expanded view: full list of covered exercises (or "none" message for uncovered).
+    // For uncovered patterns, the expanded view is just a short prompt — the long-press
+    // popup is the place for browsing all options to add.
+    const exp=document.createElement("div");exp.className="p-expanded";
+    if(coveredInPattern.length>0){
+      const hdr=document.createElement("div");hdr.className="p-expanded-header";
+      hdr.textContent = summaryMode==="planned" ? "In current plan" : `In last ${ACTUAL_WINDOW_DAYS} days`;
+      exp.appendChild(hdr);
+      coveredInPattern.forEach(exName=>{
+        const r=document.createElement("div");r.className="p-expanded-row";
+        const nm=document.createElement("span");nm.className="p-ex-name";nm.textContent=exName;
+        r.appendChild(nm);
+        // If this exercise also belongs to other patterns, show a small "+N" indicator
+        const otherPatterns=(EX_TO_PATTERNS[exName]||[]).filter(p=>p!==pattern);
+        if(otherPatterns.length>0){
+          const multi=document.createElement("span");multi.className="p-ex-multi";
+          multi.textContent="+"+otherPatterns.length;
+          multi.title="Also: "+otherPatterns.join(", ");
+          r.appendChild(multi);
+        }
+        exp.appendChild(r);
+      });
+    } else {
+      const msg=document.createElement("div");msg.className="p-expanded-uncov-msg";
+      msg.textContent = summaryMode==="planned"
+        ? `No exercises in the current block train this pattern. Long-press to browse ${exercisesInPattern.length} option${exercisesInPattern.length===1?"":"s"}.`
+        : `Nothing logged for this pattern in the last ${ACTUAL_WINDOW_DAYS} days. Long-press to browse ${exercisesInPattern.length} option${exercisesInPattern.length===1?"":"s"}.`;
+      exp.appendChild(msg);
+    }
+    card.appendChild(exp);
+
+    // Tap to toggle expanded state; long-press to open the full exercise list popup.
+    card.onclick=()=>card.classList.toggle("open");
     attachLongPress(card, ()=>openPatternExercises(pattern), {allowOnInteractive:true});
     sg.appendChild(card);
   });
