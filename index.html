@@ -368,6 +368,27 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .swap-list{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:4px}
 .swap-actions{padding:10px 14px;border-top:0.5px solid var(--border);display:flex;gap:8px;flex-shrink:0}
 .swap-actions button{flex:1;padding:9px;font-size:13px;font-weight:500;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);cursor:pointer;font-family:inherit}
+.swap-actions button.primary{background:var(--accent);color:var(--accent-text);border-color:var(--accent);font-weight:600}
+.swap-actions button.primary:active{opacity:0.85}
+
+/* === Unified swap modal (v2) === */
+.swap-modal-v2{max-height:90vh}
+.swap-title-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
+.swap-close{background:transparent;border:none;color:var(--text3);font-size:16px;padding:2px 6px;cursor:pointer;line-height:1}
+.swap-current{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:8px}
+.swap-body{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:10px 16px}
+.swap-section{margin-bottom:14px}
+.swap-section-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px;font-weight:500}
+.swap-modal-v2 .swap-list{flex:0 0 auto;max-height:30vh;border:0.5px solid var(--border);border-radius:var(--radius);margin-top:6px}
+.swap-type-row{display:flex;gap:6px;flex-wrap:wrap}
+.swap-type-chip{padding:8px 12px;font-size:12px;font-weight:500;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg2);color:var(--text2);cursor:pointer;font-family:inherit;min-width:40px;text-align:center}
+.swap-type-chip.active{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
+.swap-count-row{display:flex;align-items:center;gap:14px}
+.swap-count-btn{width:36px;height:36px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);font-size:18px;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;justify-content:center;line-height:1}
+.swap-count-btn:active{background:var(--bg2)}
+.swap-count-val{font-size:18px;font-weight:600;min-width:24px;text-align:center;font-variant-numeric:tabular-nums}
+.swap-note{font-size:11px;color:var(--text3);font-style:italic;line-height:1.4;padding:8px 10px;background:var(--bg2);border-radius:var(--radius);margin-top:8px}
+
 .workout-finish-btn{flex:1;padding:11px 12px;font-size:13px;font-weight:600;border-radius:var(--radius);border:none;background:var(--text);color:var(--bg);cursor:pointer;font-family:inherit;touch-action:manipulation}
 .workout-finish-btn:active{opacity:0.85}
 /* Smaller, secondary, destructive — sits between timer and Finish */
@@ -862,16 +883,49 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
   </div>
 </div>
 
-<!-- Swap-exercise modal (mid-workout: replace an exercise in the current session) -->
+<!-- Swap-exercise modal (mid-workout: replace exercise AND/OR prescription on a session row).
+     Changes apply to the current session only — the underlying block plan stays untouched,
+     and any already-logged sets on this row keep their original exercise/type. -->
 <div class="modal-bg" id="swap-bg">
-  <div class="swap-modal">
+  <div class="swap-modal swap-modal-v2">
     <div class="swap-header">
-      <div class="swap-title" id="swap-title">Swap exercise</div>
-      <input type="text" class="swap-search" id="swap-search" placeholder="Search exercises…">
+      <div class="swap-title-row">
+        <div class="swap-title" id="swap-title">Swap exercise</div>
+        <button class="swap-close" type="button" onclick="closeSwapPicker()" aria-label="Close"><i class="ti ti-x"></i></button>
+      </div>
+      <div class="swap-current" id="swap-current"></div>
     </div>
-    <div class="swap-list" id="swap-list"></div>
+    <div class="swap-body">
+      <div class="swap-section">
+        <div class="swap-section-label">Exercise</div>
+        <input type="text" class="swap-search" id="swap-search" placeholder="Search exercises…" autocomplete="off">
+        <div class="swap-list" id="swap-list"></div>
+      </div>
+      <div class="swap-section">
+        <div class="swap-section-label">Set type</div>
+        <div class="swap-type-row" id="swap-type-row"></div>
+      </div>
+      <div class="swap-section">
+        <div class="swap-section-label">Sets</div>
+        <div class="swap-count-row">
+          <button class="swap-count-btn" id="swap-sets-minus" type="button">−</button>
+          <span class="swap-count-val" id="swap-sets-val">3</span>
+          <button class="swap-count-btn" id="swap-sets-plus" type="button">+</button>
+        </div>
+      </div>
+      <div class="swap-section" id="swap-struct-section" style="display:none">
+        <div class="swap-section-label" id="swap-struct-label">Drops</div>
+        <div class="swap-count-row">
+          <button class="swap-count-btn" id="swap-struct-minus" type="button">−</button>
+          <span class="swap-count-val" id="swap-struct-val">3</span>
+          <button class="swap-count-btn" id="swap-struct-plus" type="button">+</button>
+        </div>
+      </div>
+      <div class="swap-note">Already-logged sets keep their original exercise and structure. Block plan is unchanged.</div>
+    </div>
     <div class="swap-actions">
       <button onclick="closeSwapPicker()">Cancel</button>
+      <button class="primary" onclick="saveSwap()">Save changes</button>
     </div>
   </div>
 </div>
@@ -1015,7 +1069,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
       <details class="help-section">
         <summary>Set type multipliers</summary>
         <p>How much each intensifier set type counts toward your weekly volume, relative to a straight set. <b>Edit these if you disagree with the defaults</b> — the literature on these techniques is thin and reasonable people land in different places.</p>
-        <p class="help-note">Defaults are conservative estimates drawn from coaching literature on rest-pause (Marshall et al.), myo-reps (Fagerli), and drop set protocols. Wide error bars apply. See the Help → "Intensifier weighting &amp; the literature" section for more.</p>
+        <p class="help-note">Defaults assume <b>well-executed</b> sequences (close to failure, short rests). Drawn from the volume-equivalence finding in Coleman 2022 and Gonzalez 2025 — when volume is matched, hypertrophy is matched. See Help → "Intensifier weighting &amp; the literature" for the full rationale.</p>
         <div id="settings-mult-grid" style="margin:8px 0 0 16px"></div>
         <p style="font-size:11px;color:var(--text2);margin:10px 0 0 16px"><b>Drop sets</b> use a tiered multiplier based on the number of drops in the sequence:</p>
         <div id="settings-drop-grid" style="margin:8px 0 0 16px"></div>
@@ -1101,10 +1155,10 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
           <tr><th>Chip</th><th>Type</th><th>×</th><th>What "1 set" means</th></tr>
           <tr><td><b>S</b></td><td>Straight</td><td>1.0</td><td>One standard set to ~0–3 RIR</td></tr>
           <tr><td><b>A</b></td><td>AMRAP</td><td>1.0</td><td>One set taken to failure</td></tr>
-          <tr><td><b>D</b></td><td>Drop set</td><td>1.5–2.5</td><td>Top set + N drops; multiplier scales with drop count (see below)</td></tr>
-          <tr><td><b>C</b></td><td>Cluster</td><td>1.5</td><td>5×3 or similar with very short rest</td></tr>
-          <tr><td><b>R</b></td><td>Rest-pause</td><td>2.0</td><td>One set + 2–3 short-rest mini-sets</td></tr>
-          <tr><td><b>M</b></td><td>Myo-rep</td><td>2.5</td><td>Activation set + 3–5 mini-sets at short rest</td></tr>
+          <tr><td><b>D</b></td><td>Drop set</td><td>1.5–3.0</td><td>Top set + N drops; multiplier scales with drop count (see below)</td></tr>
+          <tr><td><b>C</b></td><td>Cluster</td><td>3.0</td><td>5×3 or similar with very short rest</td></tr>
+          <tr><td><b>R</b></td><td>Rest-pause</td><td>3.0</td><td>One set + 2–3 short-rest mini-sets</td></tr>
+          <tr><td><b>M</b></td><td>Myo-rep</td><td>3.0</td><td>Activation set + 3–5 mini-sets at short rest</td></tr>
         </table>
         <p class="help-note">These multipliers are <b>defensible estimates, not precise measurements</b>. The research on intensifier techniques is thin and the numbers were chosen as reasonable midpoints in the available literature. <b>All multipliers are user-editable</b> in Settings → Set type multipliers. If you disagree with any of these (and reasonable people do), change them.</p>
       </details>
@@ -1113,15 +1167,17 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
         <summary>Intensifier weighting &amp; the literature</summary>
         <p>This is the most opinionated part of the app, so we want to be transparent about how we landed where we did and where the uncertainty is.</p>
         <p><b>The basic question:</b> if a straight set to ~0–3 RIR contributes 1 "set" toward your weekly volume, how much should an intensified set contribute?</p>
-        <p><b>What the literature actually says:</b></p>
+        <p><b>The framework we use: volume-equivalence.</b> The Coleman et al. (2022) meta-analysis and the Gonzalez et al. (2025) narrative review both report a consistent finding across drop sets, rest-pause, myo-reps, and cluster sets: <i>when volume is matched, hypertrophy is matched</i>. So the question becomes "how much volume does one well-executed sequence actually produce?" rather than "how much hypertrophy does this technique magically generate?"</p>
+        <p><b>Where each multiplier comes from:</b></p>
         <ul>
-          <li><b>Rest-pause (Marshall et al., 2012):</b> equated-volume comparisons show similar hypertrophy outcomes per equated rep. Rest-pause sequences allow ~50–100% more total reps than a straight set in the same time. We use <b>2.0×</b>.</li>
-          <li><b>Myo-reps (Børge Fagerli, various):</b> coaching framings put a full myo-rep sequence at "2–3 traditional sets." We use <b>2.5×</b> as the midpoint. Crucially, <b>"1 myo-rep set" means one full activation+mini-sets sequence</b>, not each mini-set individually — otherwise the count would be wildly inflated.</li>
-          <li><b>Drop sets:</b> Coleman et al. (2022) meta-analysis and the Gonzalez et al. (2025) narrative review both report that <i>when volume is matched</i>, drop sets and traditional training produce equivalent hypertrophy and strength. Drop sets accomplish that matched volume in ~30–70% less time, which is their main practical advantage. Past that, the literature is thin — none of the included studies tested multi-drop sequences (3+) the way bodybuilders typically perform them. Our tiered estimates: <b>1 drop = 1.5×</b>, <b>2 drops = 2.0×</b>, <b>3 drops = 2.5×</b>, <b>4 drops = 2.75×</b>, <b>5+ drops = 3.0×</b> (plateau). The plateau reflects diminishing returns — each successive drop performs less work than the one before it (lighter load, fewer reps to failure) — and our genuine uncertainty about whether 6, 7, or more drops contribute meaningful additional stimulus. If you'd like the cap to behave differently (e.g. you find extended-drop sequences genuinely worth 3.5× or 4×), edit the tier 5 value in Settings.</li>
-          <li><b>Cluster sets:</b> equated-volume research shows similar hypertrophy to traditional sets per equated rep, with potentially better mechanical performance. We use <b>1.5×</b> reflecting the modest additional reps cluster format allows.</li>
+          <li><b>Rest-pause:</b> a typical sequence (initial set to failure + 2-3 short-rest mini-sets) usually produces total reps roughly equivalent to 2.5-3 straight sets at the same weight. We use <b>3.0×</b> as the default, reflecting that a well-executed sequence with short rests tends to land closer to 3 than 2.</li>
+          <li><b>Myo-reps (Børge Fagerli):</b> activation set + 4-5 mini-sets to failure typically produces aggregate volume in the 2.5-3× range. We use <b>3.0×</b> for the same reason. Crucially, <b>"1 myo-rep set" means one full activation+mini-sets sequence</b>, not each mini-set individually — otherwise the count would be wildly inflated.</li>
+          <li><b>Cluster sets:</b> structurally similar to several mini-sets at the same weight (e.g. 5×3 at 85% 1RM). Aggregate reps × weight is genuinely ~3× a single straight set to failure at the same load. We use <b>3.0×</b>.</li>
+          <li><b>Drop sets:</b> tiered by number of drops. Lighter loads on each successive drop means each drop performs less work than the one before. Estimates: <b>1 drop = 1.5×</b>, <b>2 drops = 2.0×</b>, <b>3 drops = 2.5×</b>, <b>4 drops = 2.75×</b>, <b>5+ drops = 3.0×</b> (plateau). The plateau reflects diminishing returns past ~5 drops — both fatigue and the lightness of the load eat into marginal contribution.</li>
         </ul>
-        <p><b>What we're guessing about:</b> the precise multiplier for each technique relative to a straight set. Individual response varies enormously based on training age, recovery, exercise selection, and how strictly the technique is performed. A poorly-executed myo-rep with long rests between mini-sets is essentially a straight set; a tightly-executed one with very short rest is much more.</p>
-        <p><b>Why this matters for the Summary tab:</b> if you do 4 myo-rep sets of curls (= 10 effective sets per our math) you'll see Biceps at 10 in the Summary. Whether that "really" represents the same biceps stimulus as 10 straight sets is unprovable — but it's a useful planning approximation that prevents you from accidentally over- or under-training a muscle.</p>
+        <p><b>The "well-executed" caveat:</b> these defaults assume sequences performed close to failure with appropriately short rests. If you're using these techniques with significant reps in reserve, longer rests between mini-sets, or generally less aggressively, you may want to dial the multipliers down in Settings. A myo-rep sequence with 30s rest between mini-sets is closer to 1.5 straight sets than to 3.</p>
+        <p><b>What we're still uncertain about:</b> the precise multiplier per technique. Individual response varies enormously based on training age, recovery, exercise selection, and how strictly the technique is performed. The numbers above are defensible defaults, not rigorous extracts from research — partly because the research often doesn't report reps-per-protocol in ways that would let us compute exact ratios.</p>
+        <p><b>Why this matters for the Summary tab:</b> if you do 4 myo-rep sets of curls (= 12 effective sets per our math) you'll see Biceps at 12 in the Summary. Whether that "really" represents the same biceps stimulus as 12 straight sets is unprovable — but it's a useful planning approximation that prevents you from accidentally over- or under-training a muscle.</p>
         <p><b>If you want to change anything:</b> Settings → Set type multipliers. You can edit any base value and the drop tiers individually. Changes apply immediately to all Summary calculations and the per-exercise Sets graph. Click "Reset all to defaults" to restore.</p>
       </details>
 
@@ -1169,7 +1225,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
           <li><b>Weight</b> graph: uses the working weight (same as straight sets)</li>
           <li><b>Est 1RM</b> graph: uses the activation reps only (most representative of true working strength)</li>
           <li><b>Volume</b> graph: weight × <i>total</i> reps including all mini-sets (the actual work performed)</li>
-          <li><b>Sets</b> graph: each myo-rep sequence contributes <b>2.5 effective sets</b> per the same multiplier used in the Summary tab. Days that include intensifier sets are marked with a hollow (outlined) dot on the graph and an asterisk in the history table — so you can tell at a glance which trends are inflated by the multipliers vs straight-set work. Tap any dot for a per-type breakdown.</li>
+          <li><b>Sets</b> graph: each myo-rep sequence contributes <b>3.0 effective sets</b> per the same multiplier used in the Summary tab. Days that include intensifier sets are marked with a hollow (outlined) dot on the graph and an asterisk in the history table — so you can tell at a glance which trends are inflated by the multipliers vs straight-set work. Tap any dot for a per-type breakdown.</li>
         </ul>
       </details>
 
@@ -1416,9 +1472,9 @@ const SET_TYPE_DEFAULTS={
   straight:    {label:"Straight",  short:"S", mult:1.0, sub:"Standard sets to ~0-3 RIR"},
   amrap:       {label:"AMRAP",     short:"A", mult:1.0, sub:"To failure; same volume as a straight set"},
   drop:        {label:"Drop set",  short:"D", mult:1.5, sub:"Top set + 1-3 weight drops (multiplier scales with number of drops)"},
-  cluster:     {label:"Cluster",   short:"C", mult:1.5, sub:"5×3 with short rest, etc."},
-  restpause:   {label:"Rest-pause",short:"R", mult:2.0, sub:"1 set + 2-3 short-rest mini-sets"},
-  myorep:      {label:"Myo-rep",   short:"M", mult:2.5, sub:"Activation set + 3-5 mini-sets"}
+  cluster:     {label:"Cluster",   short:"C", mult:3.0, sub:"5×3 with short rest, etc."},
+  restpause:   {label:"Rest-pause",short:"R", mult:3.0, sub:"1 set + 2-3 short-rest mini-sets"},
+  myorep:      {label:"Myo-rep",   short:"M", mult:3.0, sub:"Activation set + 3-5 mini-sets"}
 };
 const SET_TYPE_KEYS=["straight","amrap","drop","cluster","restpause","myorep"];
 const SET_TYPE_OVERRIDES_KEY="trainblock_set_type_overrides_v1";
@@ -2793,7 +2849,7 @@ function buildSvgGraph(sets){
     return s.weight||0;
   }
   // For setCount we aggregate per day rather than per set.
-  // Each set contributes its set-type multiplier (straight=1.0, drop=1.5, myo-rep=2.5, etc.)
+  // Each set contributes its set-type multiplier (straight=1.0, drop=tiered, myo-rep/cluster/restpause=3.0, etc.)
   // so the "Sets" graph matches the volume math used in the Summary tab.
   let points; // [{t, m, src}]
   if(graphMetric==="setCount"){
@@ -2934,7 +2990,7 @@ function buildSvgGraph(sets){
       const lines=[`${fmtNum(p.m)} effective set${p.m===1?"":"s"}`];
       if(p.hasIntensifier){
         // Group by (type, effective multiplier) so drop sets of different tiers render distinctly:
-        // "3 straight + 1 drop x1 (×1.5) + 1 drop x3 (×2.5) + 1 myo-rep (×2.5)"
+        // "3 straight + 1 drop x1 (×1.5) + 1 drop x3 (×2.5) + 1 myo-rep (×3.0)"
         const buckets={};
         p.daySets.forEach(st=>{
           const t=st.type||"straight";
@@ -5263,19 +5319,39 @@ function confirmFinishWorkout(){
   }
 }
 
-// ===== Swap-exercise picker (mid-workout) =====
+// ===== Unified swap-exercise picker (mid-workout) =====
+// Lets the user change exercise, set type, set count, and type-specific structural count
+// (drop count / mini-set count / cluster count) for one row in the current session.
+// Changes apply to the SESSION only — the underlying block plan is untouched, and any
+// already-logged sets keep their original exercise name and type for historical accuracy.
 let swapCtx=null;
+// swapCtx shape: {position, draft:{ex, type, sets, dropCount, miniSetCount, clusterCount}}
+
 function openSwapPicker(plannedRowPosition){
   const s=sessions.find(x=>x.id===curWorkoutSessId);
   if(!s)return;
   const pr=s.plannedRows[plannedRowPosition];
   if(!pr)return;
-  swapCtx={position:plannedRowPosition, originalEx:pr.ex};
-  document.getElementById("swap-title").textContent="Swap "+pr.ex;
+  // Snapshot the current row prescription into the draft so the modal opens pre-populated
+  swapCtx={
+    position: plannedRowPosition,
+    draft: {
+      ex: pr.ex,
+      type: pr.type || "straight",
+      sets: pr.plannedSets || 1,
+      dropCount: pr.dropCount || 3,
+      miniSetCount: pr.miniSetCount || (pr.type==="myorep" ? 4 : 3),
+      clusterCount: pr.clusterCount || 5
+    }
+  };
+  document.getElementById("swap-title").textContent="Swap " + pr.ex;
+  document.getElementById("swap-current").textContent=
+    `Currently: ${pr.ex} · ${getSetTypeInfo(pr.type||"straight").label} · ${pr.plannedSets||1} ${(pr.type==="straight"||pr.type==="amrap")?"sets":"sequences"}`;
   document.getElementById("swap-search").value="";
   buildSwapList("");
+  renderSwapTypeChips();
+  renderSwapCounts();
   document.getElementById("swap-bg").classList.add("open");
-  setTimeout(()=>document.getElementById("swap-search").focus(),60);
 }
 function closeSwapPicker(){
   swapCtx=null;
@@ -5290,22 +5366,101 @@ function buildSwapList(query){
     if(!visibleItems.length)return;
     const groupEl=document.createElement("div");groupEl.className="ex-group";groupEl.textContent=group;list.appendChild(groupEl);
     visibleItems.forEach(([name])=>{
-      const opt=document.createElement("div");opt.className="ex-option"+(name===swapCtx?.originalEx?" selected":"");
+      const isSelected = swapCtx && name===swapCtx.draft.ex;
+      const opt=document.createElement("div");opt.className="ex-option"+(isSelected?" selected":"");
       opt.textContent=name;
-      opt.onclick=()=>doSwap(name);
+      opt.onclick=()=>{
+        if(!swapCtx)return;
+        swapCtx.draft.ex=name;
+        // Re-render the list to update the selection highlight
+        buildSwapList(document.getElementById("swap-search").value);
+      };
       list.appendChild(opt);
     });
   });
 }
 document.getElementById("swap-search").addEventListener("input",e=>buildSwapList(e.target.value));
-function doSwap(newEx){
+
+// Set type chips for the swap modal
+function renderSwapTypeChips(){
+  const row=document.getElementById("swap-type-row");
+  row.innerHTML="";
+  if(!swapCtx)return;
+  SET_TYPE_KEYS.forEach(key=>{
+    const info=getSetTypeInfo(key);
+    const chip=document.createElement("button");
+    chip.type="button";
+    chip.className="swap-type-chip"+(key===swapCtx.draft.type?" active":"");
+    chip.textContent=info.short;
+    chip.title=info.label;
+    chip.onclick=()=>{
+      const oldType=swapCtx.draft.type;
+      swapCtx.draft.type=key;
+      // When switching INTO a structural type the source row didn't have, refresh the
+      // structural count to that type's natural default so the user sees a sensible value.
+      if(key==="myorep" && oldType!=="myorep")swapCtx.draft.miniSetCount=4;
+      else if(key==="restpause" && oldType!=="restpause")swapCtx.draft.miniSetCount=3;
+      else if(key==="cluster" && oldType!=="cluster")swapCtx.draft.clusterCount=5;
+      else if(key==="drop" && oldType!=="drop")swapCtx.draft.dropCount=3;
+      renderSwapTypeChips();
+      renderSwapCounts();
+    };
+    row.appendChild(chip);
+  });
+}
+
+// Sets count + (conditional) structural count based on set type
+function renderSwapCounts(){
+  if(!swapCtx)return;
+  // Sets
+  const setsVal=document.getElementById("swap-sets-val");
+  setsVal.textContent=swapCtx.draft.sets;
+  document.getElementById("swap-sets-minus").onclick=()=>{
+    if(swapCtx.draft.sets>1){swapCtx.draft.sets--;setsVal.textContent=swapCtx.draft.sets}
+  };
+  document.getElementById("swap-sets-plus").onclick=()=>{
+    if(swapCtx.draft.sets<10){swapCtx.draft.sets++;setsVal.textContent=swapCtx.draft.sets}
+  };
+  // Structural count (varies by type)
+  const section=document.getElementById("swap-struct-section");
+  const t=swapCtx.draft.type;
+  let label=null, key=null, min=1, max=7;
+  if(t==="drop"){label="Drops"; key="dropCount"; min=1; max=7}
+  else if(t==="myorep" || t==="restpause"){label="Mini-sets"; key="miniSetCount"; min=1; max=10}
+  else if(t==="cluster"){label="Clusters"; key="clusterCount"; min=2; max=10}
+  if(!label){section.style.display="none";return}
+  section.style.display="";
+  document.getElementById("swap-struct-label").textContent=label;
+  const structVal=document.getElementById("swap-struct-val");
+  structVal.textContent=swapCtx.draft[key];
+  document.getElementById("swap-struct-minus").onclick=()=>{
+    if(swapCtx.draft[key]>min){swapCtx.draft[key]--;structVal.textContent=swapCtx.draft[key]}
+  };
+  document.getElementById("swap-struct-plus").onclick=()=>{
+    if(swapCtx.draft[key]<max){swapCtx.draft[key]++;structVal.textContent=swapCtx.draft[key]}
+  };
+}
+
+// Save: apply the draft to the session's plannedRow. Already-logged sets are untouched —
+// they keep their original ex/type/structure (already correct historical records).
+function saveSwap(){
   if(!swapCtx)return;
   const s=sessions.find(x=>x.id===curWorkoutSessId);
   if(!s){closeSwapPicker();return}
   const pr=s.plannedRows[swapCtx.position];
-  pr.ex=newEx;
-  // Note: we deliberately do NOT update existing logged sets (they keep their original ex name
-  // for historical accuracy). New sets logged after the swap will use the new ex name.
+  if(!pr){closeSwapPicker();return}
+  const d=swapCtx.draft;
+  pr.ex=d.ex;
+  pr.type=d.type;
+  pr.plannedSets=d.sets;
+  // Always update structural counts so they're sane for the new type; renderers default
+  // sensibly if the field doesn't apply to the type.
+  pr.dropCount=d.dropCount;
+  pr.miniSetCount=d.miniSetCount;
+  pr.clusterCount=d.clusterCount;
+  // Note: pr.targets[] is kept as-is. If the type changed, the existing targets may no
+  // longer make semantic sense (e.g. a straight-set target for what's now a drop sequence),
+  // but they'll still render as initial weight/reps placeholders without misleading the user.
   saveSessions();
   closeSwapPicker();
   renderWorkoutBody();
