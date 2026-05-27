@@ -315,8 +315,10 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .sess-ex-name{font-size:13px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
 .sess-ex-name:active{color:var(--accent)}
 .sess-ex-sets{display:flex;flex-wrap:wrap;gap:4px;font-size:12px;color:var(--text);font-variant-numeric:tabular-nums}
-.sess-ex-set{padding:3px 8px;background:var(--bg);border-radius:6px;border:0.5px solid var(--border)}
+.sess-ex-set{padding:3px 8px;background:var(--bg);border-radius:6px;border:0.5px solid var(--border);font-size:11px;color:var(--text);font-family:inherit}
+.sess-ex-set:active{background:var(--bg2)}
 .sess-ex-set.miss{background:var(--warn-bg);color:var(--warn-text);border-color:var(--warn-text)}
+.sess-ex-set.miss:active{background:var(--warn-text);color:var(--warn-bg)}
 .sess-detail-meta{font-size:12px;color:var(--text2);margin-bottom:14px;padding:8px 10px;background:var(--bg2);border-radius:var(--radius)}
 
 /* Graph view */
@@ -916,6 +918,36 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
       <button class="help-close" onclick="closeHistory()" aria-label="Close">×</button>
     </div>
     <div class="help-body" id="history-body"></div>
+  </div>
+</div>
+
+<!-- History set editor: small modal to edit weight/reps/RIR or delete a logged set
+     from the session-detail view. Complex set types (drop/myo/cluster/restpause)
+     are still editable for the top-level weight/reps; structural sub-fields like
+     dropWeights or miniSetReps are preserved as-is. -->
+<div class="modal-bg input-modal" id="histset-bg" style="z-index:215">
+  <div class="modal" style="max-width:320px;width:100%">
+    <div class="logset-title" id="histset-title">Edit set</div>
+    <div class="logset-target" id="histset-sub" style="margin-bottom:12px"></div>
+    <div class="logset-fields">
+      <div class="logset-field">
+        <label>Weight (<span id="histset-unit">lb</span>)</label>
+        <input type="text" inputmode="decimal" pattern="[0-9]*\.?[0-9]*" id="histset-weight" placeholder="—" autocomplete="off">
+      </div>
+      <div class="logset-field">
+        <label>Reps</label>
+        <input type="text" inputmode="numeric" pattern="[0-9]*" id="histset-reps" placeholder="—" autocomplete="off">
+      </div>
+      <div class="logset-field">
+        <label>RIR <span style="color:var(--text3);font-weight:normal">(optional)</span></label>
+        <input type="text" inputmode="numeric" pattern="[0-9]*" id="histset-rir" placeholder="—" autocomplete="off">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button onclick="closeHistSetEditor()">Cancel</button>
+      <button class="danger" onclick="histSetDelete()">Delete</button>
+      <button class="primary" onclick="histSetSave()">Save</button>
+    </div>
   </div>
 </div>
 
@@ -2507,15 +2539,92 @@ function renderSessionDetail(sessId){
     card.appendChild(head);
     const sets=document.createElement("div");sets.className="sess-ex-sets";
     byEx[ex].forEach(st=>{
-      const sp=document.createElement("span");sp.className="sess-ex-set"+(st.targetReps&&st.reps<st.targetReps?" miss":"");
+      // Each set chip is now tappable — opens the editor for that specific set.
+      const sp=document.createElement("button");
+      sp.type="button";
+      sp.className="sess-ex-set"+(st.targetReps&&st.reps<st.targetReps?" miss":"");
+      sp.style.cursor="pointer";sp.style.fontFamily="inherit";
       const rir=st.rir!==undefined?` @${st.rir}R`:"";
       sp.textContent=`${fmtSetReps(st)}${rir}`;
+      sp.title="Tap to edit or delete this set";
+      sp.onclick=()=>openHistSetEditor(s.id, st);
       sets.appendChild(sp);
     });
     card.appendChild(sets);
     body.appendChild(card);
   });
 }
+
+// === History set editor ===
+// Opens a small modal to edit weight/reps/RIR or delete a set already in history.
+// Stash the session ID + set reference so save/delete know what to mutate.
+let histSetCtx=null; // {sessId, set}
+function openHistSetEditor(sessId, set){
+  const s=sessions.find(x=>x.id===sessId);
+  if(!s)return;
+  const idx=s.sets.indexOf(set);
+  if(idx<0)return;
+  histSetCtx={sessId, set, idx};
+  document.getElementById("histset-title").textContent=set.ex || "Edit set";
+  // Show the set's full text representation (with mini-set reps, drops, etc.) so the user
+  // can confirm they're editing the right one — useful when sets look similar at a glance.
+  const dateStr=set.timestamp ? new Date(set.timestamp).toLocaleString(undefined,{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"}) : "";
+  let typeNote = "";
+  if(set.type==="myorep")typeNote = ` (myo-rep — only initial weight/reps editable)`;
+  else if(set.type==="drop")typeNote = ` (drop — only initial weight/reps editable)`;
+  else if(set.type==="cluster")typeNote = ` (cluster)`;
+  else if(set.type==="restpause")typeNote = ` (rest-pause — only initial weight/reps editable)`;
+  document.getElementById("histset-sub").innerHTML = `<span style="font-variant-numeric:tabular-nums">${fmtSetReps(set)}</span>${typeNote}${dateStr?` · ${dateStr}`:""}`;
+  document.getElementById("histset-unit").textContent = set.unit || prefs.preferredUnit;
+  document.getElementById("histset-weight").value = set.weight ?? "";
+  document.getElementById("histset-reps").value = set.reps ?? "";
+  document.getElementById("histset-rir").value = (set.rir!==undefined&&set.rir!==null) ? set.rir : "";
+  document.getElementById("histset-bg").classList.add("open");
+}
+function closeHistSetEditor(){
+  histSetCtx=null;
+  document.getElementById("histset-bg").classList.remove("open");
+}
+function histSetSave(){
+  if(!histSetCtx)return;
+  const w=parseFloat(document.getElementById("histset-weight").value);
+  const r=parseInt(document.getElementById("histset-reps").value,10);
+  const rirRaw=document.getElementById("histset-rir").value.trim();
+  if(isNaN(w)||w<0||isNaN(r)||r<=0){
+    alert("Please enter a valid weight and reps.");
+    return;
+  }
+  const s=sessions.find(x=>x.id===histSetCtx.sessId);
+  if(!s){closeHistSetEditor();return}
+  const idx=s.sets.indexOf(histSetCtx.set);
+  if(idx<0){closeHistSetEditor();return}
+  // Update in place — preserve everything else (timestamp, type, miniSetReps, dropWeights, etc.)
+  s.sets[idx].weight=w;
+  s.sets[idx].reps=r;
+  if(rirRaw===""){
+    delete s.sets[idx].rir;
+  } else {
+    const rirNum=parseInt(rirRaw,10);
+    if(!isNaN(rirNum)&&rirNum>=0)s.sets[idx].rir=rirNum;
+  }
+  saveSessions();
+  closeHistSetEditor();
+  renderHistoryView(); // re-render whichever history view we came from (session detail or graph)
+}
+function histSetDelete(){
+  if(!histSetCtx)return;
+  if(!confirm("Delete this logged set permanently?"))return;
+  const s=sessions.find(x=>x.id===histSetCtx.sessId);
+  if(!s){closeHistSetEditor();return}
+  const idx=s.sets.indexOf(histSetCtx.set);
+  if(idx<0){closeHistSetEditor();return}
+  s.sets.splice(idx,1);
+  saveSessions();
+  closeHistSetEditor();
+  renderHistoryView();
+}
+// Tap outside the editor to dismiss
+document.getElementById("histset-bg").addEventListener("click",e=>{if(e.target.id==="histset-bg")closeHistSetEditor()});
 
 // ----- Exercise progression graph -----
 let graphMetric="weight"; // "weight" | "estimated1rm" | "volume" | "setCount"
@@ -3714,17 +3823,38 @@ function openMuscleExercises(muscle){
   const list=document.getElementById("muscle-ex-list");
   list.innerHTML="";
 
-  // Collect names of exercises currently planned (sets > 0) anywhere in the active block.
-  // Used to highlight rows the user has already incorporated, so they can see which ones
-  // they could add to improve coverage for this muscle.
-  const plannedNames=new Set();
-  const curBlk=mem[curBlock];
-  if(curBlk){
-    Object.values(curBlk.days||{}).forEach(day=>{
-      (day.rows||[]).forEach(r=>{
-        if(r.ex && r.sets>0)plannedNames.add(r.ex);
+  // Collect exercise names to highlight. Source depends on which Summary mode is active:
+  //   - "planned" → exercises with sets > 0 in the current block (what's on the schedule)
+  //   - "actual"  → exercises actually trained in the last 28 days (matches the Actual chip window)
+  // This keeps the popup consistent with the volume the user just saw on the muscle card.
+  const highlightNames=new Set();
+  let highlightLabel;
+  if(summaryMode==="actual"){
+    highlightLabel="trained recently";
+    const cutoff=Date.now() - 28*86400000;
+    sessions.forEach(s=>{
+      (s.sets||[]).forEach(st=>{
+        const ts = st.timestamp ? new Date(st.timestamp).getTime() : new Date(s.date).getTime();
+        if(ts>=cutoff && st.ex)highlightNames.add(st.ex);
       });
     });
+    // Imported Flexify history also counts toward "actual" if it's recent enough
+    if(Array.isArray(flexifyHistory)){
+      flexifyHistory.forEach(rec=>{
+        const ts = rec.date ? new Date(rec.date).getTime() : 0;
+        if(ts>=cutoff && rec.ours)highlightNames.add(rec.ours);
+      });
+    }
+  } else {
+    highlightLabel="in plan";
+    const curBlk=mem[curBlock];
+    if(curBlk){
+      Object.values(curBlk.days||{}).forEach(day=>{
+        (day.rows||[]).forEach(r=>{
+          if(r.ex && r.sets>0)highlightNames.add(r.ex);
+        });
+      });
+    }
   }
 
   // Walk EX (grouped) and collect any exercise where this muscle has weight > 0.
@@ -3735,7 +3865,7 @@ function openMuscleExercises(muscle){
     const hits=[];
     items.forEach(([name, muscles])=>{
       const w=muscles[muscle];
-      if(w&&w>0)hits.push({name, weight:w, planned:plannedNames.has(name)});
+      if(w&&w>0)hits.push({name, weight:w, highlighted:highlightNames.has(name)});
     });
     if(hits.length){
       // Sort within group by weight descending (heaviest contributors first)
@@ -3751,19 +3881,19 @@ function openMuscleExercises(muscle){
     list.appendChild(empty);
     sub.textContent=`Exercises that target ${muscle}.`;
   } else {
-    const plannedCount=groups.reduce((acc,g)=>acc+g.hits.filter(h=>h.planned).length,0);
-    const plannedNote = plannedCount>0 ? `, ${plannedCount} in current plan` : "";
-    sub.textContent=`${totalCount} exercise${totalCount===1?"":"s"} target ${muscle}${plannedNote}.`;
+    const hlCount=groups.reduce((acc,g)=>acc+g.hits.filter(h=>h.highlighted).length,0);
+    const hlNote = hlCount>0 ? `, ${hlCount} ${highlightLabel}` : "";
+    sub.textContent=`${totalCount} exercise${totalCount===1?"":"s"} target ${muscle}${hlNote}.`;
     groups.forEach(({groupName, hits})=>{
       const gl=document.createElement("div");gl.className="muscle-ex-group";gl.textContent=groupName;
       list.appendChild(gl);
-      hits.forEach(({name, weight, planned})=>{
-        const row=document.createElement("div");row.className="muscle-ex-row"+(planned?" planned":"");
+      hits.forEach(({name, weight, highlighted})=>{
+        const row=document.createElement("div");row.className="muscle-ex-row"+(highlighted?" planned":"");
         const nm=document.createElement("span");nm.className="muscle-ex-name";
         const nmText=document.createElement("span");nmText.className="muscle-ex-name-text";nmText.textContent=name;
         nm.appendChild(nmText);
-        if(planned){
-          const tag=document.createElement("span");tag.className="muscle-ex-planned-tag";tag.textContent="in plan";
+        if(highlighted){
+          const tag=document.createElement("span");tag.className="muscle-ex-planned-tag";tag.textContent=highlightLabel;
           nm.appendChild(tag);
         }
         const wt=document.createElement("span");wt.className="muscle-ex-weight"+(weight>=1?" primary":"");
@@ -4055,8 +4185,9 @@ function saveInlineSet(s, pr, slotIdx, existing, partial){
     s.sets.push(rec);
   }
   saveSessions();
-  // Fire the rest timer only for genuinely new sets (not edits of existing logged sets)
-  if(!existing && !restTimer.id)startRestTimer();
+  // New log: always (re)start the timer at full duration, even if one's already running.
+  // Edits to existing logged sets don't touch the timer.
+  if(!existing)startRestTimer();
   renderWorkoutBody();
 }
 
@@ -4792,7 +4923,7 @@ function saveMyorepInline(s, pr, slotIdx, existing){
   saveSessions();
   delete myorepInlineState[stateKey];
   renderWorkoutBody();
-  if(!existing&&!restTimer.id)startRestTimer();
+  if(!existing)startRestTimer();
 }
 function fmtNum(n){if(n==null)return "—";return (n%1===0)?String(n):n.toFixed(1).replace(/\.?0+$/,"")||"0"}
 
@@ -5086,9 +5217,9 @@ function saveDropInline(s, pr, slotIdx, existing){
   saveSessions();
   delete dropInlineState[stateKey];
   renderWorkoutBody();
-  // Drop sequences are continuous (no internal rests), so just start the default rest timer
+  // Drop sequences are continuous (no internal rests), so just (re)start the default rest timer
   // when the whole sequence is logged — same behaviour as straight sets.
-  if(!existing&&!restTimer.id)startRestTimer();
+  if(!existing)startRestTimer();
 }
 
 function confirmAbandonWorkout(){
@@ -5847,8 +5978,8 @@ function saveLoggedSet(){
   saveSessions();
   closeLogSet();
   renderWorkoutBody();
-  // Auto-start rest timer when a new set is logged
-  if(!logSetCtx?.existing&&!restTimer.id)startRestTimer();
+  // New log: (re)start the rest timer at full duration regardless of any running timer
+  if(!logSetCtx?.existing)startRestTimer();
 }
 function deleteLoggedSet(){
   if(!logSetCtx||!logSetCtx.existing)return;
