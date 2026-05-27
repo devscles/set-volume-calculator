@@ -367,12 +367,29 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .graph-show-all{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text2);cursor:pointer;user-select:none}
 .graph-show-all input{margin:0;cursor:pointer;width:13px;height:13px;accent-color:var(--accent)}
 /* Scrollable history table: keeps the graph as the focal element */
-.graph-table-wrap{max-height:200px;overflow-y:auto;-webkit-overflow-scrolling:touch;border:0.5px solid var(--border);border-radius:var(--radius);margin-top:10px}
+.graph-table-wrap{max-height:280px;overflow-y:auto;-webkit-overflow-scrolling:touch;border:0.5px solid var(--border);border-radius:var(--radius);margin-top:10px}
 .graph-table-wrap-label{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:0.04em;font-weight:500;margin:10px 0 4px;padding:0 4px}
 .graph-table{width:100%;border-collapse:collapse;font-size:12px}
 .graph-table th{font-size:10px;color:var(--text2);font-weight:500;text-align:left;padding:6px 8px;text-transform:uppercase;letter-spacing:0.04em;border-bottom:0.5px solid var(--border);background:var(--bg2);position:sticky;top:0;z-index:1}
 .graph-table td{padding:5px 8px;border-bottom:0.5px solid var(--border);font-variant-numeric:tabular-nums}
 .graph-table tr:last-child td{border-bottom:none}
+/* Expandable history rows: main row is tappable; detail row sits beneath, hidden until open.
+   Chevron rotates 90° (▸ → ▾) on open to signal state. */
+.graph-table-row{cursor:pointer;transition:background 0.12s ease}
+.graph-table-row:active{background:var(--bg2)}
+.graph-table-row.open td{background:var(--bg2)}
+.graph-table-chev{width:18px;padding-right:0!important;color:var(--text3);text-align:center}
+.graph-table-chev .chev{display:inline-block;transition:transform 0.15s var(--ease);font-size:10px;line-height:1}
+.graph-table-row.open .graph-table-chev .chev{transform:rotate(90deg)}
+.graph-table-detail{display:none}
+.graph-table-detail.open{display:table-row}
+.graph-table-detail td{padding:0;background:var(--bg2);border-bottom:0.5px solid var(--border)}
+.graph-set-list{padding:6px 12px 8px 30px;display:flex;flex-direction:column;gap:3px}
+.graph-set-line{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2);font-variant-numeric:tabular-nums}
+.graph-set-marker{width:10px;color:var(--accent);font-weight:600;flex-shrink:0;text-align:center}
+.graph-set-num{color:var(--text3);min-width:18px;flex-shrink:0}
+.graph-set-vals{flex:1;color:var(--text)}
+.graph-set-type{font-size:9px;font-weight:600;padding:1px 5px;border-radius:999px;background:var(--accent);color:var(--accent-text);flex-shrink:0;letter-spacing:0.02em}
 .graph-empty{padding:24px 16px;text-align:center;color:var(--text2);font-size:13px}
 
 /* === Workout modal === */
@@ -2831,7 +2848,7 @@ function renderExerciseGraph(exName){
   body.appendChild(tableLabel);
   const tableWrap=document.createElement("div");tableWrap.className="graph-table-wrap";
   const tbl=document.createElement("table");tbl.className="graph-table";
-  tbl.innerHTML=`<tr><th>Date</th><th>Best set</th><th>Volume</th><th>Sets</th></tr>`;
+  tbl.innerHTML=`<tr><th></th><th>Date</th><th>Best set</th><th>Volume</th><th>Sets</th></tr>`;
   const dates=Object.keys(bySession).sort().reverse();
   dates.forEach(d=>{
     const sets=bySession[d];
@@ -2841,9 +2858,34 @@ function renderExerciseGraph(exName){
     const effSets=sets.reduce((sum,s)=>sum+getSetTypeMult(s.type||"straight",s),0);
     const hasIntens=sets.some(s=>{const t=s.type||"straight";return t!=="straight"&&t!=="amrap"});
     const setsCell=hasIntens?`${fmtNum(effSets)}*`:String(sets.length);
+    // Main row: tappable, toggles the .open class which reveals the sub-row beneath
     const tr=document.createElement("tr");
-    tr.innerHTML=`<td>${new Date(d).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"2-digit"})}</td><td>${fmtNum(best.weight)}×${fmtRepsOnly(best)}</td><td>${fmtNum(vol)}</td><td title="${hasIntens?'includes intensifier sets (multiplied)':''}">${setsCell}</td>`;
+    tr.className="graph-table-row";
+    tr.innerHTML=`<td class="graph-table-chev"><span class="chev">▸</span></td><td>${new Date(d).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"2-digit"})}</td><td>${fmtNum(best.weight)}×${fmtRepsOnly(best)}</td><td>${fmtNum(vol)}</td><td title="${hasIntens?'includes intensifier sets (multiplied)':''}">${setsCell}</td>`;
     tbl.appendChild(tr);
+    // Detail row: hidden by default; reveals every set logged on this day in chronological order.
+    // Best set (the one shown in the main row) is marked with ▸ so the user can see which is which.
+    const detailTr=document.createElement("tr");
+    detailTr.className="graph-table-detail";
+    const detailCell=document.createElement("td");
+    detailCell.setAttribute("colspan","5");
+    const sortedSets=[...sets].sort((a,b)=>new Date(a.timestamp||a.sessionDate)-new Date(b.timestamp||b.sessionDate));
+    const setLines=sortedSets.map((st,i)=>{
+      const marker = st===best ? "▸" : " ";
+      const rir = (st.rir!==undefined&&st.rir!==null) ? ` @${st.rir}R` : "";
+      const typeInfo = (st.type && st.type!=="straight") ? ` <span class="graph-set-type">${getSetTypeInfo(st.type).short}</span>` : "";
+      // For complex set types, show the full rep breakdown via fmtRepsOnly (which already
+      // formats drop-rep arrays, myo mini-sets, etc.)
+      return `<div class="graph-set-line"><span class="graph-set-marker">${marker}</span><span class="graph-set-num">${i+1}.</span><span class="graph-set-vals">${fmtNum(st.weight)}${st.unit||""} × ${fmtRepsOnly(st)}${rir}</span>${typeInfo}</div>`;
+    }).join("");
+    detailCell.innerHTML=`<div class="graph-set-list">${setLines}</div>`;
+    detailTr.appendChild(detailCell);
+    tbl.appendChild(detailTr);
+    // Tap anywhere on the main row to toggle the detail row's visibility
+    tr.onclick=()=>{
+      tr.classList.toggle("open");
+      detailTr.classList.toggle("open");
+    };
   });
   tableWrap.appendChild(tbl);
   body.appendChild(tableWrap);
@@ -2969,14 +3011,11 @@ function buildSvgGraph(sets){
   if(points.length===0)return svg;
 
   // Compute best-per-day points (always — used for trend line and "best only" view).
-  // Also collect ALL points for each day, so the tooltip can expand to show every set,
-  // not just the chosen top set.
+  // In Est 1RM mode, prefer true 1RMs (reps===1) over higher Epley estimates from multi-rep sets:
+  // a measured single is more truthful than an estimate, even if the estimate computes higher.
   const byDayBest={};
-  const byDayAll={};
   points.forEach(p=>{
     const d=new Date(p.t).toISOString().slice(0,10);
-    if(!byDayAll[d])byDayAll[d]=[];
-    byDayAll[d].push(p);
     const cur=byDayBest[d];
     const isTrue1rm = graphMetric==="estimated1rm" && p.src && p.src.reps===1;
     const curIsTrue1rm = cur && graphMetric==="estimated1rm" && cur.src && cur.src.reps===1;
@@ -2985,12 +3024,7 @@ function buildSvgGraph(sets){
     else if(isTrue1rm && !curIsTrue1rm)replace=true; // true 1RM always wins over estimate
     else if(!isTrue1rm && curIsTrue1rm)replace=false; // never let estimate win over true 1RM
     else if(p.m > cur.m)replace=true; // otherwise standard "highest metric wins"
-    if(replace)byDayBest[d]={t:p.t,m:p.m,src:p.src,isAggregate:p.isAggregate,daySets:p.daySets,dayKey:d};
-  });
-  // Attach the full per-day set list to each best-per-day point. Aggregate (setCount) points
-  // already have their own daySets, so don't override.
-  Object.keys(byDayBest).forEach(d=>{
-    if(!byDayBest[d].daySets)byDayBest[d].allDayPoints=byDayAll[d];
+    if(replace)byDayBest[d]={t:p.t,m:p.m,src:p.src,isAggregate:p.isAggregate,daySets:p.daySets};
   });
   const dailyMax=Object.values(byDayBest).sort((a,b)=>a.t-b.t);
 
@@ -3122,21 +3156,6 @@ function buildSvgGraph(sets){
       else line2=`~${Math.round(est1rm(s))}${s.unit||""} 1RM (est) · ${fmtNum(s.weight)}×${s.reps}`;
     }
     if(graphMetric==="volume")line2=`vol ${fmtNum((s.weight||0)*totalRepsForSet(s))} · ${fmtNum(s.weight)}×${repsShort}`;
-    // When this point has the full day's set list, show every set rather than just the best.
-    // The best set (the one represented by the dot) is marked with a leading ▸.
-    if(Array.isArray(p.allDayPoints) && p.allDayPoints.length>1){
-      const lines=[date, ""];
-      // Sort by timestamp so the order shown matches workout order
-      const sorted=[...p.allDayPoints].sort((a,b)=>a.t-b.t);
-      sorted.forEach(pt=>{
-        const st=pt.src;
-        const reps=fmtRepsOnly(st);
-        const marker = pt.src===s ? "▸ " : "  ";
-        const rir = (st.rir!==undefined && st.rir!==null) ? ` @${st.rir}R` : "";
-        lines.push(`${marker}${fmtNum(st.weight)}${st.unit||""}×${reps}${rir}`);
-      });
-      return lines;
-    }
     return [line2, date];
   }
 
