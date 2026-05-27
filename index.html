@@ -196,7 +196,26 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .sum-toggle button{padding:5px 12px;font-size:11px;font-weight:500;border:none;background:var(--bg);color:var(--text2);cursor:pointer;font-family:inherit;letter-spacing:0.03em}
 .sum-toggle button.active{background:var(--accent);color:var(--accent-text)}
 .sum-toggle button:first-child{border-right:0.5px solid var(--border2)}
+/* Top-level view tabs (Muscles / Patterns) — sit ABOVE the Planned/Actual sub-toggle.
+   Larger and more prominent than sum-toggle since they're the main navigation. */
+.sum-view-tabs{display:flex;gap:6px;margin-bottom:10px;border-bottom:0.5px solid var(--border);padding-bottom:0}
+.sum-view-tab{flex:1;padding:9px 12px;font-size:13px;font-weight:500;background:transparent;color:var(--text2);border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:inherit;text-align:center;margin-bottom:-0.5px}
+.sum-view-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
 .sum-meta{font-size:11px;color:var(--text2);margin-bottom:6px}
+/* Pattern cards — simpler than muscle cards (no volume number; binary covered/not).
+   covered = green palette (success); not = red (danger). Tap to expand the example list,
+   long-press to open the exercise popup (mirrors muscle card behaviour). */
+.p-card{border-radius:var(--radius);padding:10px 12px;cursor:pointer;transition:transform 0.08s ease,opacity 0.08s ease;user-select:none;-webkit-user-select:none;display:flex;flex-direction:column;gap:4px}
+.p-card:active{transform:scale(0.97);opacity:0.85}
+.p-card.covered{background:var(--success-bg)}
+.p-card.uncovered{background:var(--danger-bg)}
+.p-card .p-name{font-size:12px;font-weight:500;letter-spacing:0.01em}
+.p-card.covered .p-name{color:var(--success-text)}
+.p-card.uncovered .p-name{color:var(--danger-text)}
+.p-card .p-examples{font-size:10px;line-height:1.35;color:var(--text3);overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.p-card.uncovered .p-examples{font-style:italic;color:var(--danger-text);opacity:0.7}
+.p-card .p-count{font-size:10px;color:var(--text3);font-weight:500}
+.p-card.covered .p-count{color:var(--success-text);opacity:0.8}
 .leg-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:3px}
 .summary-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .empty-state{grid-column:1/-1;padding:36px 20px;text-align:center;border-radius:var(--radius);background:var(--bg2);border:0.5px dashed var(--border2)}
@@ -1340,6 +1359,32 @@ const BUILTIN_EX={
   "Core":[["Decline Sit Ups",{Abs:1,Obliques:0.5}],["Reverse Crunch",{Abs:1,Obliques:0.5}],["Cable Crunch",{Abs:1,Obliques:0.5}],["Crunch Machine",{Abs:1,Obliques:0.5}],["Yoga Ball Crunch",{Abs:1,Obliques:0.5}],["Yoga Ball Deadbug",{Abs:1,Obliques:0.5}],["Yoga Ball Plank Rollout",{Abs:1,Obliques:0.5,"Front Delt":0.5}],["Cable Side Bend",{Abs:0.5,Obliques:1}],["Side Bend",{Abs:0.5,Obliques:1}],["Cable Baseball Bat Swing",{"Side Delt":0.5,Abs:0.5,Obliques:1}],["Cable Axe Swing",{Abs:0.5,Obliques:1,Lats:0.5}],["Back Extension",{Hamstrings:0.5,Glutes:0.5,Erectors:1}],["Plank",{Abs:1,Obliques:0.5,"Front Delt":0.5}],["Hanging Leg Raise",{Abs:1,Obliques:0.5}],["Pallof Press",{Obliques:1,Abs:0.5}],["Russian Twist",{Obliques:1,Abs:0.5}]]
 };
 const ALL_MUS=["Chest","Lats","Traps","Front Delt","Side Delt","Rear Delt","Biceps","Triceps","Quads","Hamstrings","Glutes","Calves","Abs","Erectors","Obliques"];
+
+// === Movement patterns ===
+// Ordered for display in the Summary "Patterns" tab. Each exercise can belong to 0+ patterns
+// (most isolation lifts belong to none; some compound lifts like Power Clean belong to two).
+const ALL_PATTERNS=["Vertical Push","Vertical Pull","Horizontal Push","Horizontal Pull","Squat","Lunge","Hinge","Rotation","Anti-Rotation","Carry"];
+// Pattern → array of exercise names. Look up reverse via EX_TO_PATTERNS (built below).
+const BUILTIN_EX_PATTERNS={
+  "Vertical Push":["Barbell Shoulder Press","Dumbbell Shoulder Press","Barbell Push Press","Unilateral Dumbbell Push Press","Power Clean","Clean and Press","Hang Clean and Press","Arnold Press","Seated Dumbbell Press","Dips"],
+  "Vertical Pull":["Lat Pulldown","One Arm Lat Pulldown","Pull-Ups","Chin-Ups","Upright Row","Neutral Grip Lat Pulldown","Wide Grip Pull-Up"],
+  "Horizontal Push":["Barbell Bench Press","Dumbbell Bench Press","Incline Dumbbell Bench Press","Push-Up","Landmine Press","Incline Barbell Bench Press","Decline Barbell Bench Press","Machine Chest Press","Close-Grip Bench Press","Diamond Push-Up"],
+  "Horizontal Pull":["Barbell Row","Dumbbell Row","Underhand Barbell Row","Narrow Grip Cable Row","Wide Grip Cable Row","One Arm Cable Row","T-Bar Row","Pendlay Row","Chest-Supported Row","Seated Cable Row","Meadows Row","Face Pull"],
+  "Squat":["Squat","Leg Press","Cossack Squat","Front Squat","Hack Squat","Goblet Squat","Sissy Squat"],
+  "Lunge":["Dumbbell Lunge","Dumbbell Split Squat","Step Down Heel Tap","Bulgarian Split Squat","Walking Lunge","Reverse Lunge"],
+  "Hinge":["Rack Pull","Trap Bar Deadlift","Deadlift","Stiff Leg Deadlift","1 Leg Kettlebell Deadlift","Romanian Deadlift","Good Morning","Hip Thrust","Glute Bridge","Cable Pull-Through","Single-Leg Romanian Deadlift","Back Extension","Power Clean","Clean and Press","Hang Clean and Press"],
+  "Rotation":["Cable Baseball Bat Swing","Cable Axe Swing","Russian Twist"],
+  "Anti-Rotation":["Unilateral Dumbbell Push Press","Single-Leg Romanian Deadlift","Yoga Ball Deadbug","Yoga Ball Plank Rollout","Plank","Pallof Press"],
+  "Carry":["Farmer's Carry"]
+};
+// Reverse lookup: exercise name → array of patterns (O(1) for muscle popup + summary cards).
+const EX_TO_PATTERNS={};
+Object.entries(BUILTIN_EX_PATTERNS).forEach(([pattern, names])=>{
+  names.forEach(n=>{
+    if(!EX_TO_PATTERNS[n])EX_TO_PATTERNS[n]=[];
+    EX_TO_PATTERNS[n].push(pattern);
+  });
+});
 
 // Mapping from our planner's exercise names to Flexify's exact spelling/case.
 // Used for CSV export to Flexify and CSV import from Flexify history.
@@ -3509,6 +3554,9 @@ const FLEXIFY_HISTORY_KEY="trainblock_flexify_history_v1";
 // In-memory history: array of {date: Date, ours: string|null, flexify: string, reps: number, weight: number, unit: "kg"|"lb", bodyWeight: number}
 let flexifyHistory=[];
 let summaryMode="planned"; // "planned" or "actual"
+// Top-level Summary view: "muscles" (default) shows the 15 muscle cards;
+// "patterns" shows the 10 movement-pattern cards. Each view has its own Planned/Actual mode.
+let summaryView="muscles";
 const ACTUAL_WINDOW_DAYS=28;
 
 function loadFlexifyHistory(){
@@ -6727,6 +6775,131 @@ function calcDayBreakdown(dayId,muscle){
 }
 function r05(v){return Math.round(v*2)/2}
 function fmt(v){return v%1===0?v.toString():v.toFixed(1)}
+
+// === Patterns view ===
+// Renders the 10 movement-pattern cards. Each is green/red based on whether the active mode
+// (planned in current block, or actual in last 28 days) contains any exercises tagged with
+// that pattern. Long-press → popup listing all exercises in the pattern, with highlights
+// matching the same "covered" set.
+function getCoveredExercisesForPatterns(mode){
+  // Returns Set<exercise name> covering whichever mode the user is viewing.
+  // Planned: any row in the current block with sets > 0.
+  // Actual:  any logged set in the last ACTUAL_WINDOW_DAYS days (sessions + flexify history).
+  const covered=new Set();
+  if(mode==="planned"){
+    const curBlk=mem[curBlock];
+    if(curBlk){
+      Object.values(curBlk.days||{}).forEach(day=>{
+        (day.rows||[]).forEach(r=>{
+          if(r.ex && r.sets>0)covered.add(r.ex);
+        });
+      });
+    }
+  } else {
+    const cutoff=Date.now() - ACTUAL_WINDOW_DAYS*86400000;
+    sessions.forEach(s=>{
+      if(s.status==="in_progress")return;
+      (s.sets||[]).forEach(st=>{
+        const ts = st.timestamp ? new Date(st.timestamp).getTime() : new Date(s.date).getTime();
+        if(ts>=cutoff && st.ex)covered.add(st.ex);
+      });
+    });
+    if(Array.isArray(flexifyHistory)){
+      flexifyHistory.forEach(rec=>{
+        const ts = rec.date ? new Date(rec.date).getTime() : 0;
+        if(ts>=cutoff && rec.ours)covered.add(rec.ours);
+      });
+    }
+  }
+  return covered;
+}
+
+function renderPatternCards(ids, actualDisabled){
+  const sg=document.getElementById("sg");
+  const meta=document.getElementById("sum-meta");
+  const legend=document.getElementById("sum-legend");
+  // Legend explains the binary scheme — much simpler than the muscle 4-tier
+  legend.innerHTML=
+    `<span><span class="leg-dot" style="background:var(--success-text)"></span>covered</span>`+
+    `<span><span class="leg-dot" style="background:var(--danger-text)"></span>not in ${summaryMode==="planned"?"plan":"last 4 wks"}</span>`;
+  const covered=getCoveredExercisesForPatterns(summaryMode);
+  const coveredCount=ALL_PATTERNS.filter(p=>{
+    return (BUILTIN_EX_PATTERNS[p]||[]).some(ex=>covered.has(ex));
+  }).length;
+  meta.textContent = summaryMode==="planned"
+    ? `Movement-pattern coverage in current block — ${coveredCount} of ${ALL_PATTERNS.length} patterns covered`
+    : `Movement-pattern coverage, last ${ACTUAL_WINDOW_DAYS} days — ${coveredCount} of ${ALL_PATTERNS.length} patterns covered`;
+  // Render in spec order (Vertical Push first), NOT sorted by coverage — order conveys structure
+  // (push/pull, vertical/horizontal, squat/lunge/hinge, rotation/anti-rotation, carry).
+  ALL_PATTERNS.forEach(pattern=>{
+    const exercisesInPattern=BUILTIN_EX_PATTERNS[pattern]||[];
+    const coveredInPattern=exercisesInPattern.filter(ex=>covered.has(ex));
+    const cls = coveredInPattern.length>0 ? "covered" : "uncovered";
+    const card=document.createElement("div");
+    card.className="p-card "+cls;
+    card.dataset.pattern=pattern;
+    const name=document.createElement("div");name.className="p-name";name.textContent=pattern;
+    card.appendChild(name);
+    const examples=document.createElement("div");examples.className="p-examples";
+    if(coveredInPattern.length>0){
+      // Show first 3 covered exercises as examples
+      examples.textContent = coveredInPattern.slice(0,3).join(", ") + (coveredInPattern.length>3 ? `, +${coveredInPattern.length-3} more` : "");
+    } else {
+      examples.textContent = summaryMode==="planned" ? "none in plan" : "none in last 4 wks";
+    }
+    card.appendChild(examples);
+    if(coveredInPattern.length>0){
+      const cnt=document.createElement("div");cnt.className="p-count";
+      cnt.textContent=`${coveredInPattern.length} of ${exercisesInPattern.length} exercises`;
+      card.appendChild(cnt);
+    }
+    // Long-press opens the popup listing all exercises in this pattern,
+    // with the same "in plan" / "trained recently" highlighting as the muscle popup.
+    attachLongPress(card, ()=>openPatternExercises(pattern), {allowOnInteractive:true});
+    sg.appendChild(card);
+  });
+}
+
+// Pattern popup: lists every exercise tagged with the given pattern, highlighting
+// those in plan (or trained recently, depending on Summary mode).
+function openPatternExercises(pattern){
+  document.getElementById("muscle-ex-title").textContent=pattern;
+  const sub=document.getElementById("muscle-ex-sub");
+  const list=document.getElementById("muscle-ex-list");
+  list.innerHTML="";
+  const covered=getCoveredExercisesForPatterns(summaryMode);
+  const highlightLabel = summaryMode==="actual" ? "trained recently" : "in plan";
+  const exercises=BUILTIN_EX_PATTERNS[pattern]||[];
+  if(exercises.length===0){
+    const empty=document.createElement("div");empty.className="muscle-ex-empty";
+    empty.textContent="No exercises currently mapped to this pattern.";
+    list.appendChild(empty);
+  } else {
+    const hlCount=exercises.filter(e=>covered.has(e)).length;
+    const hlNote = hlCount>0 ? `, ${hlCount} ${highlightLabel}` : "";
+    sub.textContent = `${exercises.length} exercise${exercises.length===1?"":"s"} train ${pattern}${hlNote}.`;
+    exercises.forEach(name=>{
+      const isHighlighted=covered.has(name);
+      const row=document.createElement("div");row.className="muscle-ex-row"+(isHighlighted?" planned":"");
+      const nm=document.createElement("span");nm.className="muscle-ex-name";
+      const nmText=document.createElement("span");nmText.className="muscle-ex-name-text";nmText.textContent=name;
+      nm.appendChild(nmText);
+      if(isHighlighted){
+        const tag=document.createElement("span");tag.className="muscle-ex-planned-tag";tag.textContent=highlightLabel;
+        nm.appendChild(tag);
+      }
+      // Also show what other patterns this exercise belongs to (informational)
+      const patterns=(EX_TO_PATTERNS[name]||[]).filter(p=>p!==pattern);
+      const wt=document.createElement("span");wt.className="muscle-ex-weight";
+      wt.textContent = patterns.length>0 ? `+${patterns.length}` : "—";
+      wt.title = patterns.length>0 ? "Also: "+patterns.join(", ") : "Only this pattern";
+      row.appendChild(nm);row.appendChild(wt);
+      list.appendChild(row);
+    });
+  }
+  document.getElementById("muscle-ex-bg").classList.add("open");
+}
+
 function renderSummary(){
   const ids=curDayIds();
   const el=document.getElementById("sum");
@@ -6740,6 +6913,10 @@ function renderSummary(){
   // active for one frame before flipping back.
   if(summaryMode==="actual"&&!hasHistory)summaryMode="planned";
   el.innerHTML=`
+    <div class="sum-view-tabs">
+      <button class="sum-view-tab ${summaryView==='muscles'?'active':''}" id="sum-view-muscles">Muscles</button>
+      <button class="sum-view-tab ${summaryView==='patterns'?'active':''}" id="sum-view-patterns">Patterns</button>
+    </div>
     <div class="sum-toggle">
       <button id="sum-planned" class="${summaryMode==='planned'?'active':''}">Planned</button>
       <button id="sum-actual" class="${summaryMode==='actual'?'active':''}" ${actualDisabled?'disabled style="opacity:0.4;cursor:not-allowed"':''} title="${actualDisabled?'Log a workout or import Flexify history first':''}">Actual (last 4 wks)</button>
@@ -6748,8 +6925,15 @@ function renderSummary(){
     <div class="legend" id="sum-legend"></div>
     <div class="summary-grid" id="sg"></div>`;
 
+  document.getElementById("sum-view-muscles").onclick=()=>{summaryView="muscles";renderSummary()};
+  document.getElementById("sum-view-patterns").onclick=()=>{summaryView="patterns";renderSummary()};
   document.getElementById("sum-planned").onclick=()=>{summaryMode="planned";renderSummary()};
   document.getElementById("sum-actual").onclick=()=>{if(!actualDisabled){summaryMode="actual";renderSummary()}};
+
+  if(summaryView==="patterns"){
+    renderPatternCards(ids, actualDisabled);
+    return;
+  }
 
   // Thresholds: planned mode = weekly targets; actual mode = 4× because it's a 4-week window.
   const scale=summaryMode==="actual"?4:1;
