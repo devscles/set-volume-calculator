@@ -2931,8 +2931,19 @@ function totalRepsForSet(s){
   if(s.type==="myorep"&&Array.isArray(s.miniSetReps)){
     s.miniSetReps.forEach(r=>{if(typeof r==="number"&&r>0)t+=r});
   }
+  if(s.type==="restpause"&&Array.isArray(s.miniSetReps)){
+    // Rest-pause stores the same way as myo-rep: initial set reps + mini-set reps array.
+    // Total volume = initial + sum of mini-sets.
+    s.miniSetReps.forEach(r=>{if(typeof r==="number"&&r>0)t+=r});
+  }
   if(s.type==="drop"&&Array.isArray(s.dropReps)){
     s.dropReps.forEach(r=>{if(typeof r==="number"&&r>0)t+=r});
+  }
+  if(s.type==="cluster"&&typeof s.clusterCount==="number"&&s.clusterCount>0){
+    // Cluster: every cluster is `reps` reps at the same weight. So a 3-rep × 3-cluster
+    // sequence totals 9 reps for volume purposes. Note: est1rm still uses s.reps (the
+    // per-cluster figure) which is the correct intensity to estimate from.
+    t = s.reps * s.clusterCount;
   }
   return t;
 }
@@ -6178,10 +6189,20 @@ function fmtSetReps(st){
   const w=fmtNum(st.weight);
   return `${w}${u} × ${fmtRepsOnly(st)}`;
 }
-// Just the rep portion of a set: "8" for straight, "15+5,5,5,3" for myo-rep, "10→8→6" for drop
+// Just the rep portion of a set:
+//   straight/AMRAP: "8"
+//   myo-rep:        "15+5,5,5,3"  (activation + mini-sets)
+//   rest-pause:     "8+3,2"        (initial + mini-sets)
+//   drop:           "10→8→6"       (initial → drops)
+//   cluster:        "3×3"          (per-cluster reps × cluster count)
 function fmtRepsOnly(st){
   if(!st)return "";
   if(st.type==="myorep"&&Array.isArray(st.miniSetReps)){
+    const mini=st.miniSetReps.filter(x=>x!=null&&x>0);
+    if(mini.length===0)return String(st.reps);
+    return `${st.reps}+${mini.join(",")}`;
+  }
+  if(st.type==="restpause"&&Array.isArray(st.miniSetReps)){
     const mini=st.miniSetReps.filter(x=>x!=null&&x>0);
     if(mini.length===0)return String(st.reps);
     return `${st.reps}+${mini.join(",")}`;
@@ -6190,6 +6211,9 @@ function fmtRepsOnly(st){
     const drops=st.dropReps.filter(x=>x!=null&&x>0);
     if(drops.length===0)return String(st.reps);
     return `${st.reps}→${drops.join("→")}`;
+  }
+  if(st.type==="cluster"&&typeof st.clusterCount==="number"&&st.clusterCount>1){
+    return `${st.reps}×${st.clusterCount}`;
   }
   return String(st.reps);
 }
