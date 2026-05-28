@@ -356,6 +356,8 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .sess-ex-set.miss{background:var(--warn-bg);color:var(--warn-text);border-color:var(--warn-text)}
 .sess-ex-set.miss:active{background:var(--warn-text);color:var(--warn-bg)}
 .sess-detail-meta{font-size:12px;color:var(--text2);margin-bottom:14px;padding:8px 10px;background:var(--bg2);border-radius:var(--radius)}
+.sess-rename-btn{background:transparent;border:none;color:var(--text3);cursor:pointer;padding:2px 4px;font-size:13px;line-height:1;font-family:inherit}
+.sess-rename-btn:active{color:var(--accent)}
 
 /* Graph view */
 .graph-container{padding:8px 4px 16px}
@@ -402,6 +404,11 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .workout-close{width:32px;height:32px;border-radius:50%;border:none;background:var(--bg2);color:var(--text);font-size:18px;line-height:1;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .workout-close:active{background:var(--bg3)}
 .workout-body{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 16px 100px}
+/* "Add exercise" button at the bottom of the workout body — dashed outline so it reads as
+   an additive/secondary action distinct from the logged exercise cards above it. */
+.wo-add-exercise{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;margin-top:8px;padding:12px;font-size:13px;font-weight:500;border-radius:var(--radius);border:0.5px dashed var(--border2);background:transparent;color:var(--text2);cursor:pointer;font-family:inherit;touch-action:manipulation}
+.wo-add-exercise:active{background:var(--bg2)}
+.wo-add-exercise i{font-size:15px}
 .workout-footer{position:absolute;bottom:0;left:0;right:0;background:var(--bg);border-top:0.5px solid var(--border);padding:10px 16px;display:flex;gap:8px;align-items:center;box-shadow:0 -2px 8px rgba(0,0,0,0.04)}
 .workout-timer-btn{flex:1;padding:11px 12px;font-size:13px;font-weight:500;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;touch-action:manipulation}
 .workout-timer-btn:active{background:var(--bg2)}
@@ -679,6 +686,15 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .start-workout{display:block;width:100%;margin:0 0 12px;padding:12px;font-size:14px;font-weight:600;border-radius:var(--radius);border:none;background:var(--accent);color:var(--accent-text);cursor:pointer;font-family:inherit;touch-action:manipulation}
 .start-workout:active{opacity:0.85}
 .start-workout-resume{background:var(--warn-text);color:var(--bg)}
+/* Launch row: holds Start workout + Wing It side by side (or one full-width button). */
+.workout-launch-row{display:flex;gap:8px;margin:0 0 12px}
+.workout-launch-row .start-workout{margin:0}
+/* Start workout takes ~2/3 when paired with Wing It */
+.workout-launch-row .start-workout-main{flex:2}
+/* Wing It: secondary outline style when beside Start; primary accent when alone */
+.wing-it-secondary{flex:1;background:transparent;color:var(--text);border:0.5px solid var(--border2)}
+.wing-it-secondary:active{background:var(--bg2)}
+.wing-it-primary{flex:1}
 
 /* === Pill row: visual representation of planned sets, with per-set targets === */
 .pill-row{display:flex;flex-direction:column;gap:4px;margin-top:4px;padding:2px 0}
@@ -2657,7 +2673,9 @@ function renderSessionDetail(sessId){
   const dateStr=new Date(s.date).toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric",year:"numeric"});
   const meta=document.createElement("div");
   meta.className="sess-detail-meta";
-  meta.innerHTML=`<div style="font-weight:600;color:var(--text);font-size:14px;margin-bottom:2px">${s.blockName}${s.dayLabel?` — ${s.dayLabel}`:""}</div><div>${dateStr}</div><div style="margin-top:6px">${s.sets.length} set${s.sets.length===1?"":"s"} · status: ${s.status}</div>`;
+  const titleStr=`${s.blockName}${s.dayLabel?` — ${s.dayLabel}`:""}`;
+  meta.innerHTML=`<div style="display:flex;align-items:center;gap:6px;margin-bottom:2px"><span style="font-weight:600;color:var(--text);font-size:14px">${titleStr}</span><button class="sess-rename-btn" type="button" aria-label="Rename session" title="Rename session"><i class="ti ti-edit"></i></button></div><div>${dateStr}</div><div style="margin-top:6px">${s.sets.length} set${s.sets.length===1?"":"s"} · status: ${s.status}</div>`;
+  meta.querySelector(".sess-rename-btn").onclick=()=>renameSession(s.id);
   body.appendChild(meta);
 
   // Group sets by exercise (in order of first appearance)
@@ -4228,6 +4246,26 @@ function finishSession(sessId){
   s.finishedAt=new Date().toISOString();
   saveSessions();
 }
+// Create an empty ad-hoc session not tied to any block/day. The user adds exercises on the
+// fly via the in-workout "Add exercise" button. Named "Ad-hoc — <date>" (renameable later).
+function createAdHocSession(){
+  const now=new Date();
+  const dateLabel=now.toLocaleDateString(undefined,{month:"short",day:"numeric"});
+  const sess={
+    id:"sess_"+Date.now()+"_"+Math.floor(Math.random()*1000),
+    date:now.toISOString(),
+    blockId:null, dayId:null,
+    adHoc:true,
+    blockName:"Ad-hoc",
+    dayLabel:dateLabel,
+    status:"in_progress",
+    plannedRows:[],
+    sets:[]
+  };
+  sessions.push(sess);
+  saveSessions();
+  return sess;
+}
 function abandonSession(sessId){
   const idx=sessions.findIndex(x=>x.id===sessId);
   if(idx<0)return;
@@ -4241,8 +4279,87 @@ function abandonSession(sessId){
   }
 }
 
+// Rename a session's label. For ad-hoc sessions the whole label is editable; for planned
+// sessions, renaming overrides the displayed name (blockName — the dayLabel comes along).
+// Uses a simple prompt() — low-friction, and renames are infrequent.
+function renameSession(sessId){
+  const s=sessions.find(x=>x.id===sessId);
+  if(!s)return;
+  const current = s.dayLabel ? `${s.blockName} — ${s.dayLabel}` : s.blockName;
+  const next=prompt("Rename this workout:", current);
+  if(next===null)return; // cancelled
+  const trimmed=next.trim();
+  if(!trimmed)return;
+  // Store the whole thing as blockName and clear dayLabel, so the custom name displays verbatim.
+  s.blockName=trimmed;
+  s.dayLabel="";
+  saveSessions();
+  renderSessionDetail(sessId);
+}
+
 // ===== Workout modal =====
 let curWorkoutSessId=null;
+
+// Launch a planned workout for the current block + given day. Factored out of the button
+// handler so both the Start button and (potentially) other entry points can reuse it.
+function launchPlannedWorkout(btn, dayId){
+  if(btn.disabled)return;
+  btn.disabled=true;
+  try{
+    const otherActive=activeSession();
+    if(otherActive){
+      const lbl=otherActive.blockName+(otherActive.dayLabel?" — "+otherActive.dayLabel:"");
+      if(!confirm(`There's an in-progress workout for "${lbl}". Discard it and start this one?`)){
+        btn.disabled=false;
+        return;
+      }
+      abandonSession(otherActive.id);
+    }
+    const sess=createSessionFromPlan(curBlock,dayId);
+    if(!sess||!sess.id)throw new Error("createSessionFromPlan returned no session");
+    openWorkoutModal(sess.id);
+    setTimeout(()=>{
+      const open=document.getElementById("workout-bg")?.classList.contains("open");
+      if(!open){btn.disabled=false}
+    }, 200);
+    renderDay(dayId);
+  } catch(err) {
+    console.error("Start workout failed:", err);
+    btn.disabled=false;
+    const msg = err && err.message ? err.message : String(err);
+    alert("Couldn't start the workout:\n\n" + msg + "\n\n(Also logged to browser console.)");
+  }
+}
+
+// Launch an ad-hoc ("Wing It") workout — an empty session not tied to a plan.
+function launchAdHocWorkout(btn){
+  if(btn.disabled)return;
+  btn.disabled=true;
+  try{
+    const otherActive=activeSession();
+    if(otherActive){
+      const lbl=otherActive.blockName+(otherActive.dayLabel?" — "+otherActive.dayLabel:"");
+      if(!confirm(`There's an in-progress workout for "${lbl}". Discard it and start an ad-hoc one?`)){
+        btn.disabled=false;
+        return;
+      }
+      abandonSession(otherActive.id);
+    }
+    const sess=createAdHocSession();
+    if(!sess||!sess.id)throw new Error("createAdHocSession returned no session");
+    openWorkoutModal(sess.id);
+    setTimeout(()=>{
+      const open=document.getElementById("workout-bg")?.classList.contains("open");
+      if(!open){btn.disabled=false}
+    }, 200);
+    if(curTab && curTab!=="sum")renderDay(curTab);
+  } catch(err) {
+    console.error("Wing It failed:", err);
+    btn.disabled=false;
+    const msg = err && err.message ? err.message : String(err);
+    alert("Couldn't start the ad-hoc workout:\n\n" + msg + "\n\n(Also logged to browser console.)");
+  }
+}
 
 // Open the workout modal for a given session. Renders fresh each time.
 function openWorkoutModal(sessId){
@@ -4317,7 +4434,15 @@ function renderWorkoutBody(){
   const body=document.getElementById("workout-body");
   body.innerHTML="";
   if(s.plannedRows.length===0){
-    body.innerHTML='<div class="empty-state"><div class="empty-state-title">Nothing planned</div><div class="empty-state-text">This day has no exercises. Tap × to close.</div></div>';
+    // Empty workout — either an ad-hoc session, or a planned day whose rows were all cleared.
+    const empty=document.createElement("div");empty.className="empty-state";
+    if(s.adHoc){
+      empty.innerHTML='<div class="empty-state-title">Ad-hoc workout</div><div class="empty-state-text">No exercises yet. Add one below to start logging. Tap × or Discard to bail out.</div>';
+    } else {
+      empty.innerHTML='<div class="empty-state-title">Nothing planned</div><div class="empty-state-text">This day has no exercises. Add one below, or tap × to close.</div>';
+    }
+    body.appendChild(empty);
+    body.appendChild(buildAddExerciseButton());
     return;
   }
   // Compute superset groups from the plannedRows for visual grouping
@@ -4356,6 +4481,19 @@ function renderWorkoutBody(){
     }
     body.appendChild(wrap);
   });
+  // "Add exercise" — available in ALL workouts (planned or ad-hoc). Appends an off-plan
+  // exercise to THIS session only; the block plan is never modified.
+  body.appendChild(buildAddExerciseButton());
+}
+
+// Build the "+ Add exercise" button used at the bottom of every workout.
+function buildAddExerciseButton(){
+  const btn=document.createElement("button");
+  btn.className="wo-add-exercise";
+  btn.type="button";
+  btn.innerHTML='<i class="ti ti-plus" aria-hidden="true"></i> Add exercise';
+  btn.onclick=()=>openAddExercise();
+  return btn;
 }
 
 // ============================================================================
@@ -5488,7 +5626,7 @@ function confirmFinishWorkout(){
 // Changes apply to the SESSION only — the underlying block plan is untouched, and any
 // already-logged sets keep their original exercise name and type for historical accuracy.
 let swapCtx=null;
-// swapCtx shape: {position, draft:{ex, type, sets, dropCount, miniSetCount, clusterCount}}
+// swapCtx shape: {mode:"swap"|"add", position, originalEx, draft:{ex, type, sets, dropCount, miniSetCount, clusterCount}}
 
 function openSwapPicker(plannedRowPosition){
   const s=sessions.find(x=>x.id===curWorkoutSessId);
@@ -5499,6 +5637,7 @@ function openSwapPicker(plannedRowPosition){
   // Also remember the original exercise name so saveSwap can detect a real change (and clear
   // any pre-populated targets that no longer apply to the new exercise).
   swapCtx={
+    mode:"swap",
     position: plannedRowPosition,
     originalEx: pr.ex,
     draft: {
@@ -5514,6 +5653,28 @@ function openSwapPicker(plannedRowPosition){
   document.getElementById("swap-current").textContent=
     `Currently: ${pr.ex} · ${getSetTypeInfo(pr.type||"straight").label} · ${pr.plannedSets||1} ${(pr.type==="straight"||pr.type==="amrap")?"sets":"sequences"}`;
   document.getElementById("swap-search").value="";
+  document.querySelector("#swap-bg .swap-actions .primary").textContent="Save changes";
+  buildSwapList("");
+  renderSwapTypeChips();
+  renderSwapCounts();
+  document.getElementById("swap-bg").classList.add("open");
+}
+
+// Open the same modal in "add" mode — appends a new exercise row to the current session.
+// No exercise is pre-selected; the user picks one, sets type/sets, and saves.
+function openAddExercise(){
+  const s=sessions.find(x=>x.id===curWorkoutSessId);
+  if(!s)return;
+  swapCtx={
+    mode:"add",
+    position:null,
+    originalEx:null,
+    draft:{ ex:null, type:"straight", sets:3, dropCount:3, miniSetCount:4, clusterCount:5 }
+  };
+  document.getElementById("swap-title").textContent="Add exercise";
+  document.getElementById("swap-current").textContent="Pick an exercise, then set the type and number of sets.";
+  document.getElementById("swap-search").value="";
+  document.querySelector("#swap-bg .swap-actions .primary").textContent="Add to workout";
   buildSwapList("");
   renderSwapTypeChips();
   renderSwapCounts();
@@ -5613,9 +5774,41 @@ function saveSwap(){
   if(!swapCtx)return;
   const s=sessions.find(x=>x.id===curWorkoutSessId);
   if(!s){closeSwapPicker();return}
+  const d=swapCtx.draft;
+
+  if(swapCtx.mode==="add"){
+    // Append a new off-plan exercise row to this session only.
+    if(!d.ex){alert("Pick an exercise first.");return}
+    // New rows get an idx beyond any existing plannedRow idx, so logged sets key correctly.
+    const maxIdx=s.plannedRows.reduce((m,pr)=>Math.max(m, typeof pr.idx==="number"?pr.idx:-1), -1);
+    const newRow={
+      idx:maxIdx+1,
+      ex:d.ex,
+      type:d.type,
+      plannedSets:d.sets,
+      targets:[],
+      target:null,
+      linkedToPrev:false,
+      addedDuringWorkout:true
+    };
+    if(d.type==="drop")newRow.dropCount=d.dropCount;
+    if(d.type==="myorep"||d.type==="restpause")newRow.miniSetCount=d.miniSetCount;
+    if(d.type==="cluster")newRow.clusterCount=d.clusterCount;
+    s.plannedRows.push(newRow);
+    saveSessions();
+    closeSwapPicker();
+    renderWorkoutBody();
+    // Scroll the new exercise into view at the bottom
+    setTimeout(()=>{
+      const body=document.getElementById("workout-body");
+      if(body)body.scrollTop=body.scrollHeight;
+    }, 50);
+    return;
+  }
+
+  // ----- swap mode -----
   const pr=s.plannedRows[swapCtx.position];
   if(!pr){closeSwapPicker();return}
-  const d=swapCtx.draft;
   const exChanged = d.ex !== swapCtx.originalEx;
   pr.ex=d.ex;
   pr.type=d.type;
@@ -6408,53 +6601,41 @@ function renderDay(dayId){
     el.appendChild(hint);
   }
 
-  // "Start workout" button — visible only when at least one exercise is planned
-  if(!allEmpty){
-    const hasContent=dayData.rows.some(r=>r.ex&&r.sets>0);
-    if(hasContent){
-      // Check for an existing in-progress session for THIS block+day
-      const inProg=sessions.find(s=>s.status==="in_progress"&&s.blockId===curBlock&&s.dayId===dayId);
+  // Workout-launch row. Three states:
+  //  - Day has a plan + no in-progress: [Start workout] [Wing It]
+  //  - In-progress for this day:        [Resume workout]   (Wing It hidden)
+  //  - Day has no plan (empty):         [Wing It]          (primary)
+  {
+    const hasContent=!allEmpty && dayData.rows.some(r=>r.ex&&r.sets>0);
+    const inProg=sessions.find(s=>s.status==="in_progress"&&s.blockId===curBlock&&s.dayId===dayId);
+    const anyActive=activeSession();
+    const launchRow=document.createElement("div");
+    launchRow.className="workout-launch-row";
+
+    if(inProg){
+      // In-progress for this day → single Resume button, no Wing It.
       const btn=document.createElement("button");
-      btn.className="start-workout"+(inProg?" start-workout-resume":"");
-      btn.textContent=inProg?"Resume workout":"Start workout";
-      btn.onclick=()=>{
-        // Guard against double-tap: disable immediately so a second click while
-        // we're creating the session doesn't trigger a duplicate.
-        if(btn.disabled)return;
-        btn.disabled=true;
-        try{
-          if(inProg){openWorkoutModal(inProg.id);return}
-          const otherActive=activeSession();
-          if(otherActive){
-            const lbl=otherActive.blockName+(otherActive.dayLabel?" — "+otherActive.dayLabel:"");
-            if(!confirm(`There's an in-progress workout for "${lbl}". Discard it and start this one?`)){
-              btn.disabled=false; // user canceled — re-enable
-              return;
-            }
-            abandonSession(otherActive.id);
-          }
-          const sess=createSessionFromPlan(curBlock,dayId);
-          if(!sess||!sess.id)throw new Error("createSessionFromPlan returned no session");
-          openWorkoutModal(sess.id);
-          // Defensive: verify the modal actually opened. If it didn't (e.g. session
-          // creation failed or modal element missing), re-enable the button so the
-          // user isn't stuck with a dead button.
-          setTimeout(()=>{
-            const open=document.getElementById("workout-bg")?.classList.contains("open");
-            if(!open){btn.disabled=false}
-          }, 200);
-          // Re-render this day so the button now says "Resume"
-          renderDay(dayId);
-        } catch(err) {
-          console.error("Start workout failed:", err);
-          btn.disabled=false;
-          // Surface the actual error message so the user (and us) have something concrete to act on.
-          const msg = err && err.message ? err.message : String(err);
-          alert("Couldn't start the workout:\n\n" + msg + "\n\n(Also logged to browser console.)");
-        }
-      };
-      el.appendChild(btn);
+      btn.className="start-workout start-workout-resume";
+      btn.textContent="Resume workout";
+      btn.onclick=()=>{if(btn.disabled)return;btn.disabled=true;openWorkoutModal(inProg.id);setTimeout(()=>{btn.disabled=false},300)};
+      launchRow.appendChild(btn);
+    } else {
+      if(hasContent){
+        const startBtn=document.createElement("button");
+        startBtn.className="start-workout start-workout-main";
+        startBtn.textContent="Start workout";
+        startBtn.onclick=()=>launchPlannedWorkout(startBtn, dayId);
+        launchRow.appendChild(startBtn);
+      }
+      // Wing It button — shown whenever there's no in-progress workout for this day.
+      // If the day has a plan it's the secondary (narrower) action; if not, it's primary/full-width.
+      const wingBtn=document.createElement("button");
+      wingBtn.className="start-workout wing-it"+(hasContent?" wing-it-secondary":" wing-it-primary");
+      wingBtn.textContent="Wing It";
+      wingBtn.onclick=()=>launchAdHocWorkout(wingBtn);
+      launchRow.appendChild(wingBtn);
     }
+    if(launchRow.children.length>0)el.appendChild(launchRow);
   }
 
   // Compute superset group memberships before rendering: for each row index,
