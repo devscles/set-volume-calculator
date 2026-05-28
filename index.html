@@ -1747,7 +1747,57 @@ function rebuildEX(){
 function makeEmptyDay(){return{label:"",rows:Array(10).fill(null).map(()=>({ex:"",sets:0,type:"straight",linkedToPrev:false}))}}
 // Safe read of a row's set type (older saved rows may lack the field)
 function rowType(row){return (row&&row.type&&SET_TYPE_DEFAULTS[row.type])?row.type:"straight"}
-function makeEmptyBlock(id){return{id,name:"",days:{d1:makeEmptyDay(),d2:makeEmptyDay(),d3:makeEmptyDay()}}}
+function makeEmptyWeek(){return{days:{d1:makeEmptyDay(),d2:makeEmptyDay(),d3:makeEmptyDay()}}}
+function makeEmptyBlock(id){
+  const block={id,name:"",weeks:[makeEmptyWeek()],weekCount:1};
+  defineDaysAccessor(block);
+  return block;
+}
+
+// === Multi-week support (Stage 1: structure only, weekCount always 1) ===
+// Each block holds an array of weeks; each week holds the day map we used to store directly
+// on the block. To avoid rewriting the ~36 call sites that read `block.days[...]`, we define
+// a non-enumerable getter `days` on each block that returns the CURRENTLY SELECTED week's days.
+// Non-enumerable so JSON.stringify serializes `weeks` (the real data) and ignores `days`.
+let curWeek=0; // index into the current block's weeks[]; always 0 until Stage 2 adds the UI
+function defineDaysAccessor(block){
+  if(!block)return;
+  // Remove any own `days` data property (e.g. from a freshly parsed legacy block) before
+  // installing the getter — can't have both an own data prop and an accessor of the same name.
+  if(Object.prototype.hasOwnProperty.call(block,"days")){
+    // Only delete if it's a plain data property, not already our getter
+    const desc=Object.getOwnPropertyDescriptor(block,"days");
+    if(desc && "value" in desc)delete block.days;
+  }
+  if(!Object.getOwnPropertyDescriptor(block,"days")){
+    Object.defineProperty(block,"days",{
+      enumerable:false,
+      configurable:true,
+      get(){
+        const w=Math.min(curWeek, (this.weeks?this.weeks.length:1)-1);
+        return this.weeks && this.weeks[w] ? this.weeks[w].days : {};
+      }
+    });
+  }
+}
+// Migrate a parsed block from the legacy {days} shape into the {weeks:[{days}]} shape.
+// Idempotent: if it already has weeks[], just ensures weekCount + the days accessor.
+function ensureWeeksShape(block){
+  if(!block)return block;
+  if(!Array.isArray(block.weeks)){
+    // Legacy: block.days holds the single week's days. Wrap it.
+    const legacyDays = (block.days && typeof block.days==="object") ? block.days : {d1:makeEmptyDay(),d2:makeEmptyDay(),d3:makeEmptyDay()};
+    // Delete the own data prop so we can install the getter
+    if(Object.prototype.hasOwnProperty.call(block,"days")){
+      const desc=Object.getOwnPropertyDescriptor(block,"days");
+      if(desc && "value" in desc)delete block.days;
+    }
+    block.weeks=[{days:legacyDays}];
+  }
+  if(typeof block.weekCount!=="number"||block.weekCount<1)block.weekCount=block.weeks.length;
+  defineDaysAccessor(block);
+  return block;
+}
 
 const mem={};
 function storageKey(b){return"trainblock_v4_"+b}
@@ -1759,15 +1809,36 @@ function loadAllBlocks(){
       const raw=localStorage.getItem(storageKey(b));
       if(raw){
         const parsed=JSON.parse(raw);
-        // Validate shape: needs at least one d<N> day with rows
+        // New shape: has weeks[]. Validate the first week has valid days.
+        if(parsed && Array.isArray(parsed.weeks) && parsed.weeks.length>0){
+          const wk=parsed.weeks[0];
+          if(wk && wk.days && typeof wk.days==="object"){
+            const keys=Object.keys(wk.days).filter(k=>/^d\d+$/.test(k));
+            const ok=keys.length>=MIN_DAYS&&keys.length<=MAX_DAYS&&keys.every(k=>wk.days[k]&&Array.isArray(wk.days[k].rows));
+            if(ok){
+              mem[b]=parsed;
+              if(!mem[b].name)mem[b].name="Block "+b;
+              ensureWeeksShape(mem[b]);
+              // Ensure each day in each week has a label string
+              mem[b].weeks.forEach(week=>{
+                Object.keys(week.days).filter(k=>/^d\d+$/.test(k)).forEach(k=>{
+                  if(typeof week.days[k].label!=="string")week.days[k].label="";
+                });
+              });
+              return;
+            }
+          }
+        }
+        // Legacy shape: has days directly on the block.
         if(parsed&&parsed.days&&typeof parsed.days==="object"){
           const keys=Object.keys(parsed.days).filter(k=>/^d\d+$/.test(k));
           const ok=keys.length>=MIN_DAYS&&keys.length<=MAX_DAYS&&keys.every(k=>parsed.days[k]&&Array.isArray(parsed.days[k].rows));
           if(ok){
             mem[b]=parsed;
             if(!mem[b].name)mem[b].name="Block "+b;
-            // Ensure each day has a label string
-            keys.forEach(k=>{if(typeof mem[b].days[k].label!=="string")mem[b].days[k].label=""});
+            // Ensure each day has a label string (read off the legacy days before migration)
+            keys.forEach(k=>{if(typeof parsed.days[k].label!=="string")parsed.days[k].label=""});
+            ensureWeeksShape(mem[b]); // wraps legacy days into weeks[0] + installs accessor
             return;
           }
         }
@@ -1784,6 +1855,26 @@ const RENAME_MIGRATIONS={
   "Back Fly":"Bent Over Back Fly",
   "Back Bend":"Back Extension"
 };
+// One-time persist of the weeks[] shape. loadAllBlocks already migrates in memory via
+// ensureWeeksShape; this writes the upgraded shape back to storage so it's durable even
+// for blocks the user never edits. Safe to run every boot (idempotent).
+function migrateBlocksToWeeks(){
+  BLOCKS.forEach(b=>{
+    if(!mem[b])return;
+    ensureWeeksShape(mem[b]); // no-op if already migrated
+    try{
+      const raw=localStorage.getItem(storageKey(b));
+      // Only rewrite if storage still holds the legacy shape (no weeks key)
+      if(raw){
+        const parsed=JSON.parse(raw);
+        if(!parsed || !Array.isArray(parsed.weeks)){
+          localStorage.setItem(storageKey(b),JSON.stringify(mem[b]));
+        }
+      }
+    }catch(e){}
+  });
+}
+
 function migrateRenamedExercises(){
   let changed=false;
   BLOCKS.forEach(b=>{
@@ -7420,6 +7511,7 @@ loadSessions();               // native workout history
 rebuildEX();
 loadBlockList();              // load persisted block IDs (or default A,B,C)
 loadAllBlocks();              // populate mem for each block
+migrateBlocksToWeeks();       // upgrade legacy {days} blocks to {weeks:[{days}]} (idempotent)
 loadFlexifyHistory();         // load any imported Flexify history (legacy import path)
 migrateRenamedExercises();    // rename old exercise names in stored data (blocks + sessions + flexify)
 if(!BLOCKS.includes(curBlock))curBlock=BLOCKS[0];
