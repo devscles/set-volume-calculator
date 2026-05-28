@@ -1230,7 +1230,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
         <p>The Days strip below the tabs lets you add or remove days from the current block (between 1 and 7). The day tab shows your label and total physical sets in parentheses, e.g. "Day 1 — Push (24)".</p>
         <p>Each day has a label field at the top. Set it to whatever helps you remember (e.g. "Push", "Legs/Push", "Heavy day").</p>
         <p><b>Weeks:</b> next to the Days control is a <b>Weeks</b> +/- control. Most programs are a single repeating week, which is the default — leave it at 1 and nothing changes. If your program varies week to week (progressive overload, a deload week, an undulating block), bump the week count and a row of <b>Week 1 / Week 2 / …</b> pills appears above the day tabs. Tap a pill to switch which week you're editing or viewing.</p>
-        <p>When you add a week, the app offers to <b>copy the current week's plan</b> into the new one — handy when each week is a small tweak on the last (e.g. add a set or a few pounds). Decline to start the new week empty. Adding or removing a <i>day</i> applies to every week, so all weeks always share the same day structure.</p>
+        <p>When you add a week, the app offers to <b>copy the current week's plan</b> into the new one — handy when each week is a small tweak on the last (e.g. add a set or a few pounds). Decline to start the new week empty. Each week has its <b>own day count</b> — Week 1 can be 3 days and Week 2 can be 4, so adding or removing a day only affects the week you're currently viewing.</p>
         <p>The Summary tab shows the <b>currently-selected week's</b> volume, and starting a workout from a given week tags that session with its week number (shown in history as e.g. "Push — W2").</p>
       </details>
 
@@ -2284,8 +2284,8 @@ function showTab(id){
   renderStatusStrip();
 }
 
-// Day-manager: add/remove days. Days must stay consistent ACROSS weeks (Day N exists in every
-// week), so add/remove operate on every week of the current block, not just the visible one.
+// Day-manager: add/remove days. Each week has its OWN day count — adding a day to Week 2
+// doesn't touch Week 1. The day count shown reflects the currently-selected week.
 function syncDayMgr(){
   const n=curDayIds().length;
   document.getElementById("day-count").textContent=n;
@@ -2296,10 +2296,10 @@ function syncDayMgr(){
 function addDay(){
   const ids=curDayIds();
   if(ids.length>=MAX_DAYS)return;
+  // Next day ID is based on THIS week's existing day IDs (weeks can diverge).
   const nextNum=ids.length?parseInt(ids[ids.length-1].slice(1))+1:1;
   const newId="d"+nextNum;
-  // Add the new day to every week so all weeks share the same day set.
-  mem[curBlock].weeks.forEach(wk=>{wk.days[newId]=makeEmptyDay()});
+  mem[curBlock].weeks[curWeek].days[newId]=makeEmptyDay();
   syncBlockButtons();
   curDayIds().forEach(renderDay);
   renderSummary();
@@ -2310,16 +2310,13 @@ function removeDay(){
   const ids=curDayIds();
   if(ids.length<=MIN_DAYS)return;
   const lastId=ids[ids.length-1];
-  // Check for content in ANY week's copy of this day (removing affects all weeks).
-  const anyContent=mem[curBlock].weeks.some(wk=>{
-    const day=wk.days[lastId];
-    return day && (day.label || day.rows.some(r=>r.ex||r.sets));
-  });
-  if(anyContent){
-    const wkNote = mem[curBlock].weekCount>1 ? " (across all weeks)" : "";
+  const day=mem[curBlock].weeks[curWeek].days[lastId];
+  const hasContent=day && (day.label || day.rows.some(r=>r.ex||r.sets));
+  if(hasContent){
+    const wkNote = mem[curBlock].weekCount>1 ? ` (Week ${curWeek+1})` : "";
     if(!confirm(`Remove Day ${ids.length}${wkNote}? Any exercises and sets on this day will be lost.`))return;
   }
-  mem[curBlock].weeks.forEach(wk=>{delete wk.days[lastId]});
+  delete mem[curBlock].weeks[curWeek].days[lastId];
   syncBlockButtons();
   curDayIds().forEach(renderDay);
   renderSummary();
@@ -2364,7 +2361,14 @@ function selectWeek(w){
   // The `days` getter now points at the new week, so just re-render everything that reads days.
   renderWeekBar();
   syncBlockButtons();
-  curDayIds().forEach(renderDay);
+  // If the previously-selected day tab doesn't exist in this week (weeks can have different
+  // day counts), fall back to the last available day (or Summary if somehow none).
+  const ids=curDayIds();
+  if(curTab!=="sum" && !ids.includes(curTab)){
+    showTab(ids[ids.length-1]||"sum");
+  } else {
+    curDayIds().forEach(renderDay);
+  }
   renderSummary();
   renderStatusStrip();
 }
@@ -4414,12 +4418,10 @@ function createSessionFromPlan(blockId, dayId){
   const block=mem[blockId];
   const day=block.days[dayId];
   const now=new Date().toISOString();
-  // Record which week this session came from. When the block has multiple weeks, fold the
-  // week number into the day label so history reads e.g. "Push — W2".
+  // Record which week this session came from (for week-aware Resume detection), but label
+  // the session by its day label only — "Block — Day" is more useful in history than a week number.
   const weekIdx=curWeek;
-  const multiWeek=block.weekCount>1;
-  const baseLabel=day.label||"";
-  const dayLabel = multiWeek ? (baseLabel ? `${baseLabel} — W${weekIdx+1}` : `W${weekIdx+1}`) : baseLabel;
+  const dayLabel=day.label||"";
   const sess={
     id:"sess_"+Date.now()+"_"+Math.floor(Math.random()*1000),
     date:now,
