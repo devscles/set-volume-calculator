@@ -55,6 +55,13 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .day-mgr-btn:active{background:var(--bg2)}
 .day-mgr-btn:disabled{opacity:0.35;cursor:not-allowed}
 .day-mgr-count{min-width:18px;text-align:center;font-size:13px;font-weight:500;color:var(--text)}
+.day-mgr-divider{width:1px;height:20px;background:var(--border2);margin:0 4px;flex-shrink:0}
+/* Week selector pills — shown only when a block has more than one week */
+.week-bar{display:flex;gap:6px;padding:0 14px;margin-bottom:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;flex-shrink:0;scrollbar-width:none}
+.week-bar::-webkit-scrollbar{display:none}
+.week-pill{flex-shrink:0;padding:5px 12px;font-size:12px;font-weight:500;border-radius:999px;border:0.5px solid var(--border2);background:var(--bg);color:var(--text2);cursor:pointer;font-family:inherit;touch-action:manipulation;white-space:nowrap}
+.week-pill.active{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
+.week-pill:active{opacity:0.85}
 
 /* Backup reminder banner */
 .backup-banner{background:var(--warn-bg);color:var(--warn-text);padding:8px 14px;display:flex;align-items:center;gap:8px;font-size:12px;flex-shrink:0;border-bottom:0.5px solid var(--border)}
@@ -778,13 +785,20 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
   <button class="status-text" id="status-strip-text" type="button"></button>
   <div class="status-muscles" id="status-strip-muscles"></div>
 </div>
-<!-- Row 4: Days +/- controls (compact, no extras) -->
+<!-- Row 4: Days +/- and Weeks +/- controls -->
 <div class="day-mgr" id="day-mgr">
   <span class="day-mgr-label">Days</span>
   <button class="day-mgr-btn" id="day-remove" title="Remove last day" aria-label="Remove last day">−</button>
   <span class="day-mgr-count" id="day-count">3</span>
   <button class="day-mgr-btn" id="day-add" title="Add a day" aria-label="Add a day">+</button>
+  <span class="day-mgr-divider" aria-hidden="true"></span>
+  <span class="day-mgr-label">Weeks</span>
+  <button class="day-mgr-btn" id="week-remove" title="Remove last week" aria-label="Remove last week">−</button>
+  <span class="day-mgr-count" id="week-count">1</span>
+  <button class="day-mgr-btn" id="week-add" title="Add a week" aria-label="Add a week">+</button>
 </div>
+<!-- Week selector pills (shown only when weekCount > 1) -->
+<div class="week-bar" id="week-bar" style="display:none"></div>
 <div class="tabs" id="tabs-bar">
   <button class="tab-sum" id="tab-sum" onclick="showTab('sum')">Summary</button>
 </div>
@@ -1212,9 +1226,12 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
       </details>
 
       <details class="help-section">
-        <summary>Days</summary>
+        <summary>Days &amp; weeks</summary>
         <p>The Days strip below the tabs lets you add or remove days from the current block (between 1 and 7). The day tab shows your label and total physical sets in parentheses, e.g. "Day 1 — Push (24)".</p>
         <p>Each day has a label field at the top. Set it to whatever helps you remember (e.g. "Push", "Legs/Push", "Heavy day").</p>
+        <p><b>Weeks:</b> next to the Days control is a <b>Weeks</b> +/- control. Most programs are a single repeating week, which is the default — leave it at 1 and nothing changes. If your program varies week to week (progressive overload, a deload week, an undulating block), bump the week count and a row of <b>Week 1 / Week 2 / …</b> pills appears above the day tabs. Tap a pill to switch which week you're editing or viewing.</p>
+        <p>When you add a week, the app offers to <b>copy the current week's plan</b> into the new one — handy when each week is a small tweak on the last (e.g. add a set or a few pounds). Decline to start the new week empty. Adding or removing a <i>day</i> applies to every week, so all weeks always share the same day structure.</p>
+        <p>The Summary tab shows the <b>currently-selected week's</b> volume, and starting a workout from a given week tags that session with its week number (shown in history as e.g. "Push — W2").</p>
       </details>
 
       <details class="help-section">
@@ -1558,6 +1575,7 @@ function nextBlockId(){
   return null;
 }
 const MIN_DAYS=1,MAX_DAYS=7;
+const MAX_WEEKS=12; // generous cap; covers most mesocycle lengths
 const MAX_SETS=99;
 
 // Set-type system: each exercise row has a "type" indicating straight sets vs an intensifier.
@@ -2185,6 +2203,7 @@ function syncBlockButtons(){
   rebuildTabsAndPanels();
   syncDayTabs();
   syncDayMgr();
+  renderWeekBar();
   syncBlockActions();
 }
 function onBlockNameInput(val){mem[curBlock].name=val;const btn=document.getElementById("btn-"+curBlock);if(btn)btn.textContent=val||"Block "+curBlock;autoSave()}
@@ -2238,7 +2257,9 @@ function doDeleteBlock(){
 document.getElementById("delblock-bg").addEventListener("click",e=>{if(e.target.id==="delblock-bg")closeDeleteBlockModal()});
 
 function switchBlock(b){
-  curBlock=b;syncBlockButtons();
+  curBlock=b;
+  curWeek=0; // each block tracks its own selected week; reset to week 1 on switch
+  syncBlockButtons();
   const ids=curDayIds();
   ids.forEach(renderDay);
   renderSummary();
@@ -2263,19 +2284,22 @@ function showTab(id){
   renderStatusStrip();
 }
 
-// Day-manager: add/remove days
+// Day-manager: add/remove days. Days must stay consistent ACROSS weeks (Day N exists in every
+// week), so add/remove operate on every week of the current block, not just the visible one.
 function syncDayMgr(){
   const n=curDayIds().length;
   document.getElementById("day-count").textContent=n;
   document.getElementById("day-add").disabled=(n>=MAX_DAYS);
   document.getElementById("day-remove").disabled=(n<=MIN_DAYS);
+  syncWeekMgr();
 }
 function addDay(){
   const ids=curDayIds();
   if(ids.length>=MAX_DAYS)return;
   const nextNum=ids.length?parseInt(ids[ids.length-1].slice(1))+1:1;
   const newId="d"+nextNum;
-  mem[curBlock].days[newId]=makeEmptyDay();
+  // Add the new day to every week so all weeks share the same day set.
+  mem[curBlock].weeks.forEach(wk=>{wk.days[newId]=makeEmptyDay()});
   syncBlockButtons();
   curDayIds().forEach(renderDay);
   renderSummary();
@@ -2286,12 +2310,16 @@ function removeDay(){
   const ids=curDayIds();
   if(ids.length<=MIN_DAYS)return;
   const lastId=ids[ids.length-1];
-  const day=mem[curBlock].days[lastId];
-  const hasContent=day.label||day.rows.some(r=>r.ex||r.sets);
-  if(hasContent){
-    if(!confirm(`Remove Day ${ids.length}? Any exercises and sets on this day will be lost.`))return;
+  // Check for content in ANY week's copy of this day (removing affects all weeks).
+  const anyContent=mem[curBlock].weeks.some(wk=>{
+    const day=wk.days[lastId];
+    return day && (day.label || day.rows.some(r=>r.ex||r.sets));
+  });
+  if(anyContent){
+    const wkNote = mem[curBlock].weekCount>1 ? " (across all weeks)" : "";
+    if(!confirm(`Remove Day ${ids.length}${wkNote}? Any exercises and sets on this day will be lost.`))return;
   }
-  delete mem[curBlock].days[lastId];
+  mem[curBlock].weeks.forEach(wk=>{delete wk.days[lastId]});
   syncBlockButtons();
   curDayIds().forEach(renderDay);
   renderSummary();
@@ -2300,6 +2328,97 @@ function removeDay(){
 }
 document.getElementById("day-add").onclick=addDay;
 document.getElementById("day-remove").onclick=removeDay;
+
+// === Week manager ===
+function syncWeekMgr(){
+  const blk=mem[curBlock];
+  const wc=blk?blk.weekCount:1;
+  document.getElementById("week-count").textContent=wc;
+  document.getElementById("week-add").disabled=(wc>=MAX_WEEKS);
+  document.getElementById("week-remove").disabled=(wc<=1);
+}
+// Render the week selector pills. Hidden entirely when the block has only one week,
+// so single-week users never see the feature.
+function renderWeekBar(){
+  const bar=document.getElementById("week-bar");
+  const blk=mem[curBlock];
+  if(!blk || blk.weekCount<=1){
+    bar.style.display="none";
+    bar.innerHTML="";
+    return;
+  }
+  bar.style.display="flex";
+  bar.innerHTML="";
+  for(let w=0;w<blk.weekCount;w++){
+    const pill=document.createElement("button");
+    pill.className="week-pill"+(w===curWeek?" active":"");
+    pill.textContent="Week "+(w+1);
+    pill.onclick=()=>selectWeek(w);
+    bar.appendChild(pill);
+  }
+}
+function selectWeek(w){
+  const blk=mem[curBlock];
+  if(!blk || w<0 || w>=blk.weekCount || w===curWeek)return;
+  curWeek=w;
+  // The `days` getter now points at the new week, so just re-render everything that reads days.
+  renderWeekBar();
+  syncBlockButtons();
+  curDayIds().forEach(renderDay);
+  renderSummary();
+  renderStatusStrip();
+}
+function addWeek(){
+  const blk=mem[curBlock];
+  if(!blk || blk.weekCount>=MAX_WEEKS)return;
+  // Offer to copy the current week's plan into the new week — the common progressive-overload
+  // workflow (build week 1, duplicate, tweak loads). Decline → start the new week empty.
+  let newWeekDays;
+  const curHasContent=Object.values(blk.weeks[curWeek].days).some(d=>d.label||d.rows.some(r=>r.ex||r.sets));
+  if(curHasContent && confirm(`Copy Week ${curWeek+1}'s plan into the new week? (Cancel for an empty week.)`)){
+    newWeekDays=deepCloneDays(blk.weeks[curWeek].days);
+  } else {
+    // Empty week, but matching the current day structure (same day IDs)
+    newWeekDays={};
+    Object.keys(blk.weeks[curWeek].days).forEach(dayId=>{newWeekDays[dayId]=makeEmptyDay()});
+  }
+  blk.weeks.push({days:newWeekDays});
+  blk.weekCount=blk.weeks.length;
+  curWeek=blk.weekCount-1; // jump to the newly added week
+  renderWeekBar();
+  syncWeekMgr();
+  syncBlockButtons();
+  curDayIds().forEach(renderDay);
+  renderSummary();
+  renderStatusStrip();
+  autoSave();
+}
+function removeWeek(){
+  const blk=mem[curBlock];
+  if(!blk || blk.weekCount<=1)return;
+  const lastIdx=blk.weekCount-1;
+  const lastWeek=blk.weeks[lastIdx];
+  const hasContent=Object.values(lastWeek.days).some(d=>d.label||d.rows.some(r=>r.ex||r.sets));
+  if(hasContent){
+    if(!confirm(`Remove Week ${blk.weekCount}? Its entire plan will be lost.`))return;
+  }
+  blk.weeks.pop();
+  blk.weekCount=blk.weeks.length;
+  if(curWeek>=blk.weekCount)curWeek=blk.weekCount-1; // clamp selection
+  renderWeekBar();
+  syncWeekMgr();
+  syncBlockButtons();
+  curDayIds().forEach(renderDay);
+  renderSummary();
+  renderStatusStrip();
+  autoSave();
+}
+// Deep clone a days object (so a copied week doesn't share row references with its source).
+function deepCloneDays(days){
+  return JSON.parse(JSON.stringify(days));
+}
+document.getElementById("week-add").onclick=addWeek;
+document.getElementById("week-remove").onclick=removeWeek;
 
 // Numpad state
 let numpadCtx=null; // {dayId, rowIndex, numEl, value (string)}
@@ -4295,12 +4414,18 @@ function createSessionFromPlan(blockId, dayId){
   const block=mem[blockId];
   const day=block.days[dayId];
   const now=new Date().toISOString();
+  // Record which week this session came from. When the block has multiple weeks, fold the
+  // week number into the day label so history reads e.g. "Push — W2".
+  const weekIdx=curWeek;
+  const multiWeek=block.weekCount>1;
+  const baseLabel=day.label||"";
+  const dayLabel = multiWeek ? (baseLabel ? `${baseLabel} — W${weekIdx+1}` : `W${weekIdx+1}`) : baseLabel;
   const sess={
     id:"sess_"+Date.now()+"_"+Math.floor(Math.random()*1000),
     date:now,
-    blockId, dayId,
+    blockId, dayId, weekIdx,
     blockName:block.name||("Block "+blockId),
-    dayLabel:day.label||"",
+    dayLabel,
     status:"in_progress",
     plannedRows: day.rows.filter(r=>r.ex&&r.sets>0).map((r,i)=>{
       // Snapshot the plan into a workout-friendly shape. We carry per-set targets so the
@@ -6698,7 +6823,7 @@ function renderDay(dayId){
   //  - Day has no plan (empty):         [Wing It]          (primary)
   {
     const hasContent=!allEmpty && dayData.rows.some(r=>r.ex&&r.sets>0);
-    const inProg=sessions.find(s=>s.status==="in_progress"&&s.blockId===curBlock&&s.dayId===dayId);
+    const inProg=sessions.find(s=>s.status==="in_progress"&&s.blockId===curBlock&&s.dayId===dayId&&(s.weekIdx==null||s.weekIdx===curWeek));
     const anyActive=activeSession();
     const launchRow=document.createElement("div");
     launchRow.className="workout-launch-row";
@@ -7370,7 +7495,9 @@ function renderSummary(){
   if(summaryMode==="planned"){
     const dayTotals=ids.map(d=>calcDay(d));
     const dayLabels=ids.map((d,i)=>mem[curBlock].days[d].label||("Day "+(i+1)));
-    meta.textContent=`Planned weekly volume — ${ids.length} day${ids.length===1?"":"s"}`;
+    const blk=mem[curBlock];
+    const weekNote = (blk && blk.weekCount>1) ? ` · Week ${curWeek+1} of ${blk.weekCount}` : "";
+    meta.textContent=`Planned weekly volume — ${ids.length} day${ids.length===1?"":"s"}${weekNote}`;
 
     // Check whether nothing is planned across all days
     const anyPlanned=ids.some(d=>mem[curBlock].days[d].rows.some(r=>r.ex&&r.sets>0));
