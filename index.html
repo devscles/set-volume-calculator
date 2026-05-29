@@ -147,14 +147,26 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .panel.active{display:block;animation:panelFadeIn 0.18s var(--ease)}
 @keyframes panelFadeIn{from{opacity:0;transform:translateY(2px)}to{opacity:1;transform:translateY(0)}}
 .day-label-row{display:flex;align-items:center;margin-bottom:10px}
-.exercise-row{display:grid;grid-template-columns:1fr 28px 32px 100px;gap:6px;align-items:center;margin-bottom:8px;position:relative;padding-left:0;transition:padding-left 0.15s var(--ease)}
+.exercise-row{display:grid;grid-template-columns:18px 1fr 28px 32px 100px;gap:6px;align-items:center;margin-bottom:8px;position:relative;padding-left:0;transition:padding-left 0.15s var(--ease)}
+.exercise-row .pill-row{grid-column:1/-1}
+/* Drag handle (always visible) for reordering exercise rows / superset groups */
+.row-drag-handle{display:flex;align-items:center;justify-content:center;color:var(--text3);cursor:grab;touch-action:none;height:30px;font-size:15px;margin-left:-2px}
+.row-drag-handle:active{cursor:grabbing;color:var(--text2)}
+.row-drag-handle.empty{visibility:hidden}
+/* The row (or group) being dragged: lifted look */
+.exercise-row.dragging,.ss-drag-group .exercise-row{opacity:0.4}
+.drag-ghost{position:fixed;left:0;top:0;z-index:400;pointer-events:none;background:var(--bg);border:2px solid var(--accent);border-radius:var(--radius);box-shadow:0 4px 16px var(--shadow);padding:8px 10px;font-size:12px;font-weight:500;color:var(--text);opacity:0.95}
+.drag-ghost .dg-sub{font-size:9px;color:var(--accent);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:3px;font-weight:600}
+.drag-ghost .dg-ex{line-height:1.5}
+/* Blue insertion line shown between rows/groups during a drag */
+.drop-indicator{height:2px;background:var(--accent);border-radius:1px;margin:3px 0;pointer-events:none}
 /* Superset visual grouping. We use a left bar (::before) and add a class to rows that are part of a group. */
 .exercise-row.ss-member{padding-left:8px}
-.exercise-row.ss-member::before{content:"";position:absolute;left:0;top:-2px;bottom:-2px;width:3px;background:var(--accent);opacity:0.85}
+.exercise-row.ss-member::before{content:"";position:absolute;left:18px;top:-2px;bottom:-2px;width:3px;background:var(--accent);opacity:0.85}
 .exercise-row.ss-first::before{top:2px;border-top-left-radius:3px;border-top-right-radius:3px}
 .exercise-row.ss-last::before{bottom:2px;border-bottom-left-radius:3px;border-bottom-right-radius:3px}
 /* The first row of a group gets a tiny "×N" badge near the exercise picker */
-.ss-badge{position:absolute;top:-8px;left:6px;background:var(--accent);color:var(--accent-text);font-size:9px;font-weight:600;padding:1px 5px;border-radius:8px;letter-spacing:0.04em;line-height:1.3;pointer-events:none;z-index:2}
+.ss-badge{position:absolute;top:-8px;left:24px;background:var(--accent);color:var(--accent-text);font-size:9px;font-weight:600;padding:1px 5px;border-radius:8px;letter-spacing:0.04em;line-height:1.3;pointer-events:none;z-index:2}
 .set-type-chip{height:30px;border-radius:var(--radius);border:0.5px solid var(--border);background:var(--bg);color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit;touch-action:manipulation;letter-spacing:0.02em;transition:background-color 0.15s var(--ease),color 0.15s var(--ease),border-color 0.15s var(--ease)}
 /* Superset link toggle: small chain button between picker and chip */
 .ss-link-btn{width:28px;height:30px;border-radius:var(--radius);border:0.5px solid var(--border);background:var(--bg);color:var(--text3);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit;padding:0;transition:background-color 0.15s var(--ease),color 0.15s var(--ease),border-color 0.15s var(--ease)}
@@ -735,6 +747,9 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .ce-mus-btn{padding:7px 8px;font-size:12px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text2);cursor:pointer;text-align:center;font-family:inherit;touch-action:manipulation}
 .ce-mus-btn.primary{background:var(--text);color:var(--bg);border-color:var(--text);font-weight:500}
 .ce-mus-btn.secondary{background:var(--bg2);color:var(--text);border-color:var(--text2);font-weight:500}
+.ce-patterns{display:grid;grid-template-columns:repeat(2,1fr);gap:5px}
+.ce-pat-btn{padding:7px 8px;font-size:12px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text2);cursor:pointer;text-align:center;font-family:inherit;touch-action:manipulation}
+.ce-pat-btn.on{background:var(--accent);color:var(--accent-text);border-color:var(--accent);font-weight:500}
 .ce-hint{font-size:11px;color:var(--text3);margin-top:4px;line-height:1.4}
 .ce-link-btn{background:none;border:none;padding:4px 0;margin-top:4px;font-size:11px;color:var(--accent);cursor:pointer;font-family:inherit;text-decoration:underline}
 .ce-link-btn:active{opacity:0.7}
@@ -883,6 +898,11 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
         <label class="ce-label">Secondary muscles</label>
         <div class="ce-muscles" id="ce-secondary"></div>
         <div class="ce-hint">Tap to mark a muscle as secondary (counts as 0.5).</div>
+      </div>
+      <div class="ce-field">
+        <label class="ce-label">Movement patterns</label>
+        <div class="ce-patterns" id="ce-patterns"></div>
+        <div class="ce-hint">Optional. Tap any that apply — used by the Summary → Patterns tab. Most isolation lifts have none.</div>
       </div>
       <div class="ce-error" id="ce-error"></div>
     </div>
@@ -1278,6 +1298,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
           <li>The chain button on row 1 of any day is disabled (no row above to link to)</li>
         </ul>
         <p>Supersets are a purely organizational concept here. They don't change volume calculations — each exercise still counts its sets independently toward its muscle groups. The grouping just helps you remember which exercises you're pairing during execution.</p>
+        <p><b>Reordering:</b> each row has a <b>grip handle</b> (⠿) on its far left. Press and drag it to move the row up or down — a blue line shows where it'll land. A superset group moves as a single unit (grab any member), and you can't drop another exercise into the middle of a group. To reorder exercises <i>within</i> a superset, unlink them first, move, then re-link.</p>
         <p>Note: the Flexify export doesn't preserve superset grouping (Flexify's plan format doesn't support it). The exercises just stay in the order you have them.</p>
       </details>
 
@@ -1414,7 +1435,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 <script>
 const BUILTIN_EX={
   "Chest":[["Barbell Bench Press",{Chest:1,"Front Delt":0.5,Triceps:0.5}],["Dumbbell Bench Press",{Chest:1,"Front Delt":0.5,Triceps:0.5}],["Incline Dumbbell Bench Press",{Chest:1,"Front Delt":0.5,Triceps:0.5}],["Dumbbell Fly",{Chest:1,"Front Delt":0.5}],["Cable Crossover",{Chest:1,"Front Delt":0.5}],["Pec Deck",{Chest:1}],["Push-Up",{Chest:1,"Front Delt":0.5,Triceps:0.5}],["Landmine Press",{Chest:1,"Front Delt":0.5,Triceps:0.5}],["Dumbbell Pullover",{Chest:0.5,Lats:1,Triceps:0.5}],["Incline Barbell Bench Press",{Chest:1,"Front Delt":1,Triceps:0.5}],["Decline Barbell Bench Press",{Chest:1,"Front Delt":0.5,Triceps:0.5}],["Incline Dumbbell Fly",{Chest:1,"Front Delt":0.5}],["Cable Fly Low-to-High",{Chest:1,"Front Delt":0.5}],["Cable Fly High-to-Low",{Chest:1}],["Machine Chest Press",{Chest:1,"Front Delt":1,Triceps:0.5}]],
-  "Back / Lats":[["Barbell Row",{Lats:1,Traps:1,"Rear Delt":0.5,Biceps:0.5,Erectors:0.5}],["Dumbbell Row",{Lats:1,Traps:1,"Rear Delt":0.5,Biceps:0.5}],["Underhand Barbell Row",{Lats:1,Traps:1,"Rear Delt":0.5,Biceps:0.5}],["Narrow Grip Cable Row",{Lats:1,Traps:1,"Rear Delt":0.5,Biceps:0.5}],["Wide Grip Cable Row",{Lats:1,Traps:1,"Rear Delt":0.5,Biceps:0.5}],["One Arm Cable Row",{Lats:1,Traps:1,"Rear Delt":0.5,Biceps:0.5}],["Lat Pulldown",{Lats:1,"Rear Delt":0.5,Biceps:0.5}],["One Arm Lat Pulldown",{Lats:1,"Rear Delt":0.5,Biceps:0.5}],["Straight Arm Pulldown",{Lats:1,Triceps:0.5}],["Pull-Ups",{Lats:1,Traps:0.5,"Rear Delt":0.5,Biceps:0.5}],["Chin-Ups",{Lats:1,Traps:0.5,"Rear Delt":0.5,Biceps:1}],["Bent Over Back Fly",{Traps:0.5,"Rear Delt":1}],["T-Bar Row",{Lats:1,Traps:1,"Rear Delt":0.5,Biceps:0.5,Erectors:0.5}],["Pendlay Row",{Lats:1,Traps:1,"Rear Delt":0.5,Biceps:0.5,Erectors:0.5}],["Chest-Supported Row",{Lats:1,Traps:1,"Rear Delt":0.5,Biceps:0.5}],["Seated Cable Row",{Lats:1,Traps:1,"Rear Delt":0.5,Biceps:0.5}],["Meadows Row",{Lats:1,Traps:1,"Rear Delt":0.5,Biceps:0.5,Obliques:0.5}],["Neutral Grip Lat Pulldown",{Lats:1,Biceps:0.5,"Rear Delt":0.5}],["Wide Grip Pull-Up",{Lats:1,Traps:0.5,"Rear Delt":0.5,Biceps:0.5}]],
+  "Back / Lats":[["Barbell Row",{Lats:1,Traps:1,"Rear Delt":0.5,Biceps:0.5,Erectors:0.5}],["Dumbbell Row",{Lats:1,Traps:1,"Rear Delt":0.5,Biceps:0.5}],["Underhand Barbell Row",{Lats:1,Traps:1,"Rear Delt":0.5,Biceps:0.5}],["Narrow Grip Cable Row",{Lats:1,Traps:1,"Rear Delt":0.5,Biceps:0.5}],["Wide Grip Cable Row",{Lats:1,Traps:1,"Rear Delt":0.5,Biceps:0.5}],["One Arm Cable Row",{Lats:1,Traps:1,"Rear Delt":0.5,Biceps:0.5}],["Lat Pulldown",{Lats:1,"Rear Delt":0.5,Biceps:0.5}],["One Arm Lat Pulldown",{Lats:1,"Rear Delt":0.5,Biceps:0.5}],["Straight Arm Pulldown",{Lats:1,Triceps:0.5}],["Pull-Ups",{Lats:1,Traps:0.5,"Rear Delt":0.5,Biceps:0.5}],["Chin-Ups",{Lats:1,Traps:0.5,"Rear Delt":0.5,Biceps:1}],["Bent Over Back Fly",{Traps:0.5,"Rear Delt":1}],["T-Bar Row",{Lats:1,Traps:1,"Rear Delt":0.5,Biceps:0.5,Erectors:0.5}],["Pendlay Row",{Lats:1,Traps:1,"Rear Delt":0.5,Biceps:0.5,Erectors:0.5}],["Chest-Supported Row",{Lats:1,Traps:1,"Rear Delt":0.5,Biceps:0.5}],["Meadows Row",{Lats:1,Traps:1,"Rear Delt":0.5,Biceps:0.5,Obliques:0.5}],["Neutral Grip Lat Pulldown",{Lats:1,Biceps:0.5,"Rear Delt":0.5}],["Wide Grip Pull-Up",{Lats:1,Traps:0.5,"Rear Delt":0.5,Biceps:0.5}]],
   "Shoulders":[["Barbell Shoulder Press",{Traps:0.5,"Front Delt":1,"Side Delt":1,Triceps:0.5}],["Dumbbell Shoulder Press",{Traps:0.5,"Front Delt":1,"Side Delt":1,Triceps:0.5}],["Barbell Push Press",{Traps:0.5,"Front Delt":1,"Side Delt":1,Triceps:0.5,Quads:0.5}],["Unilateral Dumbbell Push Press",{Traps:0.5,"Front Delt":1,"Side Delt":1,Triceps:0.5,Quads:0.5,Abs:0.5,Obliques:0.5}],["Dumbbell Lateral Raise",{Traps:0.5,"Side Delt":1}],["Full ROM Lateral Raise",{Traps:0.5,"Side Delt":1}],["Dumbbell Front Raise",{"Front Delt":1}],["Cable Front Raise",{"Front Delt":1}],["Upright Row",{Traps:1,"Front Delt":0.5,"Side Delt":1,Biceps:0.5}],["Power Clean",{Traps:1,"Front Delt":0.5,Hamstrings:0.5,Glutes:1,Erectors:1,Quads:0.5}],["Clean and Press",{Traps:1,"Front Delt":1,Quads:0.5,Glutes:0.5,Erectors:0.5}],["Hang Clean and Press",{Traps:1,"Front Delt":1,Quads:0.5,Glutes:0.5,Erectors:0.5}],["Face Pull",{Traps:1,"Rear Delt":1}],["Arnold Press",{"Front Delt":1,"Side Delt":1,Traps:0.5,Triceps:0.5}],["Seated Dumbbell Press",{"Front Delt":1,"Side Delt":1,Triceps:0.5}],["Cable Lateral Raise",{"Side Delt":1,Traps:0.5}],["Machine Lateral Raise",{"Side Delt":1,Traps:0.5}],["Reverse Pec Deck",{"Rear Delt":1,Traps:0.5}]],
   "Traps":[["Dumbbell Shrug",{Traps:1}],["Trap Bar Shrug",{Traps:1}],["Cable Shrug",{Traps:1}],["Rack Pull",{Traps:1,Erectors:1,Hamstrings:0.5,Glutes:0.5}],["Barbell Shrug",{Traps:1}],["Farmer's Carry",{Traps:1,Erectors:0.5,Abs:0.5,Obliques:0.5}]],
   "Biceps":[["Barbell Curl",{Biceps:1}],["Dumbbell Curl",{Biceps:1}],["Cable Curl",{Biceps:1}],["EZ Bar Curl",{Biceps:1}],["EZ Bar Curl Reverse Grip",{Biceps:1}],["Hammer Curl",{Biceps:1}],["Preacher Curl",{Biceps:1}],["Incline Dumbbell Curl",{Biceps:1}],["Spider Curl",{Biceps:1}],["Concentration Curl",{Biceps:1}],["Cable Hammer Curl",{Biceps:1}]],
@@ -1433,7 +1454,7 @@ const BUILTIN_EX_PATTERNS={
   "Vertical Push":["Barbell Shoulder Press","Dumbbell Shoulder Press","Barbell Push Press","Unilateral Dumbbell Push Press","Power Clean","Clean and Press","Hang Clean and Press","Arnold Press","Seated Dumbbell Press","Dips"],
   "Vertical Pull":["Lat Pulldown","One Arm Lat Pulldown","Pull-Ups","Chin-Ups","Upright Row","Neutral Grip Lat Pulldown","Wide Grip Pull-Up"],
   "Horizontal Push":["Barbell Bench Press","Dumbbell Bench Press","Incline Dumbbell Bench Press","Push-Up","Landmine Press","Incline Barbell Bench Press","Decline Barbell Bench Press","Machine Chest Press","Close-Grip Bench Press","Diamond Push-Up"],
-  "Horizontal Pull":["Barbell Row","Dumbbell Row","Underhand Barbell Row","Narrow Grip Cable Row","Wide Grip Cable Row","One Arm Cable Row","T-Bar Row","Pendlay Row","Chest-Supported Row","Seated Cable Row","Meadows Row","Face Pull"],
+  "Horizontal Pull":["Barbell Row","Dumbbell Row","Underhand Barbell Row","Narrow Grip Cable Row","Wide Grip Cable Row","One Arm Cable Row","T-Bar Row","Pendlay Row","Chest-Supported Row","Meadows Row","Face Pull"],
   "Squat":["Squat","Leg Press","Cossack Squat","Front Squat","Hack Squat","Goblet Squat","Sissy Squat"],
   "Lunge":["Dumbbell Lunge","Dumbbell Split Squat","Step Down Heel Tap","Bulgarian Split Squat","Walking Lunge","Reverse Lunge"],
   "Hinge":["Rack Pull","Trap Bar Deadlift","Deadlift","Stiff Leg Deadlift","1 Leg Kettlebell Deadlift","Romanian Deadlift","Good Morning","Hip Thrust","Glute Bridge","Cable Pull-Through","Single-Leg Romanian Deadlift","Back Extension","Power Clean","Clean and Press","Hang Clean and Press"],
@@ -1441,14 +1462,55 @@ const BUILTIN_EX_PATTERNS={
   "Anti-Rotation":["Unilateral Dumbbell Push Press","Single-Leg Romanian Deadlift","Yoga Ball Deadbug","Yoga Ball Plank Rollout","Plank","Pallof Press"],
   "Carry":["Farmer's Carry"]
 };
-// Reverse lookup: exercise name → array of patterns (O(1) for muscle popup + summary cards).
-const EX_TO_PATTERNS={};
+// Reverse lookup baseline: exercise name → array of patterns (from the built-in defaults).
+const BUILTIN_EX_TO_PATTERNS={};
 Object.entries(BUILTIN_EX_PATTERNS).forEach(([pattern, names])=>{
   names.forEach(n=>{
-    if(!EX_TO_PATTERNS[n])EX_TO_PATTERNS[n]=[];
-    EX_TO_PATTERNS[n].push(pattern);
+    if(!BUILTIN_EX_TO_PATTERNS[n])BUILTIN_EX_TO_PATTERNS[n]=[];
+    BUILTIN_EX_TO_PATTERNS[n].push(pattern);
   });
 });
+// Live lookup, rebuilt from baseline + user overrides. Read this everywhere (never the const baseline).
+let EX_TO_PATTERNS={};
+// Per-exercise pattern overrides: name → array of patterns. Covers both built-in re-assignment
+// and custom-exercise pattern assignment. An empty array is a valid override (means "no patterns").
+let patternOverrides={};
+const PATTERN_OVERRIDES_KEY="trainblock_pattern_overrides_v1";
+function loadPatternOverrides(){
+  try{
+    const raw=localStorage.getItem(PATTERN_OVERRIDES_KEY);
+    if(raw){
+      const parsed=JSON.parse(raw);
+      if(parsed&&typeof parsed==="object"&&!Array.isArray(parsed))patternOverrides=parsed;
+    }
+  }catch(e){patternOverrides={}}
+}
+function savePatternOverrides(){
+  try{localStorage.setItem(PATTERN_OVERRIDES_KEY,JSON.stringify(patternOverrides))}catch(e){}
+}
+// Resolve the patterns for an exercise: override wins if present, else built-in default, else [].
+function getPatternsFor(name){
+  if(Object.prototype.hasOwnProperty.call(patternOverrides,name))return patternOverrides[name].slice();
+  return (BUILTIN_EX_TO_PATTERNS[name]||[]).slice();
+}
+// Rebuild the live EX_TO_PATTERNS (name→patterns) and the pattern→names lookup used by the
+// Summary Patterns tab. Called after any override change and once at boot.
+let PATTERN_TO_EX={};
+function rebuildPatterns(){
+  EX_TO_PATTERNS={};
+  PATTERN_TO_EX={};
+  ALL_PATTERNS.forEach(p=>{PATTERN_TO_EX[p]=[]});
+  // Gather all known exercise names: built-ins + customs
+  const names=new Set(Object.keys(BUILTIN_EX_TO_PATTERNS));
+  if(Array.isArray(customExercises))customExercises.forEach(e=>names.add(e.name));
+  Object.keys(patternOverrides).forEach(n=>names.add(n));
+  names.forEach(name=>{
+    const pats=getPatternsFor(name);
+    if(pats.length)EX_TO_PATTERNS[name]=pats;
+    pats.forEach(p=>{ if(PATTERN_TO_EX[p])PATTERN_TO_EX[p].push(name) });
+  });
+}
+rebuildPatterns();
 
 // Mapping from our planner's exercise names to Flexify's exact spelling/case.
 // Used for CSV export to Flexify and CSV import from Flexify history.
@@ -3618,11 +3680,41 @@ function toggleMuscle(muscle, weight){
 
 function setCeError(msg){document.getElementById("ce-error").textContent=msg}
 
+// === Movement pattern buttons (in the exercise editor) ===
+function buildPatternButtons(){
+  const c=document.getElementById("ce-patterns");
+  c.innerHTML="";
+  ALL_PATTERNS.forEach(p=>{
+    const b=document.createElement("button");
+    b.className="ce-pat-btn";
+    b.type="button";
+    b.textContent=p;
+    b.dataset.pattern=p;
+    b.onclick=()=>togglePattern(p);
+    c.appendChild(b);
+  });
+}
+function refreshPatternButtons(){
+  if(!ceCtx)return;
+  document.querySelectorAll("#ce-patterns .ce-pat-btn").forEach(btn=>{
+    btn.classList.toggle("on", ceCtx.patterns.has(btn.dataset.pattern));
+  });
+}
+function togglePattern(pattern){
+  if(!ceCtx)return;
+  if(ceCtx.patterns.has(pattern))ceCtx.patterns.delete(pattern);
+  else ceCtx.patterns.add(pattern);
+  refreshPatternButtons();
+}
+
 function openCustomEditor(existingName){
   // Build muscle pickers if not built yet
   if(!document.querySelector("#ce-primary .ce-mus-btn")){
     buildMuscleButtons("ce-primary",1);
     buildMuscleButtons("ce-secondary",0.5);
+  }
+  if(!document.querySelector("#ce-patterns .ce-pat-btn")){
+    buildPatternButtons();
   }
   const selected=new Map();
   let nameVal="";
@@ -3648,7 +3740,13 @@ function openCustomEditor(existingName){
     }
   }
   // Store both the display name (for the input) and the canonical name (for saving overrides)
-  ceCtx={editingName:existingName, canonicalName, isBuiltin, selected};
+  ceCtx={editingName:existingName, canonicalName, isBuiltin, selected, patterns:new Set()};
+  // Load current movement patterns (override or built-in default). For built-ins we key off
+  // the canonical name; for customs, off the exercise name.
+  if(existingName){
+    const patKey = isBuiltin ? canonicalName : existingName;
+    getPatternsFor(patKey).forEach(p=>ceCtx.patterns.add(p));
+  }
 
   document.getElementById("ce-title").textContent=existingName?"Edit exercise":"New exercise";
   const nameInput=document.getElementById("ce-name");
@@ -3659,9 +3757,12 @@ function openCustomEditor(existingName){
   // Delete is only for custom exercises (built-ins can't be deleted, only reset)
   document.getElementById("ce-delete").style.display=(existingName&&!isBuiltin)?"":"none";
   // Reset-muscles is only for built-ins that have been muscle-overridden
-  document.getElementById("ce-reset").style.display=hasMuscleOverride?"":"none";
+  // Reset-to-default is offered when a built-in has a muscle OR pattern override.
+  const hasPatternOverride=isBuiltin&&(Object.prototype.hasOwnProperty.call(patternOverrides,canonicalName)||Object.prototype.hasOwnProperty.call(patternOverrides,(builtinNameOverrides[canonicalName]||canonicalName)));
+  document.getElementById("ce-reset").style.display=(hasMuscleOverride||hasPatternOverride)?"":"none";
   setCeError("");
   refreshMuscleButtons();
+  refreshPatternButtons();
   document.getElementById("ce-bg").classList.add("open");
   if(!isBuiltin)setTimeout(()=>nameInput.focus(),100);
 }
@@ -3674,6 +3775,34 @@ function closeCustomEditor(){
   if(settingsBg && settingsBg.classList.contains("open")){
     renderSettingsExerciseList();
   }
+}
+
+// Persist the editor's pattern selection for an exercise. For built-ins, store an override only
+// when it differs from the built-in default (so resets clear it). For customs, always store
+// (empty array is valid = "no patterns"). Handles a rename by moving the override to the new key.
+function persistPatternSelection(key, isBuiltin, renameTo){
+  const chosen=Array.from(ceCtx.patterns);
+  if(isBuiltin){
+    const def=(BUILTIN_EX_TO_PATTERNS[key]||[]).slice().sort();
+    const sel=chosen.slice().sort();
+    const sameAsDefault = def.length===sel.length && def.every((p,i)=>p===sel[i]);
+    if(sameAsDefault){
+      delete patternOverrides[key];
+    } else {
+      patternOverrides[key]=chosen;
+    }
+    if(renameTo && renameTo!==key){
+      if(patternOverrides[key]!==undefined){
+        patternOverrides[renameTo]=patternOverrides[key];
+        delete patternOverrides[key];
+      }
+    }
+  } else {
+    const storeKey = renameTo || key;
+    if(renameTo && renameTo!==key && patternOverrides[key]!==undefined)delete patternOverrides[key];
+    patternOverrides[storeKey]=chosen;
+  }
+  savePatternOverrides();
 }
 
 function saveCustomExercise(){
@@ -3724,7 +3853,12 @@ function saveCustomExercise(){
       propagateExerciseRename(oldDisplayName, rawName);
     }
 
+    // Persist movement-pattern selection (keyed on canonical; move to new name if renamed).
+    const renamedTo = (builtinNameOverrides[canon]||canon);
+    persistPatternSelection(canon, true, renamedTo);
+
     rebuildEX();
+    rebuildPatterns();
     closeCustomEditor();
     curDayIds().forEach(renderDay);
     renderSummary();
@@ -3757,12 +3891,15 @@ function saveCustomExercise(){
       if(oldName!==rawName){
         propagateExerciseRename(oldName, rawName);
       }
+      persistPatternSelection(oldName, false, rawName);
     }
   } else {
     customExercises.push({name:rawName,muscles});
+    persistPatternSelection(rawName, false, null);
   }
   saveCustomExercises();
   rebuildEX();
+  rebuildPatterns();
   closeCustomEditor();
   curDayIds().forEach(renderDay);
   renderSummary();
@@ -3810,10 +3947,15 @@ function musclesEqual(a,b){
 function resetBuiltinOverride(){
   if(!ceCtx||!ceCtx.isBuiltin||!ceCtx.canonicalName)return;
   const display=builtinNameOverrides[ceCtx.canonicalName]||ceCtx.canonicalName;
-  if(!confirm(`Reset "${display}" to its default muscle weights?`))return;
+  if(!confirm(`Reset "${display}" to its default muscle weights and movement patterns?`))return;
   delete builtinOverrides[ceCtx.canonicalName];
   saveBuiltinOverrides();
+  // Also clear any pattern override so it returns to the built-in default patterns.
+  delete patternOverrides[ceCtx.canonicalName];
+  delete patternOverrides[display];
+  savePatternOverrides();
   rebuildEX();
+  rebuildPatterns();
   closeCustomEditor();
   renderSummary();
 }
@@ -3829,7 +3971,14 @@ function resetBuiltinNameOverride(){
   delete builtinNameOverrides[canon];
   saveBuiltinNameOverrides();
   propagateExerciseRename(currentDisplay, canon);
+  // Move any pattern override keyed on the old display name back to the canonical name.
+  if(patternOverrides[currentDisplay]!==undefined){
+    patternOverrides[canon]=patternOverrides[currentDisplay];
+    delete patternOverrides[currentDisplay];
+    savePatternOverrides();
+  }
   rebuildEX();
+  rebuildPatterns();
   closeCustomEditor();
   curDayIds().forEach(renderDay);
   renderSummary();
@@ -3840,8 +3989,10 @@ function deleteCustomExercise(){
   const name=ceCtx.editingName;
   let usages=0;
   BLOCKS.forEach(b=>{
-    dayIdsOf(b).forEach(d=>{
-      mem[b].days[d].rows.forEach(row=>{if(row.ex===name)usages++});
+    (mem[b].weeks||[]).forEach(wk=>{
+      Object.values(wk.days).forEach(day=>{
+        day.rows.forEach(row=>{if(row.ex===name)usages++});
+      });
     });
   });
   const msg=usages>0
@@ -3849,16 +4000,22 @@ function deleteCustomExercise(){
     :`Delete "${name}"?`;
   if(!confirm(msg))return;
   BLOCKS.forEach(b=>{
-    dayIdsOf(b).forEach(d=>{
-      mem[b].days[d].rows.forEach(row=>{
-        if(row.ex===name){row.ex="";row.sets=0}
+    (mem[b].weeks||[]).forEach(wk=>{
+      Object.values(wk.days).forEach(day=>{
+        day.rows.forEach(row=>{
+          if(row.ex===name){row.ex="";row.sets=0}
+        });
       });
     });
     try{localStorage.setItem(storageKey(b),JSON.stringify(mem[b]))}catch(e){}
   });
   customExercises=customExercises.filter(e=>e.name!==name);
   saveCustomExercises();
+  // Drop any pattern override for the deleted exercise.
+  delete patternOverrides[name];
+  savePatternOverrides();
   rebuildEX();
+  rebuildPatterns();
   closeCustomEditor();
   curDayIds().forEach(renderDay);
   renderSummary();
@@ -6950,6 +7107,17 @@ function renderDay(dayId){
 
     div.appendChild(picker);div.appendChild(linkBtn);div.appendChild(chip);div.appendChild(ctrl);
 
+    // Drag handle (first column). Only draggable when the row has an exercise — empty rows
+    // stay pinned at the bottom and show a hidden placeholder handle to keep the grid aligned.
+    const handle=document.createElement("div");
+    handle.className="row-drag-handle"+(row.ex?"":" empty");
+    handle.innerHTML='<i class="ti ti-grip-vertical" aria-hidden="true"></i>';
+    if(row.ex){
+      handle.setAttribute("aria-label","Drag to reorder");
+      handle.addEventListener("pointerdown", e=>startRowDrag(e, dayId, i));
+    }
+    div.insertBefore(handle, div.firstChild);
+
     // Pill row: visual representation of the planned set scheme, with per-set tappable targets.
     // Renders one pill per set (straight/AMRAP) or one pill per sequence (drop/myorep/etc).
     // Only shows when an exercise is selected and at least one set is planned.
@@ -7107,6 +7275,192 @@ function buildCountControls(label, row, dayId, rowIdx, fieldKey, minVal, maxVal)
 // {inGroup: boolean, isFirst: boolean, isLast: boolean, size: number}.
 // "inGroup" is true only when the group has 2+ rows. Solo rows are inGroup:false even if
 // they have linkedToPrev (e.g. orphaned flag) — we only show the visual when meaningful.
+// ===== Drag-and-drop reorder of exercise rows (and superset groups) =====
+// The draggable unit is a superset group (or a standalone row = group of one). Groups are
+// atomic: they move whole, and drops only land between groups, never inside one.
+let dragState=null;
+
+// Compute the group ranges among the NON-EMPTY rows of a day.
+// Returns [{start, end}] index ranges (inclusive) over the rows array, in order.
+// Empty rows (no ex) are excluded — they stay pinned at the bottom and aren't draggable.
+function computeDragGroups(rows){
+  const groups=[];
+  let i=0;
+  // Only consider the leading run of non-empty rows. (Rows fill top-down; empties trail.)
+  const n=rows.length;
+  while(i<n){
+    if(!rows[i].ex){i++;continue}
+    let j=i+1;
+    while(j<n && rows[j].ex && rows[j].linkedToPrev)j++;
+    groups.push({start:i, end:j-1});
+    i=j;
+  }
+  return groups;
+}
+
+function startRowDrag(e, dayId, rowIndex){
+  // Only left-button / touch / pen; ignore secondary buttons.
+  if(e.button && e.button!==0)return;
+  e.preventDefault();
+  const rows=mem[curBlock].days[dayId].rows;
+  const groups=computeDragGroups(rows);
+  // Find which group contains the grabbed row.
+  const grp=groups.find(g=>rowIndex>=g.start && rowIndex<=g.end);
+  if(!grp)return;
+  const panel=document.getElementById(dayId);
+  if(!panel)return;
+  const rowEls=Array.from(panel.querySelectorAll(".exercise-row"));
+
+  // Build a floating ghost showing the dragged group.
+  const ghost=document.createElement("div");
+  ghost.className="drag-ghost";
+  const size=grp.end-grp.start+1;
+  const names=[];
+  for(let k=grp.start;k<=grp.end;k++)names.push(rows[k].ex);
+  if(size>1){
+    ghost.innerHTML=`<div class="dg-sub">Superset ×${size}</div>`+names.map(n=>`<div class="dg-ex">${n}</div>`).join("");
+  } else {
+    ghost.innerHTML=`<div class="dg-ex">${names[0]}</div>`;
+  }
+  document.body.appendChild(ghost);
+
+  // Drop indicator line (inserted into the panel between rows as the pointer moves).
+  const indicator=document.createElement("div");
+  indicator.className="drop-indicator";
+
+  dragState={
+    dayId, rows, groups, grp, rowEls, ghost, indicator, panel,
+    targetGapIndex:null, // index in `groups` BEFORE which we'll insert (groups.length = at end)
+    autoScrollTimer:null, lastClientY:0,
+    pointerId:e.pointerId
+  };
+
+  // Dim the dragged group's rows.
+  for(let k=grp.start;k<=grp.end;k++){
+    if(rowEls[k])rowEls[k].classList.add("dragging");
+  }
+
+  positionGhost(e.clientX, e.clientY);
+  // Capture the pointer so move/up events keep firing even if the finger drifts off the handle.
+  try{ e.target.setPointerCapture && e.target.setPointerCapture(e.pointerId) }catch(_){}
+  window.addEventListener("pointermove", onRowDragMove);
+  window.addEventListener("pointerup", onRowDragEnd);
+  window.addEventListener("pointercancel", onRowDragEnd);
+}
+
+function positionGhost(x, y){
+  if(!dragState)return;
+  dragState.ghost.style.left=(x+12)+"px";
+  dragState.ghost.style.top=(y-10)+"px";
+}
+
+function onRowDragMove(e){
+  if(!dragState)return;
+  e.preventDefault();
+  dragState.lastClientY=e.clientY;
+  positionGhost(e.clientX, e.clientY);
+  updateDropTarget(e.clientY);
+  handleAutoScroll(e.clientY);
+}
+
+// Determine which inter-group gap the pointer is nearest, and draw the indicator there.
+function updateDropTarget(clientY){
+  const {groups, rowEls, panel, indicator, grp}=dragState;
+  // Compute the vertical midpoint of each group's DOM block.
+  const mids=groups.map(g=>{
+    const top=rowEls[g.start].getBoundingClientRect().top;
+    const bot=rowEls[g.end].getBoundingClientRect().bottom;
+    return (top+bot)/2;
+  });
+  // Find insertion index: number of group-midpoints above the pointer.
+  let gap=0;
+  for(let i=0;i<mids.length;i++){ if(clientY>mids[i])gap=i+1; }
+  dragState.targetGapIndex=gap;
+  // Place the indicator in the DOM at the chosen gap.
+  if(indicator.parentNode)indicator.parentNode.removeChild(indicator);
+  if(gap>=groups.length){
+    // After the last non-empty group → insert after its last row element.
+    const lastEl=rowEls[groups[groups.length-1].end];
+    lastEl.parentNode.insertBefore(indicator, lastEl.nextSibling);
+  } else {
+    const beforeEl=rowEls[groups[gap].start];
+    beforeEl.parentNode.insertBefore(indicator, beforeEl);
+  }
+}
+
+// Auto-scroll the day panel when dragging near its top/bottom edge.
+function handleAutoScroll(clientY){
+  const {panel}=dragState;
+  const scroller=document.scrollingElement||document.documentElement;
+  const EDGE=70, SPEED=8;
+  if(dragState.autoScrollTimer){clearInterval(dragState.autoScrollTimer);dragState.autoScrollTimer=null}
+  const vh=window.innerHeight;
+  if(clientY<EDGE){
+    dragState.autoScrollTimer=setInterval(()=>{scroller.scrollBy(0,-SPEED);updateDropTarget(dragState.lastClientY)},16);
+  } else if(clientY>vh-EDGE){
+    dragState.autoScrollTimer=setInterval(()=>{scroller.scrollBy(0,SPEED);updateDropTarget(dragState.lastClientY)},16);
+  }
+}
+
+function onRowDragEnd(e){
+  if(!dragState)return;
+  const {dayId, rows, groups, grp, ghost, indicator, rowEls, targetGapIndex}=dragState;
+  // Clean up listeners + DOM
+  window.removeEventListener("pointermove", onRowDragMove);
+  window.removeEventListener("pointerup", onRowDragEnd);
+  window.removeEventListener("pointercancel", onRowDragEnd);
+  if(dragState.autoScrollTimer)clearInterval(dragState.autoScrollTimer);
+  if(ghost.parentNode)ghost.parentNode.removeChild(ghost);
+  if(indicator.parentNode)indicator.parentNode.removeChild(indicator);
+  rowEls.forEach(el=>el.classList.remove("dragging"));
+
+  const gap=targetGapIndex;
+  dragState=null;
+  if(gap==null){return} // never moved → no-op
+
+  // Reorder: extract the dragged group's rows, reinsert at the target gap.
+  // Work on the array of non-empty rows; empties get re-appended at the end afterward.
+  reorderGroup(dayId, rows, groups, grp, gap);
+}
+
+// Perform the actual array reorder + persist + re-render.
+function reorderGroup(dayId, rows, groups, grp, gap){
+  // The group index being moved
+  const fromIdx=groups.indexOf(grp);
+  if(fromIdx===gap || gap===fromIdx+1){
+    // Dropped in its own current position → no change.
+    return;
+  }
+  // Build the new ordering as a list of groups, then flatten.
+  const groupRows=groups.map(g=>rows.slice(g.start, g.end+1));
+  const moved=groupRows[fromIdx];
+  // Remove the moved group
+  groupRows.splice(fromIdx,1);
+  // Compute the insertion index in the post-removal list. If the gap was after the
+  // original position, it shifts down by one because we removed an earlier element.
+  let insertAt = gap > fromIdx ? gap-1 : gap;
+  groupRows.splice(insertAt, 0, moved);
+  // Flatten back to a rows list. The first row of each group must have linkedToPrev=false;
+  // followers keep linkedToPrev=true (preserved from the original slices).
+  const newNonEmpty=[];
+  groupRows.forEach(g=>{
+    g.forEach((r, idx)=>{
+      r.linkedToPrev = idx>0; // group leader unlinked, followers linked — guarantees valid groups
+      newNonEmpty.push(r);
+    });
+  });
+  // Re-append the empty rows (those without an exercise) to keep the array length stable.
+  const empties=rows.filter(r=>!r.ex);
+  const rebuilt=newNonEmpty.concat(empties);
+  // Write back in place (preserve the same array reference).
+  rows.length=0;
+  rebuilt.forEach(r=>rows.push(r));
+  renderDay(dayId);
+  updateDayTabLabel(dayId);
+  renderSummary();
+  autoSave();
+}
+
 function computeSupersetGroups(rows){
   const info=rows.map(()=>({inGroup:false,isFirst:false,isLast:false,size:1}));
   let i=0;
@@ -7324,7 +7678,7 @@ function renderPatternCards(ids, actualDisabled){
     `<span><span class="leg-dot" style="background:var(--danger-text)"></span>not in ${summaryMode==="planned"?"plan":"last 4 wks"}</span>`;
   const covered=getCoveredExercisesForPatterns(summaryMode);
   const coveredCount=ALL_PATTERNS.filter(p=>{
-    return (BUILTIN_EX_PATTERNS[p]||[]).some(ex=>covered.has(ex));
+    return (PATTERN_TO_EX[p]||[]).some(ex=>covered.has(ex));
   }).length;
   meta.textContent = summaryMode==="planned"
     ? `Movement-pattern coverage in current block — ${coveredCount} of ${ALL_PATTERNS.length} patterns covered`
@@ -7332,7 +7686,7 @@ function renderPatternCards(ids, actualDisabled){
   // Render in spec order (Vertical Push first), NOT sorted by coverage — order conveys structure
   // (push/pull, vertical/horizontal, squat/lunge/hinge, rotation/anti-rotation, carry).
   ALL_PATTERNS.forEach(pattern=>{
-    const exercisesInPattern=BUILTIN_EX_PATTERNS[pattern]||[];
+    const exercisesInPattern=PATTERN_TO_EX[pattern]||[];
     const coveredInPattern=exercisesInPattern.filter(ex=>covered.has(ex));
     const cls = coveredInPattern.length>0 ? "covered" : "uncovered";
     const isOpen=openPatterns.has(pattern);
@@ -7407,7 +7761,7 @@ function openPatternExercises(pattern){
   list.innerHTML="";
   const covered=getCoveredExercisesForPatterns(summaryMode);
   const highlightLabel = summaryMode==="actual" ? "trained recently" : "in plan";
-  const exercises=BUILTIN_EX_PATTERNS[pattern]||[];
+  const exercises=PATTERN_TO_EX[pattern]||[];
   if(exercises.length===0){
     const empty=document.createElement("div");empty.className="muscle-ex-empty";
     empty.textContent="No exercises currently mapped to this pattern.";
@@ -7635,9 +7989,11 @@ loadCustomExercises();
 loadBuiltinOverrides();
 loadBuiltinNameOverrides();
 loadSetTypeOverrides();
+loadPatternOverrides();       // per-exercise movement-pattern overrides
 loadPrefs();                  // user preferences (units, default rest)
 loadSessions();               // native workout history
 rebuildEX();
+rebuildPatterns();            // rebuild pattern lookups now that customs + overrides are loaded
 loadBlockList();              // load persisted block IDs (or default A,B,C)
 loadAllBlocks();              // populate mem for each block
 migrateBlocksToWeeks();       // upgrade legacy {days} blocks to {weeks:[{days}]} (idempotent)
