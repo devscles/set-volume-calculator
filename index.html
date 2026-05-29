@@ -1500,17 +1500,20 @@ function rebuildPatterns(){
   EX_TO_PATTERNS={};
   PATTERN_TO_EX={};
   ALL_PATTERNS.forEach(p=>{PATTERN_TO_EX[p]=[]});
-  // Gather all known exercise names: built-ins + customs
+  // Gather all known exercise names: built-ins + customs.
+  // `typeof` guard is TDZ-safe: customExercises is declared with `let` further down, so a
+  // direct reference before that line would throw. (rebuildPatterns is only meant to run
+  // after boot has loaded customs, but this keeps it safe if called earlier.)
   const names=new Set(Object.keys(BUILTIN_EX_TO_PATTERNS));
-  if(Array.isArray(customExercises))customExercises.forEach(e=>names.add(e.name));
-  Object.keys(patternOverrides).forEach(n=>names.add(n));
+  if(typeof customExercises!=="undefined" && Array.isArray(customExercises))customExercises.forEach(e=>names.add(e.name));
+  if(typeof patternOverrides!=="undefined")Object.keys(patternOverrides).forEach(n=>names.add(n));
   names.forEach(name=>{
     const pats=getPatternsFor(name);
     if(pats.length)EX_TO_PATTERNS[name]=pats;
     pats.forEach(p=>{ if(PATTERN_TO_EX[p])PATTERN_TO_EX[p].push(name) });
   });
 }
-rebuildPatterns();
+// (No eager call here — boot calls rebuildPatterns() after customs + overrides load.)
 
 // Mapping from our planner's exercise names to Flexify's exact spelling/case.
 // Used for CSV export to Flexify and CSV import from Flexify history.
