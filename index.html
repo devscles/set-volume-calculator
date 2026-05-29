@@ -1959,8 +1959,8 @@ function migrateRenamedExercises(){
   let changed=false;
   BLOCKS.forEach(b=>{
     let blockChanged=false;
-    dayIdsOf(b).forEach(d=>{
-      mem[b].days[d].rows.forEach(row=>{
+    forEachDayAllWeeks(b, day=>{
+      day.rows.forEach(row=>{
         if(row.ex && RENAME_MIGRATIONS[row.ex]){
           row.ex=RENAME_MIGRATIONS[row.ex];
           blockChanged=true;changed=true;
@@ -2470,6 +2470,14 @@ function removeWeek(){
   }
   blk.weeks.pop();
   blk.weekCount=blk.weeks.length;
+  // Any in-progress session tagged to the now-removed week of THIS block is orphaned —
+  // discard it so it can't resurface or accidentally match a different week later.
+  const orphaned=sessions.filter(s=>s.status==="in_progress"&&s.blockId===curBlock&&s.weekIdx===lastIdx);
+  if(orphaned.length){
+    orphaned.forEach(s=>{const i=sessions.indexOf(s);if(i>=0)sessions.splice(i,1)});
+    saveSessions();
+    clearAllInlineState();
+  }
   if(curWeek>=blk.weekCount)curWeek=blk.weekCount-1; // clamp selection
   renderWeekBar();
   syncWeekMgr();
@@ -2763,6 +2771,7 @@ const BACKUP_KEYS=[
   "trainblock_builtin_overrides_v1",
   "trainblock_builtin_name_overrides_v1",
   "trainblock_set_type_overrides_v1",
+  "trainblock_pattern_overrides_v1",
   "trainblock_drop_tiers_v1",
   "trainblock_flexify_history_v1",
   "trainblock_sessions_v1",
@@ -2831,7 +2840,11 @@ function checkBackupReminder(){
     if(Date.now()<until.getTime())return;
   }
   // Don't show if app has no meaningful data yet
-  const hasData=sessions.length>0||BLOCKS.some(b=>{const d=mem[b]&&mem[b].days;if(!d)return false;return Object.values(d).some(day=>day.rows.some(r=>r.ex&&r.sets>0))});
+  const hasData=sessions.length>0||BLOCKS.some(b=>{
+    const blk=mem[b];
+    if(!blk||!Array.isArray(blk.weeks))return false;
+    return blk.weeks.some(wk=>Object.values(wk.days||{}).some(day=>day.rows.some(r=>r.ex&&r.sets>0)));
+  });
   if(!hasData)return;
   // Show if never backed up, or last backup is older than threshold
   const last=prefs.lastBackupAt?new Date(prefs.lastBackupAt):null;
@@ -3836,7 +3849,10 @@ function saveCustomExercise(){
         items.forEach(([n])=>{
           if(n===canon)return; // ignore self
           const display=builtinNameOverrides[n]||n;
-          if(display.toLowerCase()===lower)conflict=true;
+          // Reject collision with either another exercise's current display name OR its
+          // canonical name — colliding with a canonical name would make EX_BY_NAME ambiguous
+          // and silently remap logged sets to the wrong muscles.
+          if(display.toLowerCase()===lower || n.toLowerCase()===lower)conflict=true;
         });
       });
       customExercises.forEach(e=>{if(e.name.toLowerCase()===lower)conflict=true});
@@ -3908,14 +3924,25 @@ function saveCustomExercise(){
 // Walk all stored data and rewrite any reference from oldName to newName.
 // Covers planner blocks (rows[*].ex) and sessions (plannedRows[*].ex, sets[*].ex).
 // Persists changes immediately so a refresh won't lose them.
+// Walk every day in every week of a block. Use this (not dayIdsOf, which only sees the
+// current week via the getter) for any cross-block/cross-week operation.
+function forEachDayAllWeeks(blockId, fn){
+  const blk=mem[blockId];
+  if(!blk||!Array.isArray(blk.weeks))return;
+  blk.weeks.forEach((wk,weekIdx)=>{
+    Object.keys(wk.days||{}).filter(k=>/^d\d+$/.test(k)).forEach(dayId=>{
+      fn(wk.days[dayId], dayId, weekIdx);
+    });
+  });
+}
+
 function propagateExerciseRename(oldName, newName){
   if(!oldName||!newName||oldName===newName)return;
-  // Planner blocks
+  // Planner blocks — every week, not just the current one.
   BLOCKS.forEach(b=>{
     if(!mem[b])return;
     let touched=false;
-    dayIdsOf(b).forEach(d=>{
-      const day=mem[b].days[d];
+    forEachDayAllWeeks(b, day=>{
       if(!day)return;
       day.rows.forEach(row=>{if(row.ex===oldName){row.ex=newName;touched=true}});
     });
@@ -4327,7 +4354,18 @@ function renderStatusStrip(){
   if(inProgress){
     const blockName=inProgress.blockName||"Workout";
     const dayLabel=inProgress.dayLabel||"";
-    const minsAgo=Math.max(0,Math.floor((Date.now()-new Date(inProgress.date).getTime())/60000));
+    // Base "ago" on the most recent activity — the latest logged set's timestamp — rather than
+    // the session creation time, so a session started hours before the first set doesn't read
+    // as "8h ago" the moment you log set one. Falls back to creation time if nothing logged yet.
+    let refTime=new Date(inProgress.date).getTime();
+    if(Array.isArray(inProgress.sets)&&inProgress.sets.length){
+      const lastTs=inProgress.sets.reduce((mx,st)=>{
+        const t=st.timestamp?new Date(st.timestamp).getTime():0;
+        return t>mx?t:mx;
+      },0);
+      if(lastTs>refTime)refTime=lastTs;
+    }
+    const minsAgo=Math.max(0,Math.floor((Date.now()-refTime)/60000));
     const ago = minsAgo<60 ? `${minsAgo}m ago` : `${Math.floor(minsAgo/60)}h ago`;
     textContent = `${blockName}${dayLabel?" · "+dayLabel:""} in progress · ${ago}`;
     textAction = ()=>{ if(typeof openWorkoutModal==="function")openWorkoutModal(inProgress.id) };
@@ -4572,6 +4610,7 @@ function activeSession(){return sessions.find(s=>s.status==="in_progress")||null
 
 // Create a new session from a block-day plan and return it.
 function createSessionFromPlan(blockId, dayId){
+  clearAllInlineState();
   const block=mem[blockId];
   const day=block.days[dayId];
   const now=new Date().toISOString();
@@ -4614,16 +4653,26 @@ function createSessionFromPlan(blockId, dayId){
   saveSessions();
   return sess;
 }
+// Clear all inline editor state. These module-level dicts are keyed by `${rowIdx}_${slotIdx}`,
+// which collides across sessions (row 0 / slot 0 of a new workout would pick up stale weight/reps
+// left behind by the previous workout). Scrub them at every session boundary.
+function clearAllInlineState(){
+  [basicInlineState, clusterInlineState, restPauseInlineState, myorepInlineState, dropInlineState]
+    .forEach(obj=>{ Object.keys(obj).forEach(k=>delete obj[k]) });
+}
+
 function finishSession(sessId){
   const s=sessions.find(x=>x.id===sessId);
   if(!s)return;
   s.status="finished";
   s.finishedAt=new Date().toISOString();
   saveSessions();
+  clearAllInlineState();
 }
 // Create an empty ad-hoc session not tied to any block/day. The user adds exercises on the
 // fly via the in-workout "Add exercise" button. Named "Ad-hoc — <date>" (renameable later).
 function createAdHocSession(){
+  clearAllInlineState();
   const now=new Date();
   const dateLabel=now.toLocaleDateString(undefined,{month:"short",day:"numeric"});
   const sess={
@@ -4646,6 +4695,7 @@ function abandonSession(sessId){
   if(idx<0)return;
   sessions.splice(idx,1); // discard rather than mark — user wanted to bail
   saveSessions();
+  clearAllInlineState();
   // If the currently-visible day panel was showing a "Resume workout" button for
   // the abandoned session, that button is now stale. Re-render the current day
   // to refresh it back to "Start workout". renderDay is a no-op for the Summary tab.
@@ -5483,7 +5533,17 @@ function buildMyoCard(s, pr, slotIdx, existing){
     const actions=document.createElement("div");actions.className="myo-card-actions";
     const editBtn=document.createElement("button");editBtn.type="button";editBtn.className="myo-card-edit";editBtn.textContent="Edit";
     editBtn.onclick=()=>{
-      myorepInlineState[stateKey]={editing:true};
+      // Populate the full editor state from the existing set (mirroring basic/cluster).
+      // Setting a bare {editing:true} would leave miniReps undefined and crash on re-render.
+      myorepInlineState[stateKey]={
+        editing:true,
+        weight:String(existing.weight),
+        activation:String(existing.reps),
+        miniReps: Array.isArray(existing.miniSetReps)
+          ? [...existing.miniSetReps].concat(Array(Math.max(0,4-existing.miniSetReps.length)).fill(null))
+          : newDefaultMiniSets()
+      };
+      if(existing.rir!==undefined)myorepInlineState[stateKey].rir=existing.rir;
       renderWorkoutBody();
     };
     const delBtn=document.createElement("button");delBtn.type="button";delBtn.className="myo-card-del";delBtn.textContent="×";delBtn.title="Delete this sequence";
@@ -5736,7 +5796,14 @@ function buildDropCard(s, pr, slotIdx, existing){
     summary.innerHTML=`<div class="drop-card-summary-main"><span class="wo-card-check" aria-hidden="true"><i class="ti ti-check"></i></span><span>${parts.join(" → ")}</span></div><div class="drop-card-summary-meta">${drops.length} drop${drops.length===1?"":"s"} (×${tier})${existing.rir!==undefined?` · @${existing.rir} RIR`:""}</div>`;
     const actions=document.createElement("div");actions.className="drop-card-actions";
     const editBtn=document.createElement("button");editBtn.type="button";editBtn.className="drop-card-edit";editBtn.textContent="Edit";
-    editBtn.onclick=()=>{dropInlineState[stateKey]={editing:true};renderWorkoutBody()};
+    editBtn.onclick=()=>{
+      // Populate the full editor state (weights[]/reps[] parallel arrays) from the existing set.
+      // A bare {editing:true} would leave weights undefined and crash on re-render.
+      const st0={editing:true, weights:[existing.weight, ...(existing.dropWeights||[])], reps:[existing.reps, ...(existing.dropReps||[])]};
+      if(existing.rir!==undefined)st0.rir=existing.rir;
+      dropInlineState[stateKey]=st0;
+      renderWorkoutBody();
+    };
     const delBtn=document.createElement("button");delBtn.type="button";delBtn.className="drop-card-del";delBtn.textContent="×";delBtn.title="Delete this sequence";
     delBtn.onclick=()=>{
       if(!confirm("Delete this drop set sequence?"))return;
@@ -6595,8 +6662,9 @@ function saveTargetMulti(){
     }
     const w=parseFloat(d.weight);
     const r=parseInt(d.reps,10);
-    // For drop sets, drops-only with no initial weight/reps is invalid
-    if(isNaN(w)||w<=0||isNaN(r)||r<=0){
+    // For drop sets, drops-only with no initial weight/reps is invalid.
+    // Allow w===0 for bodyweight movements (matches the logging validators, which accept 0).
+    if(isNaN(w)||w<0||isNaN(r)||r<=0){
       alert(`Sequence ${i+1}: please enter a valid weight and reps (or leave blank to clear).`);
       return;
     }
@@ -7207,7 +7275,9 @@ function renderPillRow(row, dayId, rowIdx){
       // Internal-count controls on first sequence only
       if(s===0){
         const label = type==="cluster" ? "clusters" : "mini-sets";
-        lineEl.appendChild(buildCountControls(label, row, dayId, rowIdx, countKey, 1, maxCount));
+        // Clusters need at least 2 (a single cluster is just a straight set); mini-sets min 1.
+        const minCount = type==="cluster" ? 2 : 1;
+        lineEl.appendChild(buildCountControls(label, row, dayId, rowIdx, countKey, minCount, maxCount));
       }
       wrap.appendChild(lineEl);
     }
@@ -7299,6 +7369,9 @@ function computeDragGroups(rows){
 }
 
 function startRowDrag(e, dayId, rowIndex){
+  // Defensive: never start a planner drag while the workout modal is open (it sits above the
+  // planner; a stray in-flight drag would fire into the now-hidden planner).
+  if(document.getElementById("workout-bg")?.classList.contains("open"))return;
   // Only left-button / touch / pen; ignore secondary buttons.
   if(e.button && e.button!==0)return;
   e.preventDefault();
@@ -7540,6 +7613,10 @@ function openSetTypePopover(rowDiv,dayId,rowIndex,chipEl,onChange){
   SET_TYPE_KEYS.forEach(key=>{
     const info=getSetTypeInfo(key);
     const m=getSetTypeMult(key);
+    // Drop is tiered by drop count (1.5–3.0), so a single flat number misleads. Show the range.
+    const multText = key==="drop"
+      ? `${getDropTierMult(1)}–${getDropTierMult(DROP_TIER_MAX)}`
+      : `${m%1===0?m:m.toFixed(2).replace(/0+$/,"").replace(/\.$/,"")}`;
     const opt=document.createElement("div");
     opt.className="set-type-option"+(key===current?" selected":"");
     opt.innerHTML=`
@@ -7547,7 +7624,7 @@ function openSetTypePopover(rowDiv,dayId,rowIndex,chipEl,onChange){
         <span class="set-type-option-name">${info.label}</span>
         <span class="set-type-option-sub">${info.sub}</span>
       </div>
-      <span class="set-type-option-mult">×${m%1===0?m:m.toFixed(2).replace(/0+$/,"").replace(/\.$/,"")}</span>`;
+      <span class="set-type-option-mult">×${multText}</span>`;
     opt.onclick=ev=>{
       ev.stopPropagation();
       mem[curBlock].days[dayId].rows[rowIndex].type=key;
@@ -7681,7 +7758,7 @@ function renderPatternCards(ids, actualDisabled){
     return (PATTERN_TO_EX[p]||[]).some(ex=>covered.has(ex));
   }).length;
   meta.textContent = summaryMode==="planned"
-    ? `Movement-pattern coverage in current block — ${coveredCount} of ${ALL_PATTERNS.length} patterns covered`
+    ? `Movement-pattern coverage — ${coveredCount} of ${ALL_PATTERNS.length} patterns${(mem[curBlock]&&mem[curBlock].weekCount>1)?` · Week ${curWeek+1}`:" in current block"}`
     : `Movement-pattern coverage, last ${ACTUAL_WINDOW_DAYS} days — ${coveredCount} of ${ALL_PATTERNS.length} patterns covered`;
   // Render in spec order (Vertical Push first), NOT sorted by coverage — order conveys structure
   // (push/pull, vertical/horizontal, squat/lunge/hinge, rotation/anti-rotation, carry).
