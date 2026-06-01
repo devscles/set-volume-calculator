@@ -206,6 +206,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
    can see at a glance which option is active. font-weight bump alone wasn't visible enough. */
 .ex-option.selected{background:var(--accent);color:var(--accent-text);font-weight:600}
 .ex-option.selected::after{content:"\2713";font-size:14px;line-height:1;flex-shrink:0}
+.ex-custom-tag{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.04em;margin-left:6px;opacity:0.7;font-weight:500}
 .ex-group.hidden,.ex-option.hidden{display:none}
 .ex-clear{font-size:12px;padding:10px;border-top:0.5px solid var(--border);color:var(--danger-text);cursor:pointer;text-align:left}
 .ex-clear:active{background:var(--bg2)}
@@ -1373,7 +1374,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
           <li><b>Built-in exercises:</b> adjust the primary/secondary muscle weights to your liking, and rename the exercise if the default name doesn't match your gym vocabulary. Renames propagate everywhere — planner rows, in-progress sessions, and past logged history. A <i>Reset to default</i> button restores the original muscle weights, and a separate <i>Reset name to default</i> button restores the original name.</li>
           <li><b>Custom exercises:</b> fully editable name and muscles. Renames also propagate to all past sessions so your progression history stays connected. <i>Delete</i> removes the exercise and clears it from any row using it.</li>
         </ul>
-        <p>Tap <b>＋ Add custom exercise</b> at the bottom of any dropdown to create a new one. Custom exercises appear in their own "Custom" group at the bottom.</p>
+        <p>Tap <b>＋ Add custom exercise</b> at the bottom of any dropdown to create a new one. Custom exercises are filed into the browse category of their primary muscle (a custom chest movement appears under Chest), marked with a small "custom" tag.</p>
         <p><b>Muscle weights:</b> primary = 1.0 (the exercise's main target), secondary = 0.5 (a meaningful contributor). The summary multiplies your sets by these weights.</p>
       </details>
 
@@ -1708,6 +1709,7 @@ function getSetTypeInfo(key){return SET_TYPE_DEFAULTS[key]||SET_TYPE_DEFAULTS.st
 const CUSTOM_GROUP="Custom";
 const CUSTOM_KEY="trainblock_custom_v1";
 let curBlock="A",curTab="d1",activeDropdown=null;
+const CUR_BLOCK_KEY="trainblock_cur_block_v1";
 
 // Returns the ordered day IDs for the given block, e.g. ["d1","d2","d3","d4"]
 function dayIdsOf(blockId){
@@ -1801,6 +1803,29 @@ function isBuiltinExercise(name){return getBuiltinOriginalMuscles(name)!==null}
 // inside hot loops (renderSummary walks ~10k lookups per render).
 let EX={};
 let EX_BY_NAME={};
+// Maps a muscle (the kind stored in exercise.muscles) to the browse category an exercise
+// should appear under in the picker dropdowns. Mirrors how the built-in library is organized.
+const MUSCLE_TO_CATEGORY={
+  "Chest":"Chest",
+  "Lats":"Back / Lats","Traps":"Traps",
+  "Front Delt":"Shoulders","Side Delt":"Shoulders","Rear Delt":"Shoulders",
+  "Biceps":"Biceps","Triceps":"Triceps",
+  "Quads":"Legs","Hamstrings":"Legs","Glutes":"Legs","Calves":"Legs",
+  "Abs":"Core","Erectors":"Core","Obliques":"Core"
+};
+// Decide which browse category a custom exercise belongs in, based on its primary muscle
+// (highest weight; ties broken by ALL_MUS order). Falls back to "Custom" if unmappable.
+function categoryForCustom(ex){
+  if(!ex||!ex.muscles)return CUSTOM_GROUP;
+  let best=null, bestW=0;
+  ALL_MUS.forEach(m=>{
+    const w=ex.muscles[m];
+    if(typeof w==="number" && w>bestW){bestW=w;best=m}
+  });
+  if(!best)return CUSTOM_GROUP;
+  return MUSCLE_TO_CATEGORY[best]||CUSTOM_GROUP;
+}
+
 function rebuildEX(){
   EX={};
   EX_BY_NAME={};
@@ -1818,13 +1843,16 @@ function rebuildEX(){
       return [displayName, final];
     });
   });
-  // Custom group last, only if there are any
-  if(customExercises.length){
-    EX[CUSTOM_GROUP]=customExercises.map(e=>{
-      EX_BY_NAME[e.name]=e.muscles;
-      return [e.name,e.muscles];
-    });
-  }
+  // Custom exercises: file each into the browse category of its primary muscle, so they sit
+  // alongside the built-ins they're most like (a custom chest press shows under Chest).
+  // Append to the END of that category's list, after the built-ins. A custom marker is kept
+  // on the entry so the editor and "(custom)" affordances can still tell them apart.
+  customExercises.forEach(e=>{
+    EX_BY_NAME[e.name]=e.muscles;
+    const cat=categoryForCustom(e);
+    if(!EX[cat])EX[cat]=[];
+    EX[cat].push([e.name, e.muscles, {custom:true}]);
+  });
 }
 
 function makeEmptyDay(){return{label:"",rows:Array(10).fill(null).map(()=>({ex:"",sets:0,type:"straight",linkedToPrev:false}))}}
@@ -2059,13 +2087,18 @@ function makePicker(rowEx,onChange){
     Object.entries(EX).forEach(([group,items])=>{
       const groupEl=document.createElement("div");groupEl.className="ex-group";groupEl.textContent=group;list.appendChild(groupEl);
       let groupHasVisible=false;
-      items.forEach(([name])=>{
+      items.forEach(([name, , meta])=>{
         if(q&&!name.toLowerCase().includes(q))return;
         groupHasVisible=true;anyVisible=true;
         const opt=document.createElement("div");opt.className="ex-option"+(name===currentVal?" selected":"");
         // Every row (built-in or custom) gets a name area + edit pencil.
         const row=document.createElement("div");row.className="ex-option-row";
-        const nm=document.createElement("span");nm.textContent=name;nm.style.flex="1";nm.style.overflow="hidden";nm.style.textOverflow="ellipsis";nm.style.whiteSpace="nowrap";
+        const nm=document.createElement("span");nm.style.flex="1";nm.style.overflow="hidden";nm.style.textOverflow="ellipsis";nm.style.whiteSpace="nowrap";
+        nm.textContent=name;
+        if(meta&&meta.custom){
+          const tag=document.createElement("span");tag.className="ex-custom-tag";tag.textContent="custom";
+          nm.appendChild(tag);
+        }
         nm.onclick=e=>{e.stopPropagation();currentVal=name;onChange(name,false);updateDisplay();closeAllDropdowns();renderSummary();autoSave()};
         const edit=document.createElement("button");edit.className="ex-edit-btn";edit.type="button";edit.innerHTML='<i class="ti ti-pencil" aria-hidden="true"></i>';edit.setAttribute("aria-label","Edit exercise");
         edit.onclick=e=>{e.stopPropagation();openCustomEditor(name)};
@@ -2324,6 +2357,7 @@ document.getElementById("delblock-bg").addEventListener("click",e=>{if(e.target.
 function switchBlock(b){
   curBlock=b;
   curWeek=0; // each block tracks its own selected week; reset to week 1 on switch
+  try{localStorage.setItem(CUR_BLOCK_KEY, b)}catch(e){}
   syncBlockButtons();
   const ids=curDayIds();
   ids.forEach(renderDay);
@@ -3125,12 +3159,13 @@ function renderExerciseGraph(exName){
   const toggle=document.createElement("div");toggle.className="graph-toggle";
   [["weight","Weight"],["estimated1rm","Est 1RM"],["volume","Volume"],["setCount","Sets"]].forEach(([key,label])=>{
     const b=document.createElement("button");b.textContent=label;b.className=graphMetric===key?"active":"";
-    b.onclick=()=>{graphMetric=key;renderExerciseGraph(exName)};
+    b.onclick=()=>{graphMetric=key;prefs.graphMetric=key;savePrefs();renderExerciseGraph(exName)};
     toggle.appendChild(b);
   });
   toggleWrap.appendChild(toggle);
-  // "Show all sets" toggle — only meaningful for per-set metrics, not setCount
-  if(graphMetric!=="setCount"){
+  // "Show all sets" toggle — only meaningful for per-set metrics (weight / est 1RM),
+  // not the per-day aggregates (Sets, Volume).
+  if(graphMetric!=="setCount" && graphMetric!=="volume"){
     const showAllLabel=document.createElement("label");
     showAllLabel.className="graph-show-all";
     showAllLabel.innerHTML=`<input type="checkbox" ${prefs.graphShowAllSets?"checked":""}> <span>Show all sets</span>`;
@@ -3301,17 +3336,21 @@ function buildSvgGraph(sets){
     if(graphMetric==="volume")return (s.weight||0)*totalRepsForSet(s);
     return s.weight||0;
   }
-  // For setCount we aggregate per day rather than per set.
-  // Each set contributes its set-type multiplier (straight=1.0, drop=tiered, myo-rep/cluster/restpause=3.0, etc.)
-  // so the "Sets" graph matches the volume math used in the Summary tab.
+  // For setCount AND volume we aggregate per day rather than per set.
+  //  - setCount: sum of set-type multipliers (effective sets)
+  //  - volume:   sum of (weight × total reps) across every set that day — matches the history view,
+  //              NOT just the single highest-volume set.
+  // weight and est1rm remain per-set (best-per-day), since "max load" semantics make sense there.
   let points; // [{t, m, src}]
-  if(graphMetric==="setCount"){
+  if(graphMetric==="setCount" || graphMetric==="volume"){
+    const isVol = graphMetric==="volume";
     const byDay={};
     sets.forEach(s=>{
       const d=(s.timestamp||s.sessionDate).slice(0,10);
-      if(!byDay[d])byDay[d]={t:new Date((s.timestamp||s.sessionDate)).getTime(),count:0,physical:0,types:{},sets:[]};
+      if(!byDay[d])byDay[d]={t:new Date((s.timestamp||s.sessionDate)).getTime(),count:0,physical:0,vol:0,types:{},sets:[]};
       const mult=getSetTypeMult(s.type||"straight", s);
       byDay[d].count+=mult;
+      byDay[d].vol+=(s.weight||0)*totalRepsForSet(s);
       byDay[d].physical+=1;
       const tk=s.type||"straight";
       byDay[d].types[tk]=(byDay[d].types[tk]||0)+1;
@@ -3319,11 +3358,12 @@ function buildSvgGraph(sets){
     });
     points=Object.values(byDay).map(d=>({
       t:d.t,
-      m:d.count,           // effective set count (with multipliers)
+      m: isVol ? d.vol : d.count,
       physical:d.physical, // raw count of logged sets
       types:d.types,       // {straight:3, myorep:1, ...}
       daySets:d.sets,
       isAggregate:true,
+      aggKind: isVol ? "volume" : "setCount",
       hasIntensifier: Object.keys(d.types).some(k=>k!=="straight"&&k!=="amrap")
     })).sort((a,b)=>a.t-b.t);
   } else {
@@ -3350,10 +3390,11 @@ function buildSvgGraph(sets){
   const dailyMax=Object.values(byDayBest).sort((a,b)=>a.t-b.t);
 
   // Decide which points drive the axis range and which points to scatter:
-  //  - "Sets" mode always shows daily aggregates (no choice).
-  //  - For other metrics: if prefs.graphShowAllSets, scatter every set; otherwise only best-per-day.
-  const showAll = graphMetric!=="setCount" && prefs.graphShowAllSets;
-  const visiblePoints = (graphMetric==="setCount" || !showAll) ? dailyMax : points;
+  //  - "Sets" and "Volume" modes always show daily aggregates (no per-set scatter).
+  //  - For weight/est1rm: if prefs.graphShowAllSets, scatter every set; otherwise only best-per-day.
+  const isAggregateMetric = graphMetric==="setCount" || graphMetric==="volume";
+  const showAll = !isAggregateMetric && prefs.graphShowAllSets;
+  const visiblePoints = (isAggregateMetric || !showAll) ? dailyMax : points;
 
   const xMin=Math.min(...visiblePoints.map(p=>p.t)), xMax=Math.max(...visiblePoints.map(p=>p.t));
   const yMin=Math.min(...visiblePoints.map(p=>p.m)), yMax=Math.max(...visiblePoints.map(p=>p.m));
@@ -3440,6 +3481,14 @@ function buildSvgGraph(sets){
   function tipLines(p){
     const date=new Date(p.t).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});
     if(p.isAggregate){
+      // Volume aggregate: show total daily volume + how many sets contributed.
+      if(p.aggKind==="volume"){
+        const unit=(p.daySets[0]&&p.daySets[0].unit)||prefs.preferredUnit||"";
+        const lines=[`${fmtNum(Math.round(p.m))}${unit} total volume`];
+        lines.push(`${p.physical} set${p.physical===1?"":"s"} logged`);
+        lines.push(date);
+        return lines;
+      }
       const lines=[`${fmtNum(p.m)} effective set${p.m===1?"":"s"}`];
       if(p.hasIntensifier){
         // Group by (type, effective multiplier) so drop sets of different tiers render distinctly:
@@ -3495,7 +3544,7 @@ function buildSvgGraph(sets){
   // For setCount mode: simple line chart through points with bigger dots.
   // Days that include intensifier sets get a hollow (outlined) dot so you can spot at a glance
   // which trends are inflated by multipliers vs straight-set work.
-  if(graphMetric==="setCount"){
+  if(graphMetric==="setCount" || graphMetric==="volume"){
     if(points.length>1){
       const path=points.map((p,i)=>`${i===0?"M":"L"} ${px(p.t).toFixed(1)} ${py(p.m).toFixed(1)}`).join(" ");
       const line=document.createElementNS("http://www.w3.org/2000/svg","path");
@@ -3506,8 +3555,9 @@ function buildSvgGraph(sets){
       const cx=px(p.t), cy=py(p.m);
       const c=document.createElementNS("http://www.w3.org/2000/svg","circle");
       c.setAttribute("cx",cx);c.setAttribute("cy",cy);c.setAttribute("r","6");
-      if(p.hasIntensifier){
-        // Hollow: bg fill with accent ring, so it reads as "different category"
+      // setCount uses a hollow dot to flag days containing intensifier sets (their multipliers
+      // inflate the count). Volume is just total work, so it always uses a solid dot.
+      if(graphMetric==="setCount" && p.hasIntensifier){
         c.setAttribute("fill","var(--bg)");
         c.setAttribute("stroke","var(--accent)");
         c.setAttribute("stroke-width","2");
@@ -4571,7 +4621,7 @@ function closeMuscleExercises(){
 const SESSIONS_KEY="trainblock_sessions_v1";
 const PREFS_KEY="trainblock_prefs_v1";
 let sessions=[];
-let prefs={preferredUnit:"lb", defaultRestSec:90, actualSource:"sessions", lastBackupAt:null, backupReminderSnoozedUntil:null, flexifyMigrated:false, graphShowAllSets:false};
+let prefs={preferredUnit:"lb", defaultRestSec:90, actualSource:"sessions", lastBackupAt:null, backupReminderSnoozedUntil:null, flexifyMigrated:false, graphShowAllSets:false, graphMetric:"weight"};
 
 function loadPrefs(){
   try{
@@ -4586,9 +4636,13 @@ function loadPrefs(){
         if(typeof p.backupReminderSnoozedUntil==="string")prefs.backupReminderSnoozedUntil=p.backupReminderSnoozedUntil;
         if(p.flexifyMigrated===true)prefs.flexifyMigrated=true;
         if(typeof p.graphShowAllSets==="boolean")prefs.graphShowAllSets=p.graphShowAllSets;
+        if(["weight","estimated1rm","volume","setCount"].includes(p.graphMetric))prefs.graphMetric=p.graphMetric;
       }
     }
   }catch(e){}
+  // Sync the module-global graphMetric to the persisted value so the graph opens on the
+  // metric the user last chose, rather than always resetting to "weight".
+  graphMetric=prefs.graphMetric;
 }
 function savePrefs(){try{localStorage.setItem(PREFS_KEY,JSON.stringify(prefs))}catch(e){}}
 
@@ -4620,7 +4674,10 @@ function createSessionFromPlan(blockId, dayId){
   // Record which week this session came from (for week-aware Resume detection), but label
   // the session by its day label only — "Block — Day" is more useful in history than a week number.
   const weekIdx=curWeek;
-  const dayLabel=day.label||"";
+  // Prefer the user's day label; fall back to "Day N" (derived from the dayId order) so history
+  // always reads "Block Name — Day N" rather than just the block name for unlabeled days.
+  const dayOrder=dayIdsOf(blockId).indexOf(dayId);
+  const dayLabel=day.label||(dayOrder>=0?`Day ${dayOrder+1}`:"");
   const sess={
     id:"sess_"+Date.now()+"_"+Math.floor(Math.random()*1000),
     date:now,
@@ -5998,6 +6055,14 @@ function saveDropInline(s, pr, slotIdx, existing){
     dropWeights.push(w);
     dropReps.push(r);
   }
+  // Soft sanity check: a drop set should get lighter each drop. If the entered weights aren't
+  // descending (e.g. a typo like 60→80), warn but let the user proceed if intentional.
+  const fullSeq=[w0, ...dropWeights];
+  let ascendingSomewhere=false;
+  for(let i=1;i<fullSeq.length;i++){ if(fullSeq[i]>fullSeq[i-1]){ascendingSomewhere=true;break} }
+  if(ascendingSomewhere){
+    if(!confirm("These drop weights aren't descending (each drop is usually lighter than the last). Save anyway?"))return;
+  }
   const rec={
     rowIdx:pr.idx, ex:pr.ex, type:"drop",
     weight:w0, reps:r0,
@@ -6681,6 +6746,14 @@ function saveTargetMulti(){
       });
       // Only keep dropWeights if any are user-set (non-null)
       if(dw.some(x=>x!=null))t.dropWeights=dw;
+      // Soft check: walk the user-entered weights (initial + non-null drops, in order) and
+      // warn if any step goes UP. Blank drops are auto-cascade and skipped.
+      const entered=[w, ...dw.filter(x=>x!=null)];
+      let ascends=false;
+      for(let k=1;k<entered.length;k++){ if(entered[k]>entered[k-1]){ascends=true;break} }
+      if(ascends){
+        if(!confirm(`Sequence ${i+1}: drop weights aren't descending (each drop is usually lighter). Save anyway?`)){return}
+      }
     }
     finalTargets[i]=t;
     lastFilled=t;
@@ -8079,6 +8152,8 @@ loadAllBlocks();              // populate mem for each block
 migrateBlocksToWeeks();       // upgrade legacy {days} blocks to {weeks:[{days}]} (idempotent)
 loadFlexifyHistory();         // load any imported Flexify history (legacy import path)
 migrateRenamedExercises();    // rename old exercise names in stored data (blocks + sessions + flexify)
+// Restore the last-selected block if it still exists; otherwise fall back to the first.
+try{const savedBlock=localStorage.getItem(CUR_BLOCK_KEY);if(savedBlock&&BLOCKS.includes(savedBlock))curBlock=savedBlock}catch(e){}
 if(!BLOCKS.includes(curBlock))curBlock=BLOCKS[0];
 syncBlockButtons();           // builds tabs + panels for the current block
 curDayIds().forEach(renderDay);
