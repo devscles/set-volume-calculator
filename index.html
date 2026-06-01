@@ -2941,6 +2941,30 @@ function renderHistoryView(){
   }
 }
 
+// Build the display title for a session. Uses the stored block/day labels, but for a planned
+// session whose day was never labeled (dayLabel empty), derives "Day N" from the dayId so the
+// entry reads "Block Name — Day N" rather than just the block name. This handles sessions
+// logged before the day-label fallback existed, since it's computed at render time.
+// Ad-hoc sessions (no dayId) and imported sessions keep their stored label as-is.
+function sessionTitle(s){
+  let dayLabel=s.dayLabel||"";
+  if(!dayLabel && s.dayId && !s.adHoc){
+    // Derive "Day N" from the dayId's position. Prefer the block's current day order if the
+    // block still exists; otherwise parse the trailing number off the dayId (e.g. "d2" → 2).
+    let n=null;
+    if(s.blockId && mem[s.blockId]){
+      const order=dayIdsOf(s.blockId).indexOf(s.dayId);
+      if(order>=0)n=order+1;
+    }
+    if(n===null){
+      const m=/^d(\d+)$/.exec(s.dayId);
+      if(m)n=parseInt(m[1],10);
+    }
+    if(n!==null)dayLabel=`Day ${n}`;
+  }
+  return s.blockName+(dayLabel?` — ${dayLabel}`:"");
+}
+
 function renderHistoryList(){
   const body=document.getElementById("history-body");
   body.innerHTML="";
@@ -2979,7 +3003,7 @@ function renderHistoryList(){
   sorted.forEach(s=>{
     const card=document.createElement("div");
     card.className="hist-session"+(s.status==="in_progress"?" in-progress":"");
-    const titleStr=s.blockName+(s.dayLabel?` — ${s.dayLabel}`:"");
+    const titleStr=sessionTitle(s);
     const dateStr=new Date(s.date).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});
     const setCount=s.sets.length;
     const exCount=new Set(s.sets.map(x=>x.ex)).size;
@@ -2999,7 +3023,7 @@ function renderSessionDetail(sessId){
   const dateStr=new Date(s.date).toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric",year:"numeric"});
   const meta=document.createElement("div");
   meta.className="sess-detail-meta";
-  const titleStr=`${s.blockName}${s.dayLabel?` — ${s.dayLabel}`:""}`;
+  const titleStr=sessionTitle(s);
   meta.innerHTML=`<div style="display:flex;align-items:center;gap:6px;margin-bottom:2px"><span style="font-weight:600;color:var(--text);font-size:14px">${titleStr}</span><button class="sess-rename-btn" type="button" aria-label="Rename session" title="Rename session"><i class="ti ti-edit"></i></button></div><div>${dateStr}</div><div style="margin-top:6px">${s.sets.length} set${s.sets.length===1?"":"s"} · status: ${s.status}</div>`;
   meta.querySelector(".sess-rename-btn").onclick=()=>renameSession(s.id);
   body.appendChild(meta);
