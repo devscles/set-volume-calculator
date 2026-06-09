@@ -413,6 +413,8 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .graph-set-vals{flex:1;color:var(--text)}
 .graph-set-type{font-size:9px;font-weight:600;padding:1px 5px;border-radius:999px;background:var(--accent);color:var(--accent-text);flex-shrink:0;letter-spacing:0.02em}
 .graph-empty{padding:24px 16px;text-align:center;color:var(--text2);font-size:13px}
+.graph-range-reset{margin-left:6px;padding:3px 10px;font-size:12px;font-weight:500;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--bg2);color:var(--text);cursor:pointer;font-family:inherit}
+.graph-range-reset:active{opacity:0.85}
 
 /* === Workout modal === */
 .workout-modal{background:var(--bg);width:100%;max-width:520px;height:100%;max-height:100vh;border-radius:0;display:flex;flex-direction:column;overflow:hidden}
@@ -482,12 +484,14 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .wo-ex.ss-member::before{content:"";position:absolute;left:0;top:-2px;bottom:-2px;width:3px;background:var(--accent);opacity:0.85}
 .wo-ex.ss-first::before{top:2px;border-top-left-radius:3px;border-top-right-radius:3px}
 .wo-ex.ss-last::before{bottom:2px;border-bottom-left-radius:3px;border-bottom-right-radius:3px}
-.wo-ex-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:8px}
-.wo-ex-name{font-size:14px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
+.wo-ex-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
+.wo-ex-name{font-size:14px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;flex:1;min-width:0}
 .wo-ex-name:active{color:var(--accent)}
 .wo-ex-name::after{content:" ✎";font-size:11px;color:var(--text3);font-weight:400}
 .wo-ex-type{font-size:11px;font-weight:600;color:var(--text3);padding:1px 6px;border:0.5px solid var(--border);border-radius:8px;flex-shrink:0;letter-spacing:0.04em}
 .wo-ex-type.intensifier{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
+.wo-ex-hist{flex-shrink:0;display:flex;align-items:center;justify-content:center;width:28px;height:28px;padding:0;border:0.5px solid var(--border2);border-radius:var(--radius);background:transparent;color:var(--text2);cursor:pointer;font-size:15px;font-family:inherit;touch-action:manipulation}
+.wo-ex-hist:active{background:var(--bg2);color:var(--text)}
 .wo-set-strip{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .wo-set-chip{min-width:64px;max-width:100%;padding:8px 10px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);font-size:12px;font-weight:500;color:var(--text);cursor:pointer;text-align:center;font-family:inherit;font-variant-numeric:tabular-nums;touch-action:manipulation;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.25;min-height:42px;word-break:break-all}
 .wo-set-chip:active{background:var(--bg2)}
@@ -737,6 +741,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
    the Settings → Exercises list. Without this, equal z-index + later-in-DOM Settings
    wins the stacking order and the editor renders invisibly underneath. */
 #ce-bg{z-index:210}
+#exhist-bg{z-index:230}
 .ce-modal{background:var(--bg);border-radius:12px;padding:16px;width:100%;max-width:340px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 8px 32px var(--shadow)}
 .ce-title{font-size:15px;font-weight:500;color:var(--text);text-align:center;margin-bottom:12px}
 .ce-body{overflow-y:auto;flex:1;padding-right:4px}
@@ -1063,6 +1068,18 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
     <div class="muscle-ex-list" id="muscle-ex-list"></div>
     <div class="modal-actions">
       <button onclick="closeMuscleExercises()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Per-exercise history popup, opened from the workout view -->
+<div class="modal-bg" id="exhist-bg">
+  <div class="modal">
+    <div class="modal-title" id="exhist-title">History</div>
+    <div class="logset-target" id="exhist-sub"></div>
+    <div id="exhist-body"></div>
+    <div class="modal-actions">
+      <button onclick="closeExerciseHistory()">Close</button>
     </div>
   </div>
 </div>
@@ -3168,17 +3185,27 @@ function renderExerciseGraph(exName){
     return;
   }
   // Collect all sets for this exercise across all sessions
-  const all=[];
-  sessions.forEach(s=>{s.sets.forEach(st=>{if(st.ex===exName)all.push({...st,sessionDate:s.date})})});
-  if(all.length===0){
+  const allUnfiltered=[];
+  sessions.forEach(s=>{s.sets.forEach(st=>{if(st.ex===exName)allUnfiltered.push({...st,sessionDate:s.date})})});
+  if(allUnfiltered.length===0){
     body.innerHTML='<div class="graph-empty">No logged sets for this exercise yet.</div>';
     return;
   }
-  all.sort((a,b)=>new Date(a.timestamp||a.sessionDate)-new Date(b.timestamp||b.sessionDate));
+  allUnfiltered.sort((a,b)=>new Date(a.timestamp||a.sessionDate)-new Date(b.timestamp||b.sessionDate));
+  // Apply the active date-range filter. "all" shows everything; the others cut off N months back.
+  const rangeMonths={ "3m":3, "6m":6, "1y":12 };
+  let all=allUnfiltered;
+  if(prefs.graphRange && prefs.graphRange!=="all" && rangeMonths[prefs.graphRange]){
+    const cutoff=new Date();
+    cutoff.setMonth(cutoff.getMonth()-rangeMonths[prefs.graphRange]);
+    const cutoffMs=cutoff.getTime();
+    all=allUnfiltered.filter(st=>new Date(st.timestamp||st.sessionDate).getTime()>=cutoffMs);
+  }
 
   // Metric toggle
   const metaRow=document.createElement("div");metaRow.className="graph-meta";
-  metaRow.innerHTML=`<span>${all.length} set${all.length===1?"":"s"} logged · first ${new Date(all[0].timestamp||all[0].sessionDate).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"})}</span>`;
+  const firstDateStr = all.length ? new Date(all[0].timestamp||all[0].sessionDate).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"}) : "—";
+  metaRow.innerHTML=`<span>${all.length} set${all.length===1?"":"s"} logged · first ${firstDateStr}</span>`;
   const toggleWrap=document.createElement("div");toggleWrap.style.cssText="display:flex;gap:8px;align-items:center;flex-wrap:wrap";
   const toggle=document.createElement("div");toggle.className="graph-toggle";
   [["weight","Weight"],["estimated1rm","Est 1RM"],["volume","Volume"],["setCount","Sets"]].forEach(([key,label])=>{
@@ -3187,6 +3214,14 @@ function renderExerciseGraph(exName){
     toggle.appendChild(b);
   });
   toggleWrap.appendChild(toggle);
+  // Date-range filter — preset windows (mobile-friendly vs. date pickers). Persisted in prefs.
+  const rangeToggle=document.createElement("div");rangeToggle.className="graph-toggle graph-range-toggle";
+  [["all","All"],["1y","1Y"],["6m","6M"],["3m","3M"]].forEach(([key,label])=>{
+    const b=document.createElement("button");b.textContent=label;b.className=(prefs.graphRange||"all")===key?"active":"";
+    b.onclick=()=>{prefs.graphRange=key;savePrefs();renderExerciseGraph(exName)};
+    rangeToggle.appendChild(b);
+  });
+  toggleWrap.appendChild(rangeToggle);
   // "Show all sets" toggle — only meaningful for per-set metrics (weight / est 1RM),
   // not the per-day aggregates (Sets, Volume).
   if(graphMetric!=="setCount" && graphMetric!=="volume"){
@@ -3202,6 +3237,15 @@ function renderExerciseGraph(exName){
   }
   metaRow.appendChild(toggleWrap);
   body.appendChild(metaRow);
+
+  // If the active range filtered out everything, show a friendly note + a jump-back-to-All.
+  if(all.length===0){
+    const empty=document.createElement("div");empty.className="graph-empty";
+    empty.innerHTML=`No sets in this range. <button class="graph-range-reset">Show all</button>`;
+    empty.querySelector("button").onclick=()=>{prefs.graphRange="all";savePrefs();renderExerciseGraph(exName)};
+    body.appendChild(empty);
+    return;
+  }
 
   // Graph container
   const container=document.createElement("div");container.className="graph-container";
@@ -3222,7 +3266,7 @@ function renderExerciseGraph(exName){
   dates.forEach(d=>{
     const sets=bySession[d];
     const best=sets.reduce((b,s)=>est1rm(s)>est1rm(b)?s:b,sets[0]);
-    const vol=sets.reduce((sum,s)=>sum+(s.weight||0)*totalRepsForSet(s),0);
+    const vol=sets.reduce((sum,s)=>sum+totalVolumeForSet(s),0);
     // Effective set count = sum of multipliers. If any intensifiers contributed, mark with *
     const effSets=sets.reduce((sum,s)=>sum+getSetTypeMult(s.type||"straight",s),0);
     const hasIntens=sets.some(s=>{const t=s.type||"straight";return t!=="straight"&&t!=="amrap"});
@@ -3323,6 +3367,31 @@ function est1rm(set){
   return set.weight*(1+set.reps/30);
 }
 
+// Total volume load (Σ weight×reps) for a set, accounting for set type.
+// The key correctness point: DROP sets perform each drop at a LIGHTER weight, so volume must
+// sum each segment at its own weight — not initial-weight × total-reps (which over-counts).
+// Myo-rep / rest-pause mini-sets ARE at the same weight as the initial, so those use one weight.
+// Cluster mini-sets are also all at the same weight.
+function totalVolumeForSet(s){
+  if(!s||!s.weight||!s.reps)return 0;
+  const w=s.weight;
+  if(s.type==="drop"){
+    let vol=w*s.reps; // initial segment
+    if(Array.isArray(s.dropWeights)&&Array.isArray(s.dropReps)){
+      for(let i=0;i<s.dropReps.length;i++){
+        const dr=s.dropReps[i];
+        // Drop weight at index i; if a weight wasn't recorded, fall back to the initial weight
+        // (better an over-estimate than dropping the segment's volume entirely).
+        const dw=(s.dropWeights&&typeof s.dropWeights[i]==="number")?s.dropWeights[i]:w;
+        if(typeof dr==="number"&&dr>0)vol+=dw*dr;
+      }
+    }
+    return vol;
+  }
+  // All other types: every rep is at the same load, so weight × total reps is correct.
+  return w*totalRepsForSet(s);
+}
+
 // Build an SVG scatter/line graph from an array of logged sets.
 // "Nice numbers" axis tick generator. Returns ~targetCount tick values that fall on
 // human-friendly intervals (1, 2, 5, 10, 20, 50, 100, ...) within an extended [min, max].
@@ -3357,7 +3426,7 @@ function buildSvgGraph(sets){
   svg.setAttribute("preserveAspectRatio","none");
   function metric(s){
     if(graphMetric==="estimated1rm")return est1rm(s);
-    if(graphMetric==="volume")return (s.weight||0)*totalRepsForSet(s);
+    if(graphMetric==="volume")return totalVolumeForSet(s);
     return s.weight||0;
   }
   // For setCount AND volume we aggregate per day rather than per set.
@@ -3374,7 +3443,7 @@ function buildSvgGraph(sets){
       if(!byDay[d])byDay[d]={t:new Date((s.timestamp||s.sessionDate)).getTime(),count:0,physical:0,vol:0,types:{},sets:[]};
       const mult=getSetTypeMult(s.type||"straight", s);
       byDay[d].count+=mult;
-      byDay[d].vol+=(s.weight||0)*totalRepsForSet(s);
+      byDay[d].vol+=totalVolumeForSet(s);
       byDay[d].physical+=1;
       const tk=s.type||"straight";
       byDay[d].types[tk]=(byDay[d].types[tk]||0)+1;
@@ -3549,7 +3618,7 @@ function buildSvgGraph(sets){
       if(s.reps===1)line2=`${fmtNum(s.weight)}${s.unit||""} actual 1RM`;
       else line2=`~${Math.round(est1rm(s))}${s.unit||""} 1RM (est) · ${fmtNum(s.weight)}×${s.reps}`;
     }
-    if(graphMetric==="volume")line2=`vol ${fmtNum((s.weight||0)*totalRepsForSet(s))} · ${fmtNum(s.weight)}×${repsShort}`;
+    if(graphMetric==="volume")line2=`vol ${fmtNum(totalVolumeForSet(s))} · ${fmtNum(s.weight)}×${repsShort}`;
     return [line2, date];
   }
 
@@ -4635,6 +4704,58 @@ function closeMuscleExercises(){
   document.getElementById("muscle-ex-bg").classList.remove("open");
 }
 
+// Per-exercise history popup, opened from the workout view. Shows the same per-day breakdown
+// as the History page's table (date · best set · volume · sets), so the user can glance at
+// recent performance for the exercise they're about to lift without leaving the workout.
+// Excludes the current in-progress session so it shows only PRIOR history.
+function openExerciseHistory(exName){
+  const titleEl=document.getElementById("exhist-title");
+  const subEl=document.getElementById("exhist-sub");
+  const bodyEl=document.getElementById("exhist-body");
+  titleEl.textContent=exName;
+  bodyEl.innerHTML="";
+  // Gather sets for this exercise across all sessions EXCEPT the one in progress now.
+  const all=[];
+  sessions.forEach(s=>{
+    if(s.status==="in_progress")return; // skip the live workout — show prior history only
+    s.sets.forEach(st=>{if(st.ex===exName)all.push({...st,sessionDate:s.date})});
+  });
+  if(all.length===0){
+    subEl.textContent="";
+    bodyEl.innerHTML='<div class="graph-empty">No prior history for this exercise yet.</div>';
+    document.getElementById("exhist-bg").classList.add("open");
+    return;
+  }
+  all.sort((a,b)=>new Date(a.timestamp||a.sessionDate)-new Date(b.timestamp||b.sessionDate));
+  // Group by day
+  const bySession={};
+  all.forEach(st=>{const d=(st.timestamp||st.sessionDate).slice(0,10);(bySession[d]=bySession[d]||[]).push(st)});
+  const dayCount=Object.keys(bySession).length;
+  subEl.textContent=`${all.length} set${all.length===1?"":"s"} across ${dayCount} day${dayCount===1?"":"s"}`;
+  // Build the same compact table the history page uses (most recent first).
+  const tableWrap=document.createElement("div");tableWrap.className="graph-table-wrap";
+  const tbl=document.createElement("table");tbl.className="graph-table";
+  tbl.innerHTML=`<tr><th>Date</th><th>Best set</th><th>Volume</th><th>Sets</th></tr>`;
+  const dates=Object.keys(bySession).sort().reverse();
+  dates.forEach(d=>{
+    const sets=bySession[d];
+    const best=sets.reduce((b,x)=>est1rm(x)>est1rm(b)?x:b,sets[0]);
+    const vol=sets.reduce((sum,x)=>sum+totalVolumeForSet(x),0);
+    const effSets=sets.reduce((sum,x)=>sum+getSetTypeMult(x.type||"straight",x),0);
+    const hasIntens=sets.some(x=>{const t=x.type||"straight";return t!=="straight"&&t!=="amrap"});
+    const setsCell=hasIntens?`${fmtNum(effSets)}*`:String(sets.length);
+    const tr=document.createElement("tr");
+    tr.innerHTML=`<td>${new Date(d).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"2-digit"})}</td><td>${fmtNum(best.weight)}×${fmtRepsOnly(best)}</td><td>${fmtNum(vol)}</td><td title="${hasIntens?'includes intensifier sets (multiplied)':''}">${setsCell}</td>`;
+    tbl.appendChild(tr);
+  });
+  tableWrap.appendChild(tbl);
+  bodyEl.appendChild(tableWrap);
+  document.getElementById("exhist-bg").classList.add("open");
+}
+function closeExerciseHistory(){
+  document.getElementById("exhist-bg").classList.remove("open");
+}
+
 // ===== Native tracking: sessions =====
 // A session is one completed (or in-progress) workout, immutable history.
 // Schema:
@@ -4645,7 +4766,7 @@ function closeMuscleExercises(){
 const SESSIONS_KEY="trainblock_sessions_v1";
 const PREFS_KEY="trainblock_prefs_v1";
 let sessions=[];
-let prefs={preferredUnit:"lb", defaultRestSec:90, actualSource:"sessions", lastBackupAt:null, backupReminderSnoozedUntil:null, flexifyMigrated:false, graphShowAllSets:false, graphMetric:"weight"};
+let prefs={preferredUnit:"lb", defaultRestSec:90, actualSource:"sessions", lastBackupAt:null, backupReminderSnoozedUntil:null, flexifyMigrated:false, graphShowAllSets:false, graphMetric:"weight", graphRange:"all"};
 
 function loadPrefs(){
   try{
@@ -4660,6 +4781,7 @@ function loadPrefs(){
         if(typeof p.backupReminderSnoozedUntil==="string")prefs.backupReminderSnoozedUntil=p.backupReminderSnoozedUntil;
         if(p.flexifyMigrated===true)prefs.flexifyMigrated=true;
         if(typeof p.graphShowAllSets==="boolean")prefs.graphShowAllSets=p.graphShowAllSets;
+        if(["all","3m","6m","1y"].includes(p.graphRange))prefs.graphRange=p.graphRange;
         if(["weight","estimated1rm","volume","setCount"].includes(p.graphMetric))prefs.graphMetric=p.graphMetric;
       }
     }
@@ -4971,7 +5093,14 @@ function renderWorkoutBody(){
     nm.onclick=()=>openSwapPicker(pi);
     const tinfo=getSetTypeInfo(pr.type);
     const tEl=document.createElement("span");tEl.className="wo-ex-type"+(pr.type!=="straight"?" intensifier":"");tEl.textContent=tinfo.short;tEl.title=tinfo.label;
-    head.appendChild(nm);head.appendChild(tEl);
+    // History button — shows this exercise's prior performance in a popup.
+    const histBtn=document.createElement("button");
+    histBtn.className="wo-ex-hist";histBtn.type="button";
+    histBtn.title="Show history for this exercise";
+    histBtn.setAttribute("aria-label","Show history for "+pr.ex);
+    histBtn.innerHTML='<i class="ti ti-history" aria-hidden="true"></i>';
+    histBtn.onclick=(e)=>{e.stopPropagation();openExerciseHistory(pr.ex)};
+    head.appendChild(nm);head.appendChild(tEl);head.appendChild(histBtn);
     wrap.appendChild(head);
 
     // Branch on set type. All 5 types now use inline editor cards (no popup modal).
