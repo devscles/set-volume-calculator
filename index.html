@@ -3254,7 +3254,7 @@ function renderExerciseGraph(exName){
 
   // Data table summary by session
   const bySession={};
-  all.forEach(st=>{const d=(st.timestamp||st.sessionDate).slice(0,10);(bySession[d]=bySession[d]||[]).push(st)});
+  all.forEach(st=>{const d=localDayKey(st.timestamp||st.sessionDate);(bySession[d]=bySession[d]||[]).push(st)});
   const tableLabel=document.createElement("div");
   tableLabel.className="graph-table-wrap-label";
   tableLabel.textContent=`History (${Object.keys(bySession).length} day${Object.keys(bySession).length===1?"":"s"})`;
@@ -3274,7 +3274,7 @@ function renderExerciseGraph(exName){
     // Main row: tappable, toggles the .open class which reveals the sub-row beneath
     const tr=document.createElement("tr");
     tr.className="graph-table-row";
-    tr.innerHTML=`<td class="graph-table-chev"><span class="chev">▸</span></td><td>${new Date(d).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"2-digit"})}</td><td>${fmtNum(best.weight)}×${fmtRepsOnly(best)}</td><td>${fmtNum(vol)}</td><td title="${hasIntens?'includes intensifier sets (multiplied)':''}">${setsCell}</td>`;
+    tr.innerHTML=`<td class="graph-table-chev"><span class="chev">▸</span></td><td>${localDayKeyToDate(d).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"2-digit"})}</td><td>${fmtNum(best.weight)}×${fmtRepsOnly(best)}</td><td>${fmtNum(vol)}</td><td title="${hasIntens?'includes intensifier sets (multiplied)':''}">${setsCell}</td>`;
     tbl.appendChild(tr);
     // Detail row: hidden by default; reveals every set logged on this day in chronological order.
     // Best set (the one shown in the main row) is marked with ▸ so the user can see which is which.
@@ -3367,6 +3367,29 @@ function est1rm(set){
   return set.weight*(1+set.reps/30);
 }
 
+// Return a YYYY-MM-DD key for the LOCAL calendar day of a date input.
+// Timestamps are stored as UTC ISO strings (new Date().toISOString()). Slicing the first 10
+// chars of that string yields the UTC date, which can differ from the user's local date for
+// sets logged in the evening (e.g. 11:30pm local July 6 is stored as July 7 UTC). That caused
+// the graph to split a single evening session across two day buckets. Grouping by LOCAL day
+// fixes it and matches how the user actually experienced the session.
+function localDayKey(dateInput){
+  const d = (dateInput instanceof Date) ? dateInput : new Date(dateInput);
+  if(isNaN(d.getTime()))return String(dateInput).slice(0,10); // fallback for malformed input
+  const y=d.getFullYear();
+  const m=String(d.getMonth()+1).padStart(2,"0");
+  const day=String(d.getDate()).padStart(2,"0");
+  return `${y}-${m}-${day}`;
+}
+// Parse a "YYYY-MM-DD" local day key back into a Date at LOCAL midnight (for display).
+// `new Date("2026-07-06")` parses as UTC midnight, which displays as the previous day in
+// timezones behind UTC. Constructing from parts keeps it in local time.
+function localDayKeyToDate(key){
+  const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(key);
+  if(!m)return new Date(key);
+  return new Date(parseInt(m[1],10), parseInt(m[2],10)-1, parseInt(m[3],10));
+}
+
 // Total volume load (Σ weight×reps) for a set, accounting for set type.
 // The key correctness point: DROP sets perform each drop at a LIGHTER weight, so volume must
 // sum each segment at its own weight — not initial-weight × total-reps (which over-counts).
@@ -3439,7 +3462,7 @@ function buildSvgGraph(sets){
     const isVol = graphMetric==="volume";
     const byDay={};
     sets.forEach(s=>{
-      const d=(s.timestamp||s.sessionDate).slice(0,10);
+      const d=localDayKey(s.timestamp||s.sessionDate);
       if(!byDay[d])byDay[d]={t:new Date((s.timestamp||s.sessionDate)).getTime(),count:0,physical:0,vol:0,types:{},sets:[]};
       const mult=getSetTypeMult(s.type||"straight", s);
       byDay[d].count+=mult;
@@ -3469,7 +3492,7 @@ function buildSvgGraph(sets){
   // a measured single is more truthful than an estimate, even if the estimate computes higher.
   const byDayBest={};
   points.forEach(p=>{
-    const d=new Date(p.t).toISOString().slice(0,10);
+    const d=localDayKey(p.t);
     const cur=byDayBest[d];
     const isTrue1rm = graphMetric==="estimated1rm" && p.src && p.src.reps===1;
     const curIsTrue1rm = cur && graphMetric==="estimated1rm" && cur.src && cur.src.reps===1;
@@ -4729,13 +4752,14 @@ function openExerciseHistory(exName){
   all.sort((a,b)=>new Date(a.timestamp||a.sessionDate)-new Date(b.timestamp||b.sessionDate));
   // Group by day
   const bySession={};
-  all.forEach(st=>{const d=(st.timestamp||st.sessionDate).slice(0,10);(bySession[d]=bySession[d]||[]).push(st)});
+  all.forEach(st=>{const d=localDayKey(st.timestamp||st.sessionDate);(bySession[d]=bySession[d]||[]).push(st)});
   const dayCount=Object.keys(bySession).length;
   subEl.textContent=`${all.length} set${all.length===1?"":"s"} across ${dayCount} day${dayCount===1?"":"s"}`;
-  // Build the same compact table the history page uses (most recent first).
+  // Build the same expandable table the history page uses (most recent first). Each day row
+  // is tappable to reveal every set logged that day — not just the best set.
   const tableWrap=document.createElement("div");tableWrap.className="graph-table-wrap";
   const tbl=document.createElement("table");tbl.className="graph-table";
-  tbl.innerHTML=`<tr><th>Date</th><th>Best set</th><th>Volume</th><th>Sets</th></tr>`;
+  tbl.innerHTML=`<tr><th></th><th>Date</th><th>Best set</th><th>Volume</th><th>Sets</th></tr>`;
   const dates=Object.keys(bySession).sort().reverse();
   dates.forEach(d=>{
     const sets=bySession[d];
@@ -4745,8 +4769,28 @@ function openExerciseHistory(exName){
     const hasIntens=sets.some(x=>{const t=x.type||"straight";return t!=="straight"&&t!=="amrap"});
     const setsCell=hasIntens?`${fmtNum(effSets)}*`:String(sets.length);
     const tr=document.createElement("tr");
-    tr.innerHTML=`<td>${new Date(d).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"2-digit"})}</td><td>${fmtNum(best.weight)}×${fmtRepsOnly(best)}</td><td>${fmtNum(vol)}</td><td title="${hasIntens?'includes intensifier sets (multiplied)':''}">${setsCell}</td>`;
+    tr.className="graph-table-row";
+    tr.innerHTML=`<td class="graph-table-chev"><span class="chev">▸</span></td><td>${localDayKeyToDate(d).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"2-digit"})}</td><td>${fmtNum(best.weight)}×${fmtRepsOnly(best)}</td><td>${fmtNum(vol)}</td><td title="${hasIntens?'includes intensifier sets (multiplied)':''}">${setsCell}</td>`;
     tbl.appendChild(tr);
+    // Detail row: every set from that day in chronological order, best marked with ▸.
+    const detailTr=document.createElement("tr");
+    detailTr.className="graph-table-detail";
+    const detailCell=document.createElement("td");
+    detailCell.setAttribute("colspan","5");
+    const sortedSets=[...sets].sort((a,b)=>new Date(a.timestamp||a.sessionDate)-new Date(b.timestamp||b.sessionDate));
+    const setLines=sortedSets.map((st,i)=>{
+      const marker = st===best ? "▸" : " ";
+      const rir = (st.rir!==undefined&&st.rir!==null) ? ` @${st.rir}R` : "";
+      const typeInfo = (st.type && st.type!=="straight") ? ` <span class="graph-set-type">${getSetTypeInfo(st.type).short}</span>` : "";
+      return `<div class="graph-set-line"><span class="graph-set-marker">${marker}</span><span class="graph-set-num">${i+1}.</span><span class="graph-set-vals">${fmtNum(st.weight)}${st.unit||""} × ${fmtRepsOnly(st)}${rir}</span>${typeInfo}</div>`;
+    }).join("");
+    detailCell.innerHTML=`<div class="graph-set-list">${setLines}</div>`;
+    detailTr.appendChild(detailCell);
+    tbl.appendChild(detailTr);
+    tr.onclick=()=>{
+      tr.classList.toggle("open");
+      detailTr.classList.toggle("open");
+    };
   });
   tableWrap.appendChild(tbl);
   bodyEl.appendChild(tableWrap);
@@ -7085,14 +7129,38 @@ function fmtRepsOnly(st){
 
 // Find the most recent logged set for a given exercise across all past sessions, excluding
 // the active session (so we show what was done last time, not earlier this workout).
+// Seed value for prefilling weight/reps when no target is set. Returns the BEST set (by
+// estimated 1RM) from the MOST RECENT session that contains this exercise — not simply the
+// last set performed, which is usually a lower-performance back-off/fatigue set and makes a
+// poor target to aim for. "Most recent session" is determined by the latest set timestamp the
+// exercise appears at; within that session the highest-est1RM set wins.
 function findLastSetForExercise(exName, excludeSessionId){
-  let best=null;
+  // 1. Find the most recent timestamp this exercise was logged at (across all sessions),
+  //    and remember which session that was.
+  let latestTs=null, latestSessId=null;
   for(const sess of sessions){
     if(sess.id===excludeSessionId)continue;
     for(const st of sess.sets){
-      if(st.ex!==exName)continue;
-      if(!best||new Date(st.timestamp)>new Date(best.timestamp))best=st;
+      if(st.ex!==exName||!st.timestamp)continue;
+      const t=new Date(st.timestamp).getTime();
+      if(latestTs===null||t>latestTs){latestTs=t;latestSessId=sess.id}
     }
+  }
+  if(latestSessId===null){
+    // Fallback: some old sets may lack timestamps. Return any matching set, last one wins.
+    let any=null;
+    for(const sess of sessions){
+      if(sess.id===excludeSessionId)continue;
+      for(const st of sess.sets){ if(st.ex===exName)any=st }
+    }
+    return any;
+  }
+  // 2. Within that most-recent session, return the best set by estimated 1RM.
+  const sess=sessions.find(s=>s.id===latestSessId);
+  let best=null;
+  for(const st of sess.sets){
+    if(st.ex!==exName)continue;
+    if(!best||est1rm(st)>est1rm(best))best=st;
   }
   return best;
 }
@@ -7273,19 +7341,22 @@ function renderDay(dayId){
     el.appendChild(hint);
   }
 
-  // Workout-launch row. Three states:
-  //  - Day has a plan + no in-progress: [Start workout] [Wing It]
-  //  - In-progress for this day:        [Resume workout]   (Wing It hidden)
-  //  - Day has no plan (empty):         [Wing It]          (primary)
+  // Workout-launch row. States:
+  //  - Day has a plan + no in-progress:   [Start workout] [Wing It]
+  //  - In-progress for this day:          [Resume workout]        (Wing It hidden)
+  //  - Day has no plan (empty):           [Wing It]               (primary)
+  //  - An ad-hoc (Wing It) workout is in progress: the Wing It button becomes
+  //    [Resume Wing It] so the user can reopen a closed ad-hoc workout. Ad-hoc sessions aren't
+  //    tied to a day, so this surfaces on every day panel (not just the one it was started from).
   {
     const hasContent=!allEmpty && dayData.rows.some(r=>r.ex&&r.sets>0);
     const inProg=sessions.find(s=>s.status==="in_progress"&&s.blockId===curBlock&&s.dayId===dayId&&(s.weekIdx==null||s.weekIdx===curWeek));
-    const anyActive=activeSession();
+    const adHocInProg=sessions.find(s=>s.status==="in_progress"&&s.adHoc);
     const launchRow=document.createElement("div");
     launchRow.className="workout-launch-row";
 
     if(inProg){
-      // In-progress for this day → single Resume button, no Wing It.
+      // In-progress planned workout for THIS day → single Resume button, no Wing It.
       const btn=document.createElement("button");
       btn.className="start-workout start-workout-resume";
       btn.textContent="Resume workout";
@@ -7299,12 +7370,25 @@ function renderDay(dayId){
         startBtn.onclick=()=>launchPlannedWorkout(startBtn, dayId);
         launchRow.appendChild(startBtn);
       }
-      // Wing It button — shown whenever there's no in-progress workout for this day.
-      // If the day has a plan it's the secondary (narrower) action; if not, it's primary/full-width.
+      // Wing It button. If an ad-hoc workout is already in progress, this becomes "Resume Wing It"
+      // and reopens it rather than starting a new one. Otherwise it launches a fresh ad-hoc workout.
+      const resumingAdHoc=!!adHocInProg;
       const wingBtn=document.createElement("button");
-      wingBtn.className="start-workout wing-it"+(hasContent?" wing-it-secondary":" wing-it-primary");
-      wingBtn.textContent="Wing It";
-      wingBtn.onclick=()=>launchAdHocWorkout(wingBtn);
+      if(resumingAdHoc){
+        // Resuming is the primary action — full width + resume color, not the cramped secondary look.
+        wingBtn.className="start-workout wing-it-primary start-workout-resume";
+        wingBtn.textContent="Resume Wing It";
+        wingBtn.onclick=()=>{
+          if(wingBtn.disabled)return;
+          wingBtn.disabled=true;
+          openWorkoutModal(adHocInProg.id);
+          setTimeout(()=>{wingBtn.disabled=false},300);
+        };
+      } else {
+        wingBtn.className="start-workout wing-it"+(hasContent?" wing-it-secondary":" wing-it-primary");
+        wingBtn.textContent="Wing It";
+        wingBtn.onclick=()=>launchAdHocWorkout(wingBtn);
+      }
       launchRow.appendChild(wingBtn);
     }
     if(launchRow.children.length>0)el.appendChild(launchRow);
@@ -8318,7 +8402,12 @@ const _active=activeSession();
 if(_active)openWorkoutModal(_active.id);
 // Check if a backup reminder should be shown (after sessions and prefs are loaded)
 checkBackupReminder();
-if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js')}
+// Register the service worker only for the web/PWA build. Inside the Capacitor native shell
+// the files are served locally from the app bundle, so a service worker is unnecessary and can
+// occasionally serve stale assets — detect Capacitor and skip registration there.
+if('serviceWorker' in navigator && !(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform())){
+  navigator.serviceWorker.register('sw.js');
+}
 </script>
 </body>
 </html>
