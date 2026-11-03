@@ -162,7 +162,9 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .drop-indicator{height:2px;background:var(--accent);border-radius:1px;margin:3px 0;pointer-events:none}
 /* Superset visual grouping. We use a left bar (::before) and add a class to rows that are part of a group. */
 .exercise-row.ss-member{padding-left:8px}
-.exercise-row.ss-member::before{content:"";position:absolute;left:18px;top:-2px;bottom:-2px;width:3px;background:var(--accent);opacity:0.85}
+/* Continuous superset line: extend each non-last member's bar across the full 8px row margin
+   so the line doesn't break between rows. First rounds top, last rounds bottom. */
+.exercise-row.ss-member::before{content:"";position:absolute;left:18px;top:0;bottom:-8px;width:3px;background:var(--accent);opacity:0.85}
 .exercise-row.ss-first::before{top:2px;border-top-left-radius:3px;border-top-right-radius:3px}
 .exercise-row.ss-last::before{bottom:2px;border-bottom-left-radius:3px;border-bottom-right-radius:3px}
 /* The first row of a group gets a tiny "×N" badge near the exercise picker */
@@ -481,7 +483,11 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 /* Exercise group within a workout */
 .wo-ex{margin-bottom:14px;padding:12px;border-radius:var(--radius);background:var(--bg2);position:relative;transition:background-color 0.15s var(--ease)}
 .wo-ex.ss-member{padding-left:18px}
-.wo-ex.ss-member::before{content:"";position:absolute;left:0;top:-2px;bottom:-2px;width:3px;background:var(--accent);opacity:0.85}
+/* Superset link line. Cards have a 14px bottom margin, so a non-last member's bar must extend
+   the full gap (bottom:-14px) to meet the next member's bar with no break. Only the first member
+   rounds the top and the last member rounds the bottom; intermediate members stay squared so the
+   line reads as one continuous bar spanning the whole group. */
+.wo-ex.ss-member::before{content:"";position:absolute;left:0;top:0;bottom:-14px;width:3px;background:var(--accent);opacity:0.85}
 .wo-ex.ss-first::before{top:2px;border-top-left-radius:3px;border-top-right-radius:3px}
 .wo-ex.ss-last::before{bottom:2px;border-bottom-left-radius:3px;border-bottom-right-radius:3px}
 .wo-ex-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
