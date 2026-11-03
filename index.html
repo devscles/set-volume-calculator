@@ -11,8 +11,8 @@
 <link rel="manifest" href="manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
 <style>
 :root{--bg:#ffffff;--bg2:#f5f4ef;--bg3:#ecebe5;--text:#1a1a1a;--text2:#6b6b6b;--text3:#a0a0a0;--border:rgba(0,0,0,0.12);--border2:rgba(0,0,0,0.22);--radius:8px;--danger-bg:#fcebeb;--danger-text:#9a2727;--warn-bg:#fcf3d6;--warn-text:#7a5400;--success-bg:#eaf3de;--success-text:#3b6d11;--high-bg:#efe1f7;--high-text:#5a2a82;--shadow:rgba(0,0,0,0.15);--overlay:rgba(0,0,0,0.4);--accent:#1d5670;--accent-text:#ffffff;--ease:cubic-bezier(0.4,0,0.2,1)}
 @media(prefers-color-scheme:dark){:root{--bg:#1c1c1e;--bg2:#2c2c2e;--bg3:#3a3a3c;--text:#f2f2f7;--text2:#aeaeb2;--text3:#636366;--border:rgba(255,255,255,0.12);--border2:rgba(255,255,255,0.22);--danger-bg:#3a1a1a;--danger-text:#f09595;--warn-bg:#3a2e0f;--warn-text:#e6c45f;--success-bg:#1a2e10;--success-text:#97c459;--high-bg:#2c1c3e;--high-text:#d4a5ff;--shadow:rgba(0,0,0,0.6);--overlay:rgba(0,0,0,0.65);--accent:#5fb7d4;--accent-text:#0a1a22}}
@@ -1459,33 +1459,36 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 
 <script>
 const BUILTIN_EX={
-  "Chest":[["Barbell Bench Press",{Chest:1,"Front Delt":0.5,Triceps:0.5}],["Dumbbell Bench Press",{Chest:1,"Front Delt":0.5,Triceps:0.5}],["Incline Dumbbell Bench Press",{Chest:1,"Front Delt":0.5,Triceps:0.5}],["Dumbbell Fly",{Chest:1,"Front Delt":0.5}],["Cable Crossover",{Chest:1,"Front Delt":0.5}],["Pec Deck",{Chest:1}],["Push-Up",{Chest:1,"Front Delt":0.5,Triceps:0.5}],["Landmine Press",{Chest:1,"Front Delt":0.5,Triceps:0.5}],["Dumbbell Pullover",{Chest:0.5,Lats:1,Triceps:0.5}],["Incline Barbell Bench Press",{Chest:1,"Front Delt":1,Triceps:0.5}],["Decline Barbell Bench Press",{Chest:1,"Front Delt":0.5,Triceps:0.5}],["Incline Dumbbell Fly",{Chest:1,"Front Delt":0.5}],["Cable Fly Low-to-High",{Chest:1,"Front Delt":0.5}],["Cable Fly High-to-Low",{Chest:1}],["Machine Chest Press",{Chest:1,"Front Delt":1,Triceps:0.5}]],
-  "Back / Lats":[["Barbell Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5,Erectors:0.5}],["Dumbbell Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5}],["Underhand Barbell Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5}],["Narrow Grip Cable Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5}],["Wide Grip Cable Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5}],["One Arm Cable Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5}],["Lat Pulldown",{Lats:1,"Rear Delt":0.5,Biceps:0.5}],["One Arm Lat Pulldown",{Lats:1,"Rear Delt":0.5,Biceps:0.5}],["Straight Arm Pulldown",{Lats:1,Triceps:0.5}],["Pull-Ups",{Lats:1,"Mid-Low Traps":0.5,"Rear Delt":0.5,Biceps:0.5}],["Chin-Ups",{Lats:1,"Mid-Low Traps":0.5,"Rear Delt":0.5,Biceps:1}],["Bent Over Back Fly",{"Mid-Low Traps":0.5,"Rear Delt":1}],["T-Bar Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5,Erectors:0.5}],["Pendlay Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5,Erectors:0.5}],["Chest-Supported Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5}],["Meadows Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5,Obliques:0.5}],["Neutral Grip Lat Pulldown",{Lats:1,Biceps:0.5,"Rear Delt":0.5}],["Wide Grip Pull-Up",{Lats:1,"Mid-Low Traps":0.5,"Rear Delt":0.5,Biceps:0.5}]],
-  "Shoulders":[["Barbell Shoulder Press",{"Upper Traps":0.5,"Front Delt":1,"Side Delt":1,Triceps:0.5}],["Dumbbell Shoulder Press",{"Upper Traps":0.5,"Front Delt":1,"Side Delt":1,Triceps:0.5}],["Barbell Push Press",{"Upper Traps":0.5,"Front Delt":1,"Side Delt":1,Triceps:0.5,Quads:0.5}],["Unilateral Dumbbell Push Press",{"Upper Traps":0.5,"Front Delt":1,"Side Delt":1,Triceps:0.5,Quads:0.5,Abs:0.5,Obliques:0.5}],["Dumbbell Lateral Raise",{"Upper Traps":0.5,"Side Delt":1}],["Full ROM Lateral Raise",{"Upper Traps":0.5,"Side Delt":1}],["Dumbbell Front Raise",{"Front Delt":1}],["Cable Front Raise",{"Front Delt":1}],["Upright Row",{"Upper Traps":1,"Front Delt":0.5,"Side Delt":1,Biceps:0.5}],["Power Clean",{"Upper Traps":1,"Mid-Low Traps":0.5,"Front Delt":0.5,Hamstrings:0.5,Glutes:1,Erectors:1,Quads:0.5}],["Clean and Press",{"Upper Traps":1,"Mid-Low Traps":0.5,"Front Delt":1,Quads:0.5,Glutes:0.5,Erectors:0.5}],["Hang Clean and Press",{"Upper Traps":1,"Mid-Low Traps":0.5,"Front Delt":1,Quads:0.5,Glutes:0.5,Erectors:0.5}],["Face Pull",{"Mid-Low Traps":1,"Rear Delt":1}],["Arnold Press",{"Front Delt":1,"Side Delt":1,"Upper Traps":0.5,Triceps:0.5}],["Seated Dumbbell Press",{"Front Delt":1,"Side Delt":1,Triceps:0.5}],["Cable Lateral Raise",{"Side Delt":1,"Upper Traps":0.5}],["Machine Lateral Raise",{"Side Delt":1,"Upper Traps":0.5}],["Reverse Pec Deck",{"Rear Delt":1,"Mid-Low Traps":0.5}]],
-  "Traps":[["Dumbbell Shrug",{"Upper Traps":1}],["Trap Bar Shrug",{"Upper Traps":1}],["Cable Shrug",{"Upper Traps":1}],["Rack Pull",{"Upper Traps":1,Erectors:1,Hamstrings:0.5,Glutes:0.5}],["Barbell Shrug",{"Upper Traps":1}],["Farmer's Carry",{"Upper Traps":1,Erectors:0.5,Abs:0.5,Obliques:0.5}]],
-  "Biceps":[["Barbell Curl",{Biceps:1}],["Dumbbell Curl",{Biceps:1}],["Cable Curl",{Biceps:1}],["EZ Bar Curl",{Biceps:1}],["EZ Bar Curl Reverse Grip",{Biceps:1}],["Hammer Curl",{Biceps:1}],["Preacher Curl",{Biceps:1}],["Incline Dumbbell Curl",{Biceps:1}],["Spider Curl",{Biceps:1}],["Concentration Curl",{Biceps:1}],["Cable Hammer Curl",{Biceps:1}]],
+  "Chest":[["Barbell Bench Press",{Chest:1,"Front Delt":0.5,Triceps:0.5}],["Dumbbell Bench Press",{Chest:1,"Front Delt":0.5,Triceps:0.5}],["Incline Dumbbell Bench Press",{Chest:1,"Front Delt":0.5,Triceps:0.5}],["Dumbbell Fly",{Chest:1,"Front Delt":0.5}],["Cable Crossover",{Chest:1,"Front Delt":0.5}],["Pec Deck",{Chest:1,"Front Delt":0.5}],["Push-Up",{Chest:1,"Front Delt":0.5,Triceps:0.5}],["Landmine Press",{Chest:1,"Front Delt":0.5,Triceps:0.5}],["Dumbbell Pullover",{Chest:0.5,Lats:1}],["Incline Barbell Bench Press",{Chest:1,"Front Delt":0.5,Triceps:0.5}],["Decline Barbell Bench Press",{Chest:1,"Front Delt":0.5,Triceps:0.5}],["Incline Dumbbell Fly",{Chest:1,"Front Delt":0.5}],["Cable Fly Low-to-High",{Chest:1,"Front Delt":0.5}],["Cable Fly High-to-Low",{Chest:1,"Front Delt":0.5}],["Machine Chest Press",{Chest:1,"Front Delt":0.5,Triceps:0.5}]],
+  "Back / Lats":[["Barbell Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5,Erectors:0.5}],["Dumbbell Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5}],["Underhand Barbell Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5}],["Narrow Grip Cable Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5}],["Wide Grip Cable Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5}],["One Arm Cable Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5}],["Lat Pulldown",{Lats:1,"Mid-Low Traps":0.5,"Rear Delt":0.5,Biceps:0.5}],["One Arm Lat Pulldown",{Lats:1,"Mid-Low Traps":0.5,"Rear Delt":0.5,Biceps:0.5}],["Straight Arm Pulldown",{Lats:1}],["Pull-Ups",{Lats:1,"Mid-Low Traps":0.5,"Rear Delt":0.5,Biceps:0.5}],["Chin-Ups",{Lats:1,"Mid-Low Traps":0.5,"Rear Delt":0.5,Biceps:1}],["Bent Over Back Fly",{"Mid-Low Traps":0.5,"Rear Delt":1}],["T-Bar Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5,Erectors:0.5}],["Pendlay Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5,Erectors:0.5}],["Chest-Supported Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5}],["Meadows Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5,Erectors:0.5}],["Neutral Grip Lat Pulldown",{Lats:1,"Mid-Low Traps":0.5,Biceps:0.5,"Rear Delt":0.5}],["Wide Grip Pull-Up",{Lats:1,"Mid-Low Traps":0.5,"Rear Delt":0.5,Biceps:0.5}]],
+  "Shoulders":[["Barbell Shoulder Press",{"Upper Traps":0.5,"Front Delt":1,"Side Delt":0.5,Triceps:0.5}],["Dumbbell Shoulder Press",{"Upper Traps":0.5,"Front Delt":1,"Side Delt":0.5,Triceps:0.5}],["Barbell Push Press",{"Upper Traps":0.5,"Front Delt":1,"Side Delt":0.5,Triceps:0.5,Quads:0.5}],["Unilateral Dumbbell Push Press",{"Upper Traps":0.5,"Front Delt":1,"Side Delt":0.5,Triceps:0.5,Quads:0.5,Abs:0.5,Obliques:0.5}],["Dumbbell Lateral Raise",{"Upper Traps":0.5,"Side Delt":1}],["Full ROM Lateral Raise",{"Upper Traps":0.5,"Side Delt":1}],["Dumbbell Front Raise",{"Front Delt":1}],["Cable Front Raise",{"Front Delt":1}],["Upright Row",{"Upper Traps":1,"Front Delt":0.5,"Side Delt":1,Biceps:0.5}],["Power Clean",{"Upper Traps":1,"Mid-Low Traps":0.5,"Front Delt":0.5,Hamstrings:0.5,Glutes:1,Erectors:1,Quads:0.5}],["Clean and Press",{"Upper Traps":1,"Mid-Low Traps":0.5,"Front Delt":1,"Side Delt":0.5,Triceps:0.5,Quads:0.5,Hamstrings:0.5,Glutes:0.5,Erectors:0.5}],["Hang Clean and Press",{"Upper Traps":1,"Mid-Low Traps":0.5,"Front Delt":1,"Side Delt":0.5,Triceps:0.5,Quads:0.5,Hamstrings:0.5,Glutes:0.5,Erectors:0.5}],["Face Pull",{"Mid-Low Traps":1,"Rear Delt":1}],["Arnold Press",{"Front Delt":1,"Side Delt":0.5,"Upper Traps":0.5,Triceps:0.5}],["Seated Dumbbell Press",{"Front Delt":1,"Side Delt":0.5,Triceps:0.5}],["Cable Lateral Raise",{"Side Delt":1,"Upper Traps":0.5}],["Machine Lateral Raise",{"Side Delt":1,"Upper Traps":0.5}],["Reverse Pec Deck",{"Rear Delt":1,"Mid-Low Traps":0.5}]],
+  "Traps":[["Dumbbell Shrug",{"Upper Traps":1}],["Trap Bar Shrug",{"Upper Traps":1}],["Cable Shrug",{"Upper Traps":1}],["Rack Pull",{"Upper Traps":1,Erectors:1,Hamstrings:0.5,Glutes:0.5}],["Barbell Shrug",{"Upper Traps":1}],["Farmer's Carry",{"Upper Traps":1,Forearms:1,Erectors:0.5,Abs:0.5,Obliques:0.5}]],
+  "Biceps":[["Barbell Curl",{Biceps:1}],["Dumbbell Curl",{Biceps:1}],["Cable Curl",{Biceps:1}],["EZ Bar Curl",{Biceps:1}],["EZ Bar Curl Reverse Grip",{Biceps:0.5,Forearms:1}],["Hammer Curl",{Biceps:1,Forearms:0.5}],["Preacher Curl",{Biceps:1}],["Incline Dumbbell Curl",{Biceps:1}],["Spider Curl",{Biceps:1}],["Concentration Curl",{Biceps:1}],["Cable Hammer Curl",{Biceps:1,Forearms:0.5}]],
   "Triceps":[["Dips",{Triceps:1,Chest:0.5,"Front Delt":0.5}],["EZ Bar Skullcrusher",{Triceps:1}],["Dumbbell Skullcrusher",{Triceps:1}],["Tricep Cable Pulldown",{Triceps:1}],["One Arm Dumbbell Tricep Press",{Triceps:1}],["Dumbbell Uppercut",{Triceps:0.5,"Front Delt":1,Obliques:0.5}],["Close-Grip Bench Press",{Triceps:1,Chest:0.5,"Front Delt":0.5}],["Overhead Cable Tricep Extension",{Triceps:1}],["Overhead Dumbbell Tricep Extension",{Triceps:1}],["Tricep Kickback",{Triceps:1}],["Diamond Push-Up",{Triceps:1,Chest:0.5,"Front Delt":0.5}]],
-  "Legs":[["Squat",{Quads:1,Hamstrings:0.5,Glutes:1,Erectors:0.5}],["Leg Press",{Quads:1,Hamstrings:0.5,Glutes:1}],["Leg Extension",{Quads:1}],["Dumbbell Lunge",{Quads:1,Hamstrings:0.5,Glutes:1}],["Dumbbell Split Squat",{Quads:1,Hamstrings:0.5,Glutes:1}],["Cossack Squat",{Quads:1,Hamstrings:0.5,Glutes:1,Erectors:0.5}],["Step Down Heel Tap",{Quads:1,Glutes:0.5}],["Trap Bar Deadlift",{"Upper Traps":0.5,Quads:1,Hamstrings:0.5,Glutes:1,Erectors:1}],["Deadlift",{Lats:0.5,"Upper Traps":0.5,Quads:0.5,Hamstrings:1,Glutes:1,Erectors:1}],["Stiff Leg Deadlift",{Hamstrings:1,Glutes:0.5,Erectors:1}],["Hamstring Curl",{Hamstrings:1}],["1 Leg Kettlebell Deadlift",{Hamstrings:1,Glutes:1,Erectors:0.5}],["Calf Press",{Calves:1}],["Front Squat",{Quads:1,Glutes:1,Erectors:0.5,Abs:0.5}],["Hack Squat",{Quads:1,Glutes:0.5}],["Bulgarian Split Squat",{Quads:1,Glutes:1,Hamstrings:0.5}],["Goblet Squat",{Quads:1,Glutes:1}],["Sissy Squat",{Quads:1}],["Romanian Deadlift",{Hamstrings:1,Glutes:1,Erectors:0.5}],["Good Morning",{Hamstrings:1,Erectors:1,Glutes:0.5}],["Hip Thrust",{Glutes:1,Hamstrings:0.5,Quads:0.5}],["Glute Bridge",{Glutes:1,Hamstrings:0.5}],["Cable Pull-Through",{Glutes:1,Hamstrings:1,Erectors:0.5}],["Walking Lunge",{Quads:1,Glutes:1,Hamstrings:0.5}],["Reverse Lunge",{Quads:1,Glutes:1,Hamstrings:0.5}],["Single-Leg Romanian Deadlift",{Hamstrings:1,Glutes:1,Erectors:0.5,Obliques:0.5}],["Standing Calf Raise",{Calves:1}]],
-  "Core":[["Decline Sit Ups",{Abs:1,Obliques:0.5}],["Reverse Crunch",{Abs:1,Obliques:0.5}],["Cable Crunch",{Abs:1,Obliques:0.5}],["Crunch Machine",{Abs:1,Obliques:0.5}],["Yoga Ball Crunch",{Abs:1,Obliques:0.5}],["Yoga Ball Deadbug",{Abs:1,Obliques:0.5}],["Yoga Ball Plank Rollout",{Abs:1,Obliques:0.5,"Front Delt":0.5}],["Cable Side Bend",{Abs:0.5,Obliques:1}],["Side Bend",{Abs:0.5,Obliques:1}],["Cable Baseball Bat Swing",{"Side Delt":0.5,Abs:0.5,Obliques:1}],["Cable Axe Swing",{Abs:0.5,Obliques:1,Lats:0.5}],["Back Extension",{Hamstrings:0.5,Glutes:0.5,Erectors:1}],["Plank",{Abs:1,Obliques:0.5,"Front Delt":0.5}],["Hanging Leg Raise",{Abs:1,Obliques:0.5}],["Pallof Press",{Obliques:1,Abs:0.5}],["Russian Twist",{Obliques:1,Abs:0.5}]]
+  "Forearms":[["Wrist Curl",{Forearms:1}],["Reverse Wrist Curl",{Forearms:1}]],
+  "Legs":[["Squat",{Quads:1,Glutes:1,Adductors:0.5,Erectors:0.5}],["Leg Press",{Quads:1,Glutes:1,Adductors:0.5}],["Leg Extension",{Quads:1}],["Dumbbell Lunge",{Quads:1,Glutes:1,Adductors:0.5}],["Dumbbell Split Squat",{Quads:1,Glutes:1,Adductors:0.5}],["Cossack Squat",{Quads:1,Glutes:1,Adductors:1,Erectors:0.5}],["Step Down Heel Tap",{Quads:1,Glutes:0.5}],["Trap Bar Deadlift",{"Upper Traps":0.5,Quads:1,Hamstrings:0.5,Glutes:1,Erectors:1}],["Deadlift",{Lats:0.5,"Upper Traps":0.5,Quads:0.5,Hamstrings:1,Glutes:1,Erectors:1}],["Stiff Leg Deadlift",{Hamstrings:1,Glutes:1,Erectors:1}],["Hamstring Curl",{Hamstrings:1}],["1 Leg Kettlebell Deadlift",{Hamstrings:1,Glutes:1,Erectors:0.5}],["Calf Press",{Calves:1}],["Front Squat",{Quads:1,Glutes:1,Adductors:0.5,Erectors:0.5,Abs:0.5}],["Hack Squat",{Quads:1,Glutes:0.5,Adductors:0.5}],["Bulgarian Split Squat",{Quads:1,Glutes:1,Adductors:0.5}],["Goblet Squat",{Quads:1,Glutes:1,Adductors:0.5}],["Sissy Squat",{Quads:1}],["Romanian Deadlift",{Hamstrings:1,Glutes:1,Erectors:0.5}],["Good Morning",{Hamstrings:1,Erectors:1,Glutes:0.5}],["Hip Thrust",{Glutes:1,Hamstrings:0.5}],["Glute Bridge",{Glutes:1,Hamstrings:0.5}],["Cable Pull-Through",{Glutes:1,Hamstrings:1,Erectors:0.5}],["Walking Lunge",{Quads:1,Glutes:1,Adductors:0.5}],["Reverse Lunge",{Quads:1,Glutes:1,Adductors:0.5}],["Single-Leg Romanian Deadlift",{Hamstrings:1,Glutes:1,Erectors:0.5,Obliques:0.5}],["Standing Calf Raise",{Calves:1}],["Hip Adduction Machine",{Adductors:1}],["Copenhagen Plank",{Adductors:1,Obliques:0.5}]],
+  "Core":[["Decline Sit Ups",{Abs:1,Obliques:0.5}],["Reverse Crunch",{Abs:1,Obliques:0.5}],["Cable Crunch",{Abs:1,Obliques:0.5}],["Crunch Machine",{Abs:1,Obliques:0.5}],["Yoga Ball Crunch",{Abs:1,Obliques:0.5}],["Yoga Ball Deadbug",{Abs:1,Obliques:0.5}],["Yoga Ball Plank Rollout",{Abs:1,Obliques:0.5,"Front Delt":0.5}],["Cable Side Bend",{Abs:0.5,Obliques:1}],["Side Bend",{Abs:0.5,Obliques:1}],["Cable Baseball Bat Swing",{"Side Delt":0.5,Abs:0.5,Obliques:1}],["Cable Axe Swing",{Abs:0.5,Obliques:1,Lats:0.5}],["Back Extension",{Hamstrings:0.5,Glutes:0.5,Erectors:1}],["Plank",{Abs:1,Obliques:0.5,"Front Delt":0.5}],["Hanging Leg Raise",{Abs:1,Obliques:0.5}],["Pallof Press",{Obliques:1,Abs:0.5}],["Russian Twist",{Obliques:1,Abs:0.5}],["Side Plank",{Obliques:1,Abs:0.5}],["Suitcase Carry",{Obliques:1,"Upper Traps":0.5,Forearms:0.5}]]
 };
-const ALL_MUS=["Chest","Lats","Upper Traps","Mid-Low Traps","Front Delt","Side Delt","Rear Delt","Biceps","Triceps","Quads","Hamstrings","Glutes","Calves","Abs","Erectors","Obliques"];
+const ALL_MUS=["Chest","Lats","Upper Traps","Mid-Low Traps","Front Delt","Side Delt","Rear Delt","Biceps","Triceps","Forearms","Quads","Hamstrings","Glutes","Adductors","Calves","Abs","Erectors","Obliques"];
 
 // === Movement patterns ===
 // Ordered for display in the Summary "Patterns" tab. Each exercise can belong to 0+ patterns
 // (most isolation lifts belong to none; some compound lifts like Power Clean belong to two).
-const ALL_PATTERNS=["Vertical Push","Vertical Pull","Horizontal Push","Horizontal Pull","Squat","Lunge","Hinge","Rotation","Anti-Rotation","Carry"];
+const ALL_PATTERNS=["Vertical Push","Vertical Pull","Horizontal Push","Horizontal Pull","Squat","Lunge","Hinge","Rotation","Anti-Rotation","Anti-Extension","Anti-Lateral Flexion","Carry"];
 // Pattern → array of exercise names. Look up reverse via EX_TO_PATTERNS (built below).
 const BUILTIN_EX_PATTERNS={
-  "Vertical Push":["Barbell Shoulder Press","Dumbbell Shoulder Press","Barbell Push Press","Unilateral Dumbbell Push Press","Power Clean","Clean and Press","Hang Clean and Press","Arnold Press","Seated Dumbbell Press","Dips"],
-  "Vertical Pull":["Lat Pulldown","One Arm Lat Pulldown","Pull-Ups","Chin-Ups","Upright Row","Neutral Grip Lat Pulldown","Wide Grip Pull-Up"],
+  "Vertical Push":["Barbell Shoulder Press","Dumbbell Shoulder Press","Barbell Push Press","Unilateral Dumbbell Push Press","Clean and Press","Hang Clean and Press","Arnold Press","Seated Dumbbell Press","Dips"],
+  "Vertical Pull":["Lat Pulldown","One Arm Lat Pulldown","Pull-Ups","Chin-Ups","Neutral Grip Lat Pulldown","Wide Grip Pull-Up"],
   "Horizontal Push":["Barbell Bench Press","Dumbbell Bench Press","Incline Dumbbell Bench Press","Push-Up","Landmine Press","Incline Barbell Bench Press","Decline Barbell Bench Press","Machine Chest Press","Close-Grip Bench Press","Diamond Push-Up"],
   "Horizontal Pull":["Barbell Row","Dumbbell Row","Underhand Barbell Row","Narrow Grip Cable Row","Wide Grip Cable Row","One Arm Cable Row","T-Bar Row","Pendlay Row","Chest-Supported Row","Meadows Row","Face Pull"],
   "Squat":["Squat","Leg Press","Cossack Squat","Front Squat","Hack Squat","Goblet Squat","Sissy Squat"],
   "Lunge":["Dumbbell Lunge","Dumbbell Split Squat","Step Down Heel Tap","Bulgarian Split Squat","Walking Lunge","Reverse Lunge"],
   "Hinge":["Rack Pull","Trap Bar Deadlift","Deadlift","Stiff Leg Deadlift","1 Leg Kettlebell Deadlift","Romanian Deadlift","Good Morning","Hip Thrust","Glute Bridge","Cable Pull-Through","Single-Leg Romanian Deadlift","Back Extension","Power Clean","Clean and Press","Hang Clean and Press"],
   "Rotation":["Cable Baseball Bat Swing","Cable Axe Swing","Russian Twist"],
-  "Anti-Rotation":["Unilateral Dumbbell Push Press","Single-Leg Romanian Deadlift","Yoga Ball Deadbug","Yoga Ball Plank Rollout","Plank","Pallof Press"],
-  "Carry":["Farmer's Carry"]
+  "Anti-Rotation":["Unilateral Dumbbell Push Press","Single-Leg Romanian Deadlift","Pallof Press"],
+  "Anti-Extension":["Yoga Ball Deadbug","Yoga Ball Plank Rollout","Plank"],
+  "Anti-Lateral Flexion":["Side Bend","Cable Side Bend","Side Plank","Copenhagen Plank","Suitcase Carry"],
+  "Carry":["Farmer's Carry","Suitcase Carry"]
 };
 // Reverse lookup baseline: exercise name → array of patterns (from the built-in defaults).
 const BUILTIN_EX_TO_PATTERNS={};
@@ -1513,30 +1516,39 @@ function loadPatternOverrides(){
 function savePatternOverrides(){
   try{localStorage.setItem(PATTERN_OVERRIDES_KEY,JSON.stringify(patternOverrides))}catch(e){}
 }
-// Resolve the patterns for an exercise: override wins if present, else built-in default, else [].
-function getPatternsFor(name){
-  if(Object.prototype.hasOwnProperty.call(patternOverrides,name))return patternOverrides[name].slice();
-  return (BUILTIN_EX_TO_PATTERNS[name]||[]).slice();
+// Patterns for a BUILT-IN, looked up by its canonical name. Built-in overrides are stored under
+// the canonical name (stable across renames); a display-name key is still honored for overrides
+// saved by older builds, which stored them under the renamed name.
+function getBuiltinPatterns(canon){
+  const display=builtinNameOverrides[canon]||canon;
+  if(Object.prototype.hasOwnProperty.call(patternOverrides,canon))return patternOverrides[canon].slice();
+  if(display!==canon && Object.prototype.hasOwnProperty.call(patternOverrides,display))return patternOverrides[display].slice();
+  return (BUILTIN_EX_TO_PATTERNS[canon]||[]).slice();
 }
-// Rebuild the live EX_TO_PATTERNS (name→patterns) and the pattern→names lookup used by the
-// Summary Patterns tab. Called after any override change and once at boot.
+// Patterns for a CUSTOM exercise, by its name. Customs have no built-in default.
+function getCustomPatterns(name){
+  return Object.prototype.hasOwnProperty.call(patternOverrides,name) ? patternOverrides[name].slice() : [];
+}
+// Rebuild the live EX_TO_PATTERNS (name→patterns) and PATTERN_TO_EX lookups used by the Summary
+// Patterns tab. Both are keyed by DISPLAY name, because that's what plan rows and logged sets
+// store — so a renamed built-in (Squat → Back Squat) still counts toward pattern coverage.
+// NOTE: must only run after boot has loaded customs, name overrides and pattern overrides.
+// (These are `let` declarations further down; referencing them earlier throws — a `typeof`
+// check does not protect against that.)
 let PATTERN_TO_EX={};
 function rebuildPatterns(){
   EX_TO_PATTERNS={};
   PATTERN_TO_EX={};
   ALL_PATTERNS.forEach(p=>{PATTERN_TO_EX[p]=[]});
-  // Gather all known exercise names: built-ins + customs.
-  // `typeof` guard is TDZ-safe: customExercises is declared with `let` further down, so a
-  // direct reference before that line would throw. (rebuildPatterns is only meant to run
-  // after boot has loaded customs, but this keeps it safe if called earlier.)
-  const names=new Set(Object.keys(BUILTIN_EX_TO_PATTERNS));
-  if(typeof customExercises!=="undefined" && Array.isArray(customExercises))customExercises.forEach(e=>names.add(e.name));
-  if(typeof patternOverrides!=="undefined")Object.keys(patternOverrides).forEach(n=>names.add(n));
-  names.forEach(name=>{
-    const pats=getPatternsFor(name);
-    if(pats.length)EX_TO_PATTERNS[name]=pats;
+  const add=(name,pats)=>{
+    if(!pats.length)return;
+    EX_TO_PATTERNS[name]=pats;
     pats.forEach(p=>{ if(PATTERN_TO_EX[p])PATTERN_TO_EX[p].push(name) });
-  });
+  };
+  Object.values(BUILTIN_EX).forEach(items=>items.forEach(([canon])=>{
+    add(builtinNameOverrides[canon]||canon, getBuiltinPatterns(canon));
+  }));
+  customExercises.forEach(e=>add(e.name, getCustomPatterns(e.name)));
 }
 // (No eager call here — boot calls rebuildPatterns() after customs + overrides load.)
 
@@ -1719,6 +1731,8 @@ function saveSetTypeOverrides(){
 // For all other types, uses the flat multiplier (with user override if set).
 function getSetTypeMult(key, setRecord){
   if(key==="drop"&&setRecord&&typeof setRecord.dropCount==="number"){
+    // A "drop set" logged with no drops was really a straight set — don't credit it 1.5×.
+    if(setRecord.dropCount<=0)return getSetTypeMult("straight");
     return getDropTierMult(setRecord.dropCount);
   }
   if(setTypeMultipliers[key]!==undefined)return setTypeMultipliers[key];
@@ -1880,8 +1894,8 @@ const MUSCLE_TO_CATEGORY={
   "Chest":"Chest",
   "Lats":"Back / Lats","Upper Traps":"Traps","Mid-Low Traps":"Traps",
   "Front Delt":"Shoulders","Side Delt":"Shoulders","Rear Delt":"Shoulders",
-  "Biceps":"Biceps","Triceps":"Triceps",
-  "Quads":"Legs","Hamstrings":"Legs","Glutes":"Legs","Calves":"Legs",
+  "Biceps":"Biceps","Triceps":"Triceps","Forearms":"Forearms",
+  "Quads":"Legs","Hamstrings":"Legs","Glutes":"Legs","Adductors":"Legs","Calves":"Legs",
   "Abs":"Core","Erectors":"Core","Obliques":"Core"
 };
 // Decide which browse category a custom exercise belongs in, based on its primary muscle
@@ -2057,6 +2071,34 @@ function migrateBlocksToWeeks(){
   });
 }
 
+// If a custom exercise has the same name as a built-in (e.g. you made a custom "Side Plank"
+// before it was added to the library), the two would collide: the picker shows both and the
+// muscle lookup gets overwritten. Rename the custom one to "Name (custom)" and carry its plans,
+// logged sets and pattern tags along. Runs at boot after blocks load; idempotent.
+function migrateCustomNameCollisions(){
+  const builtinNames=new Set();
+  Object.values(BUILTIN_EX).forEach(items=>items.forEach(([n])=>{
+    builtinNames.add(n.toLowerCase());
+    if(builtinNameOverrides[n])builtinNames.add(builtinNameOverrides[n].toLowerCase());
+  }));
+  const taken=(name,self)=>builtinNames.has(name.toLowerCase()) ||
+    customExercises.some(c=>c!==self && c.name.toLowerCase()===name.toLowerCase());
+  let changed=false;
+  customExercises.forEach(e=>{
+    if(!builtinNames.has(e.name.toLowerCase()))return;
+    let nm=`${e.name} (custom)`, i=2;
+    while(taken(nm,e))nm=`${e.name} (custom ${i++})`;
+    const old=e.name;
+    e.name=nm;
+    propagateExerciseRename(old, nm);
+    if(Object.prototype.hasOwnProperty.call(patternOverrides,old)){
+      patternOverrides[nm]=patternOverrides[old]; delete patternOverrides[old]; savePatternOverrides();
+    }
+    changed=true;
+  });
+  if(changed){ saveCustomExercises(); rebuildEX(); rebuildPatterns(); }
+}
+
 function migrateRenamedExercises(){
   let changed=false;
   BLOCKS.forEach(b=>{
@@ -2114,24 +2156,37 @@ function migrateRenamedExercises(){
 
 // Auto-save the current block
 let saveTimer=null;
-function autoSave(){
-  if(saveTimer)clearTimeout(saveTimer);
+// Blocks with unsaved edits. Tracking these (rather than saving whatever curBlock is when the
+// timer fires) means switching blocks within the debounce window can't drop an edit.
+const dirtyBlocks=new Set();
+function setSaveStatus(text, ok){
   const status=document.getElementById("save-status");
-  status.textContent="Saving…";
-  status.classList.remove("saved");
-  saveTimer=setTimeout(()=>{
-    try{
-      localStorage.setItem(storageKey(curBlock),JSON.stringify(mem[curBlock]));
-      status.textContent="Saved";
-      status.classList.add("saved");
-      // The status strip's "planned" stats depend on the current block plan; refresh them.
-      if(typeof renderStatusStrip==="function")renderStatusStrip();
-    }catch(e){
-      status.textContent="Save failed";
-      status.classList.remove("saved");
-    }
-  },300);
+  if(!status)return;
+  status.textContent=text;
+  status.classList.toggle("saved", !!ok);
 }
+function autoSave(){
+  dirtyBlocks.add(curBlock);
+  if(saveTimer)clearTimeout(saveTimer);
+  setSaveStatus("Saving…", false);
+  saveTimer=setTimeout(flushSaves,300);
+}
+// Write every dirty block now. Called by the debounce timer, before block switches and
+// backups, and when the page is hidden (app swiped away / screen locked).
+function flushSaves(){
+  if(saveTimer){clearTimeout(saveTimer);saveTimer=null}
+  if(dirtyBlocks.size===0)return;
+  try{
+    dirtyBlocks.forEach(b=>{ if(mem[b])localStorage.setItem(storageKey(b),JSON.stringify(mem[b])) });
+    dirtyBlocks.clear();
+    setSaveStatus("Saved", true);
+    if(typeof renderStatusStrip==="function")renderStatusStrip();
+  }catch(e){
+    setSaveStatus("Save failed", false);
+  }
+}
+document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="hidden")flushSaves() });
+window.addEventListener("pagehide", flushSaves);
 
 function closeAllDropdowns(){if(activeDropdown){activeDropdown.classList.remove("open");activeDropdown=null}}
 document.addEventListener("click",e=>{if(!e.target.closest(".ex-picker"))closeAllDropdowns()});
@@ -2426,6 +2481,7 @@ function doDeleteBlock(){
 document.getElementById("delblock-bg").addEventListener("click",e=>{if(e.target.id==="delblock-bg")closeDeleteBlockModal()});
 
 function switchBlock(b){
+  flushSaves(); // persist any pending edit to the block we're leaving
   curBlock=b;
   curWeek=0; // each block tracks its own selected week; reset to week 1 on switch
   try{localStorage.setItem(CUR_BLOCK_KEY, b)}catch(e){}
@@ -2606,7 +2662,7 @@ document.getElementById("week-remove").onclick=removeWeek;
 let numpadCtx=null; // {dayId, rowIndex, numEl, value (string)}
 function openNumpad(dayId,rowIndex,numEl){
   const sets=mem[curBlock].days[dayId].rows[rowIndex].sets;
-  numpadCtx={dayId,rowIndex,numEl,value:String(sets)};
+  numpadCtx={dayId,rowIndex,numEl,value:String(sets),fresh:true}; // fresh: next digit replaces
   document.getElementById("np-display").textContent=numpadCtx.value;
   document.getElementById("numpad-bg").classList.add("open");
 }
@@ -2616,14 +2672,18 @@ function npPress(d){
   let v=numpadCtx.value;
   // If current value is just "0", replace it with the new digit (so "0" then "5" gives "5").
   // Otherwise append (so "5" then "0" gives "50"). Standard calculator/numpad behaviour.
-  if(v==="0")v=d;else v+=d;
+  // The first digit after opening replaces the shown value (so opening on "3" and tapping 5
+  // gives 5, not 35). After that, digits append; a lone "0" is always replaced.
+  if(numpadCtx.fresh||v==="0")v=d;else v+=d;
+  numpadCtx.fresh=false;
   if(parseInt(v,10)>MAX_SETS)v=String(MAX_SETS);
   numpadCtx.value=v;
   document.getElementById("np-display").textContent=v;
 }
-function npClear(){if(!numpadCtx)return;numpadCtx.value="0";document.getElementById("np-display").textContent="0"}
+function npClear(){if(!numpadCtx)return;numpadCtx.fresh=false;numpadCtx.value="0";document.getElementById("np-display").textContent="0"}
 function npBack(){
   if(!numpadCtx)return;
+  numpadCtx.fresh=false;
   let v=numpadCtx.value;
   v=v.length<=1?"0":v.slice(0,-1);
   numpadCtx.value=v;
@@ -2886,6 +2946,7 @@ const BACKUP_KEYS=[
   "trainblock_prefs_v1"
 ];
 function exportBackup(){
+  flushSaves(); // backup reads localStorage, so write pending edits first
   const payload={
     version:1,
     exportedAt:new Date().toISOString(),
@@ -2914,24 +2975,43 @@ function importBackup(file){
   if(!confirm("Importing will replace ALL existing data: blocks, sessions, custom exercises, preferences. Continue?"))return;
   const reader=new FileReader();
   reader.onload=e=>{
+    let parsed;
     try{
-      const parsed=JSON.parse(e.target.result);
+      parsed=JSON.parse(e.target.result);
       if(!parsed||!parsed.data||typeof parsed.data!=="object")throw new Error("Backup format not recognized");
-      // Wipe existing keys
-      BACKUP_KEYS.forEach(k=>{try{localStorage.removeItem(k)}catch(_){}});
-      // Wipe any existing block keys we know about
-      const all=Object.keys(localStorage).filter(k=>k.startsWith("trainblock_v4_"));
-      all.forEach(k=>{try{localStorage.removeItem(k)}catch(_){}});
-      // Restore from the payload
-      Object.entries(parsed.data).forEach(([k,v])=>{
-        try{localStorage.setItem(k,v)}catch(_){}
-      });
-      // Reload everything
-      alert("Backup imported. Reloading…");
-      location.reload();
-    }catch(err){
-      alert("Import failed: "+(err.message||"unknown error"));
+    }catch(err){ alert("Import failed: "+(err.message||"unknown error")); return; }
+
+    // 1. Validate BEFORE touching anything. Only accept this app's keys, each value must be a
+    //    string that parses as JSON. A bad file is rejected with existing data untouched.
+    const entries=[];
+    for(const [k,v] of Object.entries(parsed.data)){
+      if(typeof k!=="string"||!k.startsWith("trainblock_"))continue; // ignore foreign keys
+      if(typeof v!=="string"){ alert(`Import failed: entry "${k}" is malformed. Nothing was changed.`); return; }
+      try{ JSON.parse(v) }catch(_){ alert(`Import failed: entry "${k}" is corrupted. Nothing was changed.`); return; }
+      entries.push([k,v]);
     }
+    if(entries.length===0){ alert("Import failed: the file contains no Shred Sheet data. Nothing was changed."); return; }
+
+    // 2. Snapshot current data so a mid-restore failure (e.g. storage quota) can be rolled back.
+    const snapshot={};
+    Object.keys(localStorage).filter(k=>k.startsWith("trainblock_")).forEach(k=>{snapshot[k]=localStorage.getItem(k)});
+
+    // 3. Replace: clear our keys, write the backup. Any write failure → restore the snapshot.
+    try{
+      Object.keys(snapshot).forEach(k=>localStorage.removeItem(k));
+      entries.forEach(([k,v])=>localStorage.setItem(k,v));
+    }catch(err){
+      try{
+        Object.keys(localStorage).filter(k=>k.startsWith("trainblock_")).forEach(k=>localStorage.removeItem(k));
+        Object.entries(snapshot).forEach(([k,v])=>localStorage.setItem(k,v));
+        alert("Import failed partway (storage may be full). Your previous data has been restored.");
+      }catch(_){
+        alert("Import failed and the previous data could not be fully restored. Don't close the app — export what you can from Settings.");
+      }
+      return;
+    }
+    alert("Backup imported. Reloading…");
+    location.reload();
   };
   reader.onerror=()=>alert("Couldn't read file");
   reader.readAsText(file);
@@ -3080,7 +3160,7 @@ function renderHistoryList(){
     const exCount=new Set(s.sets.map(x=>x.ex)).size;
     const meta=setCount>0?`${setCount} set${setCount===1?"":"s"} across ${exCount} exercise${exCount===1?"":"s"}`:"No sets logged";
     const badge=s.status==="in_progress"?'<span class="hist-session-badge">IN PROGRESS</span>':(s.imported?'<span class="hist-session-badge" style="background:var(--text2)">IMPORTED</span>':'');
-    card.innerHTML=`<div class="hist-session-head"><div class="hist-session-title">${titleStr}${badge}</div><div class="hist-session-date">${dateStr}</div></div><div class="hist-session-meta">${meta}</div>`;
+    card.innerHTML=`<div class="hist-session-head"><div class="hist-session-title">${esc(titleStr)}${badge}</div><div class="hist-session-date">${dateStr}</div></div><div class="hist-session-meta">${meta}</div>`;
     card.onclick=()=>historyPush({type:"session",payload:s.id});
     body.appendChild(card);
   });
@@ -3095,7 +3175,7 @@ function renderSessionDetail(sessId){
   const meta=document.createElement("div");
   meta.className="sess-detail-meta";
   const titleStr=sessionTitle(s);
-  meta.innerHTML=`<div style="display:flex;align-items:center;gap:6px;margin-bottom:2px"><span style="font-weight:600;color:var(--text);font-size:14px">${titleStr}</span><button class="sess-rename-btn" type="button" aria-label="Rename session" title="Rename session"><i class="ti ti-edit"></i></button></div><div>${dateStr}</div><div style="margin-top:6px">${s.sets.length} set${s.sets.length===1?"":"s"} · status: ${s.status}</div>`;
+  meta.innerHTML=`<div style="display:flex;align-items:center;gap:6px;margin-bottom:2px"><span style="font-weight:600;color:var(--text);font-size:14px">${esc(titleStr)}</span><button class="sess-rename-btn" type="button" aria-label="Rename session" title="Rename session"><i class="ti ti-edit"></i></button></div><div>${dateStr}</div><div style="margin-top:6px">${s.sets.length} set${s.sets.length===1?"":"s"} · status: ${s.status}</div>`;
   meta.querySelector(".sess-rename-btn").onclick=()=>renameSession(s.id);
   body.appendChild(meta);
 
@@ -3379,7 +3459,7 @@ function renderExercisePicker(){
     names.filter(n=>!ql||n.toLowerCase().includes(ql)).forEach(n=>{
       const item=document.createElement("button");
       item.className="hist-session";item.style.cssText="border:none;width:100%;text-align:left;font-family:inherit;cursor:pointer;display:flex;justify-content:space-between;align-items:center";
-      item.innerHTML=`<span>${n}</span><span style="font-size:11px;color:var(--text2);font-variant-numeric:tabular-nums">${counts[n]} set${counts[n]===1?"":"s"}</span>`;
+      item.innerHTML=`<span>${esc(n)}</span><span style="font-size:11px;color:var(--text2);font-variant-numeric:tabular-nums">${counts[n]} set${counts[n]===1?"":"s"}</span>`;
       item.onclick=()=>historyPush({type:"graph",payload:{ex:n}});
       list.appendChild(item);
     });
@@ -3413,6 +3493,13 @@ function totalRepsForSet(s){
     t = s.reps * s.clusterCount;
   }
   return t;
+}
+
+// Escape user-entered text (exercise/block/session names) before inserting into innerHTML.
+// Prevents names containing < > & " from breaking layout, and blocks script injection from a
+// shared backup file.
+function esc(v){
+  return String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 }
 
 function est1rm(set){
@@ -3818,7 +3905,7 @@ function migrateFlexifyToSessions(){
   flexifyHistory.forEach(rec=>{
     if(!rec.ours)return; // skip unmapped — can't credit them
     const d=new Date(rec.date);
-    const dayKey=d.toISOString().slice(0,10);
+    const dayKey=localDayKey(d); // local day, not UTC (evening sets west of UTC)
     if(!groups[dayKey])groups[dayKey]=[];
     groups[dayKey].push(rec);
   });
@@ -3980,8 +4067,8 @@ function openCustomEditor(existingName){
   // Load current movement patterns (override or built-in default). For built-ins we key off
   // the canonical name; for customs, off the exercise name.
   if(existingName){
-    const patKey = isBuiltin ? canonicalName : existingName;
-    getPatternsFor(patKey).forEach(p=>ceCtx.patterns.add(p));
+    const pats = isBuiltin ? getBuiltinPatterns(canonicalName) : getCustomPatterns(existingName);
+    pats.forEach(p=>ceCtx.patterns.add(p));
   }
 
   document.getElementById("ce-title").textContent=existingName?"Edit exercise":"New exercise";
@@ -4019,20 +4106,16 @@ function closeCustomEditor(){
 function persistPatternSelection(key, isBuiltin, renameTo){
   const chosen=Array.from(ceCtx.patterns);
   if(isBuiltin){
+    // Built-in overrides live under the CANONICAL name only, so renames never orphan them.
     const def=(BUILTIN_EX_TO_PATTERNS[key]||[]).slice().sort();
     const sel=chosen.slice().sort();
     const sameAsDefault = def.length===sel.length && def.every((p,i)=>p===sel[i]);
-    if(sameAsDefault){
-      delete patternOverrides[key];
-    } else {
-      patternOverrides[key]=chosen;
-    }
-    if(renameTo && renameTo!==key){
-      if(patternOverrides[key]!==undefined){
-        patternOverrides[renameTo]=patternOverrides[key];
-        delete patternOverrides[key];
-      }
-    }
+    if(sameAsDefault)delete patternOverrides[key];
+    else patternOverrides[key]=chosen;
+    // Clean up any legacy override an older build stored under the display name.
+    if(renameTo && renameTo!==key)delete patternOverrides[renameTo];
+    const curDisplay=builtinNameOverrides[key];
+    if(curDisplay && curDisplay!==key)delete patternOverrides[curDisplay];
   } else {
     const storeKey = renameTo || key;
     if(renameTo && renameTo!==key && patternOverrides[key]!==undefined)delete patternOverrides[key];
@@ -4050,20 +4133,29 @@ function saveCustomExercise(){
   // === Built-in branch: muscle override + optional rename ===
   if(ceCtx.isBuiltin){
     const canon=ceCtx.canonicalName;
-    const original=getBuiltinOriginalMuscles(canon);
-    const sameAsOriginal=musclesEqual(muscles,original);
-    if(sameAsOriginal){
-      delete builtinOverrides[canon];
-    } else {
-      builtinOverrides[canon]=muscles;
-    }
-    saveBuiltinOverrides();
-
-    // Rename handling: read the input, validate, save name override, propagate to data.
+    // Validate the name FIRST — a rejected rename must not leave a half-saved muscle change.
     const rawName=document.getElementById("ce-name").value.trim();
     if(!rawName){setCeError("Name is required.");return}
     if(rawName.length<2){setCeError("Name is too short.");return}
     const oldDisplayName=builtinNameOverrides[canon]||canon;
+    if(rawName!==oldDisplayName){
+      const lowerCheck=rawName.toLowerCase();
+      let clash=false;
+      Object.entries(BUILTIN_EX).forEach(([,items])=>items.forEach(([n])=>{
+        if(n===canon)return;
+        const display=builtinNameOverrides[n]||n;
+        if(display.toLowerCase()===lowerCheck || n.toLowerCase()===lowerCheck)clash=true;
+      }));
+      customExercises.forEach(e=>{if(e.name.toLowerCase()===lowerCheck)clash=true});
+      if(clash){setCeError("An exercise with this name already exists.");return}
+    }
+    // Name is valid — now save the muscle override.
+    const original=getBuiltinOriginalMuscles(canon);
+    if(musclesEqual(muscles,original))delete builtinOverrides[canon];
+    else builtinOverrides[canon]=muscles;
+    saveBuiltinOverrides();
+
+    // Rename handling: save name override, propagate to data.
     if(rawName!==oldDisplayName){
       // Conflict check against everything except the current exercise (canonical or current rename)
       const lower=rawName.toLowerCase();
@@ -4113,7 +4205,10 @@ function saveCustomExercise(){
   Object.entries(BUILTIN_EX).forEach(([,items])=>{
     items.forEach(([n])=>{
       const display=builtinNameOverrides[n]||n;
-      if(display.toLowerCase()===lowerName)conflict=true;
+      // Also block a built-in's canonical name: even after that built-in is renamed, its
+      // canonical name stays an alias (EX_BY_NAME, Flexify mapping), so a custom exercise
+      // using it would be mistaken for the built-in and overwrite its muscle data.
+      if(display.toLowerCase()===lowerName || n.toLowerCase()===lowerName)conflict=true;
     });
   });
   customExercises.forEach(e=>{
@@ -4333,7 +4428,8 @@ function exportToFlexify(){
     const flexNames=[];
     day.rows.forEach(row=>{
       if(!row.ex||row.sets<=0)return;
-      const info=FLEXIFY_NAME_MAP[row.ex];
+      // Map by canonical name so renamed built-ins (Squat → Back Squat) still export.
+      const info=FLEXIFY_NAME_MAP[row.ex]||FLEXIFY_NAME_MAP[resolveBuiltinName(row.ex)];
       if(info&&info.flexify){
         flexNames.push(info.flexify);
       } else {
@@ -4899,9 +4995,19 @@ function loadSessions(){
     }
   }catch(e){sessions=[]}
 }
+let sessionSaveWarned=false;
 function saveSessions(){
-  try{localStorage.setItem(SESSIONS_KEY,JSON.stringify(sessions))}
-  catch(e){console.error("Failed to save sessions; storage may be full")}
+  try{
+    localStorage.setItem(SESSIONS_KEY,JSON.stringify(sessions));
+    sessionSaveWarned=false;
+  }catch(e){
+    console.error("Failed to save sessions; storage may be full", e);
+    // Don't fail silently — logged sets would be lost. Warn once per failure streak.
+    if(!sessionSaveWarned){
+      sessionSaveWarned=true;
+      alert("Couldn't save your workout history — device storage may be full.\n\nYour latest sets are NOT saved. Export a backup from Settings now, then free up space.");
+    }
+  }
   // Status strip reflects logged sets, so re-render whenever sessions change.
   if(typeof renderStatusStrip==="function")renderStatusStrip();
 }
@@ -5350,6 +5456,7 @@ function renderBasicInlineCards(wrap, s, pr){
   addBtn.innerHTML='<i class="ti ti-plus"></i> Add set';
   addBtn.onclick=()=>{
     pr.plannedSets=Math.max(pr.plannedSets, setsForRowIdx(s,pr.idx).length)+1;
+    saveSessions(); // persist, or the extra slot vanishes on reload
     renderWorkoutBody();
   };
   container.appendChild(addBtn);
@@ -5513,6 +5620,7 @@ function renderClusterInlineCards(wrap, s, pr){
   addBtn.innerHTML='<i class="ti ti-plus"></i> Add cluster set';
   addBtn.onclick=()=>{
     pr.plannedSets=Math.max(pr.plannedSets, setsForRowIdx(s,pr.idx).length)+1;
+    saveSessions(); // persist, or the extra slot vanishes on reload
     renderWorkoutBody();
   };
   container.appendChild(addBtn);
@@ -5645,6 +5753,7 @@ function renderRestPauseInlineCards(wrap, s, pr){
   addBtn.innerHTML='<i class="ti ti-plus"></i> Add rest-pause set';
   addBtn.onclick=()=>{
     pr.plannedSets=Math.max(pr.plannedSets, setsForRowIdx(s,pr.idx).length)+1;
+    saveSessions(); // persist, or the extra slot vanishes on reload
     renderWorkoutBody();
   };
   container.appendChild(addBtn);
@@ -5819,6 +5928,7 @@ function renderMyorepInlineCards(wrap, s, pr){
     // Just render an empty card by extending the slotCount
     const newSlot=Math.max(pr.plannedSets, setsForRowIdx(s,pr.idx).length)+1;
     pr.plannedSets=newSlot; // bump so the next render shows the empty card
+    saveSessions();
     renderWorkoutBody();
   };
   container.appendChild(addBtn);
@@ -6079,6 +6189,7 @@ function renderDropSetInlineCards(wrap, s, pr){
   addBtn.innerHTML='<i class="ti ti-plus"></i> Add sequence';
   addBtn.onclick=()=>{
     pr.plannedSets=Math.max(pr.plannedSets, setsForRowIdx(s,pr.idx).length)+1;
+    saveSessions(); // persist, or the extra slot vanishes on reload
     renderWorkoutBody();
   };
   container.appendChild(addBtn);
@@ -6571,6 +6682,31 @@ function saveSwap(){
   const pr=s.plannedRows[swapCtx.position];
   if(!pr){closeSwapPicker();return}
   const exChanged = d.ex !== swapCtx.originalEx;
+  const typeChanged = (d.type||"straight") !== (pr.type||"straight");
+  // If sets were already logged on this row, swapping in place would relabel them as the new
+  // exercise/type (logged sets key off rowIdx). Instead: cap the original row at what was
+  // actually logged, and insert the swapped exercise as a NEW row (fresh idx) right after it.
+  const loggedCount = setsForRowIdx(s, pr.idx).length;
+  if(loggedCount>0 && (exChanged || typeChanged)){
+    const origPlanned = pr.plannedSets || 1;
+    pr.plannedSets = loggedCount;
+    const maxIdx=s.plannedRows.reduce((m,r)=>Math.max(m, typeof r.idx==="number"?r.idx:-1), -1);
+    // If the user left the set count untouched, default the new row to the REMAINING sets.
+    const newSets = (d.sets===origPlanned) ? Math.max(1, origPlanned-loggedCount) : d.sets;
+    const newRow={
+      idx:maxIdx+1, ex:d.ex, type:d.type, plannedSets:newSets,
+      targets: exChanged ? [] : (Array.isArray(pr.targets)?pr.targets.slice(loggedCount):[]),
+      target:null, linkedToPrev:false, addedDuringWorkout:true, swappedFrom:pr.ex
+    };
+    if(d.type==="drop")newRow.dropCount=d.dropCount;
+    if(d.type==="myorep"||d.type==="restpause")newRow.miniSetCount=d.miniSetCount;
+    if(d.type==="cluster")newRow.clusterCount=d.clusterCount;
+    s.plannedRows.splice(swapCtx.position+1, 0, newRow);
+    saveSessions();
+    closeSwapPicker();
+    renderWorkoutBody();
+    return;
+  }
   pr.ex=d.ex;
   pr.type=d.type;
   pr.plannedSets=d.sets;
@@ -7333,6 +7469,8 @@ function startRestTimer(durationSec){
   restTimer.endsAt=Date.now()+durationSec*1000;
   restTimer.durationSec=durationSec;
   if(restTimer.id)clearInterval(restTimer.id);
+  // Cancel a pending auto-dismiss from the previous timer, or it would kill this new one.
+  if(restTimer.doneTimeout){clearTimeout(restTimer.doneTimeout);restTimer.doneTimeout=null}
   restTimer.id=setInterval(updateRestTimerLabel,250);
   document.getElementById("workout-timer-btn").classList.add("running");
   updateRestTimerLabel();
@@ -7353,7 +7491,7 @@ function updateRestTimerLabel(){
     // Catches attention in a noisy gym even when phone is in a pocket.
     if(navigator.vibrate){try{navigator.vibrate([600,150,600,150,600,150,600])}catch(e){}}
     document.getElementById("workout-timer-label").textContent="Done!";
-    setTimeout(()=>{stopRestTimer()},3500);
+    restTimer.doneTimeout=setTimeout(()=>{restTimer.doneTimeout=null;stopRestTimer()},3500);
     clearInterval(restTimer.id);restTimer.id=null;
     return;
   }
@@ -7472,12 +7610,27 @@ function renderDay(dayId){
     }
 
     const picker=makePicker(row.ex,(val,cleared)=>{
-      const wasEmpty=!dayData.rows[i].ex;
-      dayData.rows[i].ex=val;
+      const r=dayData.rows[i];
+      const wasEmpty=!r.ex;
+      const prevEx=r.ex;
+      r.ex=val;
+      // A different exercise shouldn't inherit the old one's weight targets or structural
+      // counts (e.g. a 225 lb squat target landing on a lateral raise).
+      if(val && prevEx && val!==prevEx){
+        delete r.targets; delete r.target;
+        delete r.dropCount; delete r.miniSetCount; delete r.clusterCount;
+      }
       if(cleared||val===""){
-        // Clearing the exercise also clears its sets
-        dayData.rows[i].sets=0;
-        dayData.rows[i].type="straight";
+        // Clearing the exercise also clears its sets, targets, and superset link — a stale
+        // linkedToPrev on an empty row could otherwise join unrelated exercises later.
+        r.sets=0;
+        r.type="straight";
+        r.linkedToPrev=false;
+        delete r.targets; delete r.target;
+        delete r.dropCount; delete r.miniSetCount; delete r.clusterCount;
+        // The row below can't stay linked to an empty row.
+        const next=dayData.rows[i+1];
+        if(next && next.linkedToPrev)next.linkedToPrev=false;
         const n=div.querySelector(".s-num");if(n)n.textContent="0";
       } else if(wasEmpty && dayData.rows[i].sets===0){
         // First-time exercise pick: auto-bump sets to 1 so the row is immediately "active".
@@ -7758,9 +7911,9 @@ function startRowDrag(e, dayId, rowIndex){
   const names=[];
   for(let k=grp.start;k<=grp.end;k++)names.push(rows[k].ex);
   if(size>1){
-    ghost.innerHTML=`<div class="dg-sub">Superset ×${size}</div>`+names.map(n=>`<div class="dg-ex">${n}</div>`).join("");
+    ghost.innerHTML=`<div class="dg-sub">Superset ×${size}</div>`+names.map(n=>`<div class="dg-ex">${esc(n)}</div>`).join("");
   } else {
-    ghost.innerHTML=`<div class="dg-ex">${names[0]}</div>`;
+    ghost.innerHTML=`<div class="dg-ex">${esc(names[0])}</div>`;
   }
   document.body.appendChild(ghost);
 
@@ -8035,7 +8188,10 @@ function exMuscles(name){return EX_BY_NAME[name]||{}}
 function plannedRowMult(row){
   const t=rowType(row);
   if(t==="drop"){
-    const n = (typeof row.dropCount==="number" && row.dropCount>0) ? row.dropCount : 2;
+    // Default 3 drops — must match the pill row, swap modal and target editor (all use 3),
+    // or planned volume shifts depending on whether a day has been rendered yet.
+    const n = (typeof row.dropCount==="number") ? row.dropCount : 3;
+    if(n<=0)return getSetTypeMult("straight"); // zero drops is just a straight set
     return getDropTierMult(n);
   }
   return getSetTypeMult(t);
@@ -8080,7 +8236,7 @@ function fmt(v){return v%1===0?v.toString():v.toFixed(1)}
 function getCoveredExercisesForPatterns(mode){
   // Returns Set<exercise name> covering whichever mode the user is viewing.
   // Planned: any row in the current block with sets > 0.
-  // Actual:  any logged set in the last ACTUAL_WINDOW_DAYS days (sessions + flexify history).
+  // Actual:  any logged set in the last ACTUAL_WINDOW_DAYS days, from the selected data source.
   const covered=new Set();
   if(mode==="planned"){
     const curBlk=mem[curBlock];
@@ -8093,14 +8249,16 @@ function getCoveredExercisesForPatterns(mode){
     }
   } else {
     const cutoff=Date.now() - ACTUAL_WINDOW_DAYS*86400000;
-    sessions.forEach(s=>{
+    // Respect the Actual data-source setting, the same way the muscle view does.
+    const source=prefs.actualSource||"sessions";
+    if(source==="sessions")sessions.forEach(s=>{
       if(s.status==="in_progress")return;
       (s.sets||[]).forEach(st=>{
         const ts = st.timestamp ? new Date(st.timestamp).getTime() : new Date(s.date).getTime();
         if(ts>=cutoff && st.ex)covered.add(st.ex);
       });
     });
-    if(Array.isArray(flexifyHistory)){
+    if(source!=="sessions" && Array.isArray(flexifyHistory)){
       flexifyHistory.forEach(rec=>{
         const ts = rec.date ? new Date(rec.date).getTime() : 0;
         if(ts>=cutoff && rec.ours)covered.add(rec.ours);
@@ -8332,7 +8490,7 @@ function renderSummary(){
             const right = type!=="straight"
               ? `${rawSets}× ${typeInfo.label.toLowerCase()} = ${fmt(sets)}`
               : `${fmt(sets)} set${sets===1?"":"s"}`;
-            r.innerHTML=`<span>${ex}</span><span>${right}</span>`;
+            r.innerHTML=`<span>${esc(ex)}</span><span>${right}</span>`;
             detail.appendChild(r);
           });
         });
@@ -8349,7 +8507,7 @@ function renderSummary(){
     const setsByMuscle=actual.totals;
     const window=`last ${ACTUAL_WINDOW_DAYS} days`;
     const range=(actual.firstDate&&actual.lastDate)
-      ? `${actual.firstDate.toISOString().slice(0,10)} → ${actual.lastDate.toISOString().slice(0,10)}`
+      ? `${localDayKey(actual.firstDate)} → ${localDayKey(actual.lastDate)}`
       : "no sets in window";
     const sourceLabel=actual.source==="sessions"?"native sessions":"Flexify history";
     meta.textContent=`Actual volume from ${sourceLabel} — ${actual.sessionsCounted} set${actual.sessionsCounted===1?"":"s"}, ${range}`;
@@ -8375,8 +8533,10 @@ function renderSummary(){
           const mults=exMuscles(st.ex);
           const mult=getSetTypeMult(st.type||"straight", st);
           Object.entries(mults).forEach(([m,w])=>{
-            if(!byMuscleExercise[m][st.ex])byMuscleExercise[m][st.ex]={count:0,weight:w*mult};
-            byMuscleExercise[m][st.ex].count+=1;
+            // Sum each set's own weight×multiplier (straight one week, myo-reps the next must
+            // both count correctly), so the breakdown adds up to the card total.
+            const e=byMuscleExercise[m][st.ex]||(byMuscleExercise[m][st.ex]={count:0,sum:0,weights:new Set()});
+            e.count+=1; e.sum+=w*mult; e.weights.add(w*mult);
           });
         });
       });
@@ -8385,8 +8545,8 @@ function renderSummary(){
         if(rec.date<cutoff||!rec.ours)return;
         const mults=exMuscles(rec.ours);
         Object.entries(mults).forEach(([m,w])=>{
-          if(!byMuscleExercise[m][rec.ours])byMuscleExercise[m][rec.ours]={count:0,weight:w};
-          byMuscleExercise[m][rec.ours].count+=1;
+          const e=byMuscleExercise[m][rec.ours]||(byMuscleExercise[m][rec.ours]={count:0,sum:0,weights:new Set()});
+          e.count+=1; e.sum+=w; e.weights.add(w);
         });
       });
     }
@@ -8405,8 +8565,12 @@ function renderSummary(){
           const dl=document.createElement("div");dl.className="m-detail-day";dl.textContent="Exercises";detail.appendChild(dl);
           exList.forEach(([ex,info])=>{
             const r=document.createElement("div");r.className="m-detail-ex";
-            const contribution=r05(info.count*info.weight);
-            r.innerHTML=`<span>${ex}</span><span>${info.count}×${info.weight===1?"":info.weight} = ${fmt(contribution)}</span>`;
+            const contribution=r05(info.sum);
+            // Uniform multiplier → "4×0.5 = 2"; mixed set types → "4 sets = 5.5".
+            const label = info.weights.size===1
+              ? (()=>{const w=[...info.weights][0];return `${info.count}×${w===1?"":fmtNum(w)} = ${fmt(contribution)}`})()
+              : `${info.count} sets = ${fmt(contribution)}`;
+            r.innerHTML=`<span>${esc(ex)}</span><span>${label}</span>`;
             detail.appendChild(r);
           });
         }
@@ -8444,6 +8608,7 @@ loadAllBlocks();              // populate mem for each block
 migrateBlocksToWeeks();       // upgrade legacy {days} blocks to {weeks:[{days}]} (idempotent)
 loadFlexifyHistory();         // load any imported Flexify history (legacy import path)
 migrateRenamedExercises();    // rename old exercise names in stored data (blocks + sessions + flexify)
+migrateCustomNameCollisions(); // rename customs that clash with newly added built-ins
 // Restore the last-selected block if it still exists; otherwise fall back to the first.
 try{const savedBlock=localStorage.getItem(CUR_BLOCK_KEY);if(savedBlock&&BLOCKS.includes(savedBlock))curBlock=savedBlock}catch(e){}
 if(!BLOCKS.includes(curBlock))curBlock=BLOCKS[0];
@@ -8457,6 +8622,9 @@ const _active=activeSession();
 if(_active)openWorkoutModal(_active.id);
 // Check if a backup reminder should be shown (after sessions and prefs are loaded)
 checkBackupReminder();
+// Ask the browser to mark this origin's storage as persistent so training history isn't
+// evicted under storage pressure. Silently ignored where unsupported.
+try{ if(navigator.storage&&navigator.storage.persist)navigator.storage.persist() }catch(e){}
 // Register the service worker only for the web/PWA build. Inside the Capacitor native shell
 // the files are served locally from the app bundle, so a service worker is unnecessary and can
 // occasionally serve stale assets — detect Capacitor and skip registration there.
