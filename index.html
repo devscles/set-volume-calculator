@@ -1950,7 +1950,7 @@ function rebuildEX(){
   });
 }
 
-function makeEmptyDay(){return{label:"",rows:Array(10).fill(null).map(()=>({ex:"",sets:0,type:"straight",linkedToPrev:false}))}}
+function makeEmptyDay(){return{label:"",rows:Array(10).fill(null).map(()=>({ex:"",sets:0,type:"straight",linkedToPrev:false}))}} // 10 = BASE_ROW_SLOTS
 // Safe read of a row's set type (older saved rows may lack the field)
 function rowType(row){return (row&&row.type&&SET_TYPE_DEFAULTS[row.type])?row.type:"straight"}
 function makeEmptyWeek(){return{days:{d1:makeEmptyDay(),d2:makeEmptyDay(),d3:makeEmptyDay()}}}
@@ -7584,8 +7584,20 @@ function toggleRestTimer(){
 document.getElementById("logset-bg").addEventListener("click",e=>{if(e.target.id==="logset-bg")closeLogSet()});
 // Note: we deliberately don't close the workout modal on backdrop click — user could lose data accidentally
 
+// Days start with this many exercise slots; they grow past it as needed.
+const BASE_ROW_SLOTS=10;
+function blankRow(){return {ex:"",sets:0,type:"straight",linkedToPrev:false}}
+// Keep exactly one spare empty slot at the bottom of a day, so there's always room to add
+// another exercise (days used to be capped at 10). Surplus trailing blanks beyond the base
+// 10 are trimmed so clearing a long day doesn't leave a pile of empty slots.
+function ensureSpareRow(rows){
+  const isBlank=r=>!r.ex&&!r.sets;
+  while(rows.length>BASE_ROW_SLOTS && isBlank(rows[rows.length-1]) && isBlank(rows[rows.length-2]))rows.pop();
+  if(!rows.length || !isBlank(rows[rows.length-1]))rows.push(blankRow());
+}
 function renderDay(dayId){
   closeAllDropdowns();const dayData=mem[curBlock].days[dayId];
+  ensureSpareRow(dayData.rows);
   const el=document.getElementById(dayId);el.innerHTML="";
   // Position of this day within the current block, used for placeholder rotation
   const dayIdx=curDayIds().indexOf(dayId);
