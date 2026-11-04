@@ -772,6 +772,12 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .ce-actions .danger{background:var(--danger-bg);color:var(--danger-text);border-color:var(--danger-text)}
 
 .ex-option-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+/* Two-line exercise label: name, then primary muscles in small muted text */
+.ex-label{flex:1;min-width:0}
+.ex-label-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ex-sub{font-size:11px;color:var(--text3);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.2}
+.ex-option.selected .ex-sub{color:inherit;opacity:0.75}
+.ex-group-similar{color:var(--accent)}
 .ex-edit-btn{font-size:14px;padding:4px 8px;color:var(--text3);background:transparent;border:none;cursor:pointer;border-radius:var(--radius);min-width:32px}
 .ex-edit-btn:active{background:var(--bg2);color:var(--text)}
 .ex-add{font-size:12px;padding:10px;border-top:0.5px solid var(--border);color:var(--text2);cursor:pointer;text-align:left;display:flex;align-items:center;gap:6px}
@@ -1013,7 +1019,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
     <div class="swap-body">
       <div class="swap-section">
         <div class="swap-section-label">Exercise</div>
-        <input type="text" class="swap-search" id="swap-search" placeholder="Search exercises…" autocomplete="off">
+        <input type="text" class="swap-search" id="swap-search" placeholder="Search name, muscle, or pattern…" autocomplete="off">
         <div class="swap-list" id="swap-list"></div>
       </div>
       <div class="swap-section">
@@ -1391,7 +1397,9 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 
       <details class="help-section">
         <summary>Exercise library</summary>
-        <p>Tap an exercise dropdown to pick from grouped categories (Chest, Back/Lats, etc.). The list scrolls and has a search field at the top.</p>
+        <p>Tap an exercise dropdown to pick from grouped categories (Chest, Back/Lats, etc.). Each exercise shows its primary muscles underneath its name.</p>
+        <p><b>Search</b> matches exercise names, primary muscles, and movement patterns. Try "adductors", "forearms", or "vertical pull".</p>
+        <p><b>Swapping mid-workout:</b> when you tap an exercise name during a workout to swap it, a <i>Similar to …</i> section at the top lists the closest substitutes, ranked by shared movement patterns and muscle overlap. Handy when the planned machine is taken.</p>
         <p>Each row has a small pencil (✎) icon that opens an editor where you can:</p>
         <ul>
           <li><b>Built-in exercises:</b> adjust the primary/secondary muscle weights to your liking, and rename the exercise if the default name doesn't match your gym vocabulary. Renames propagate everywhere — planner rows, in-progress sessions, and past logged history. A <i>Reset to default</i> button restores the original muscle weights, and a separate <i>Reset name to default</i> button restores the original name.</li>
@@ -1408,8 +1416,8 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
         <p><b>Colour coding (Planned mode):</b></p>
         <ul>
           <li><span class="help-swatch low"></span> &lt;6 sets/week — likely below minimum effective dose</li>
-          <li><span class="help-swatch medium"></span> 6–9 sets/week — minimum effective range (per Pak et al.)</li>
-          <li><span class="help-swatch neutral"></span> 10–14 sets/week — solid maintenance/growth</li>
+          <li><span class="help-swatch medium"></span> 6–9.5 sets/week — minimum effective range (per Pak et al.)</li>
+          <li><span class="help-swatch neutral"></span> 10–14.5 sets/week — solid maintenance/growth</li>
           <li><span class="help-swatch high"></span> ≥15 sets/week — high-volume range</li>
         </ul>
         <p>The <b>Planned / Actual</b> toggle at the top switches between your planned volume and your actual logged volume from imported Flexify history. Actual mode uses the last 4 weeks of history and scales the thresholds by 4× (so ≤24, 25–36, 40–59, ≥60).</p>
@@ -1460,14 +1468,15 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 <script>
 const BUILTIN_EX={
   "Chest":[["Barbell Bench Press",{Chest:1,"Front Delt":0.5,Triceps:0.5}],["Dumbbell Bench Press",{Chest:1,"Front Delt":0.5,Triceps:0.5}],["Incline Dumbbell Bench Press",{Chest:1,"Front Delt":0.5,Triceps:0.5}],["Dumbbell Fly",{Chest:1,"Front Delt":0.5}],["Cable Crossover",{Chest:1,"Front Delt":0.5}],["Pec Deck",{Chest:1,"Front Delt":0.5}],["Push-Up",{Chest:1,"Front Delt":0.5,Triceps:0.5}],["Landmine Press",{Chest:1,"Front Delt":0.5,Triceps:0.5}],["Dumbbell Pullover",{Chest:0.5,Lats:1}],["Incline Barbell Bench Press",{Chest:1,"Front Delt":0.5,Triceps:0.5}],["Decline Barbell Bench Press",{Chest:1,"Front Delt":0.5,Triceps:0.5}],["Incline Dumbbell Fly",{Chest:1,"Front Delt":0.5}],["Cable Fly Low-to-High",{Chest:1,"Front Delt":0.5}],["Cable Fly High-to-Low",{Chest:1,"Front Delt":0.5}],["Machine Chest Press",{Chest:1,"Front Delt":0.5,Triceps:0.5}]],
-  "Back / Lats":[["Barbell Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5,Erectors:0.5}],["Dumbbell Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5}],["Underhand Barbell Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5}],["Narrow Grip Cable Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5}],["Wide Grip Cable Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5}],["One Arm Cable Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5}],["Lat Pulldown",{Lats:1,"Mid-Low Traps":0.5,"Rear Delt":0.5,Biceps:0.5}],["One Arm Lat Pulldown",{Lats:1,"Mid-Low Traps":0.5,"Rear Delt":0.5,Biceps:0.5}],["Straight Arm Pulldown",{Lats:1}],["Pull-Ups",{Lats:1,"Mid-Low Traps":0.5,"Rear Delt":0.5,Biceps:0.5}],["Chin-Ups",{Lats:1,"Mid-Low Traps":0.5,"Rear Delt":0.5,Biceps:1}],["Bent Over Back Fly",{"Mid-Low Traps":0.5,"Rear Delt":1}],["T-Bar Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5,Erectors:0.5}],["Pendlay Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5,Erectors:0.5}],["Chest-Supported Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5}],["Meadows Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5,Erectors:0.5}],["Neutral Grip Lat Pulldown",{Lats:1,"Mid-Low Traps":0.5,Biceps:0.5,"Rear Delt":0.5}],["Wide Grip Pull-Up",{Lats:1,"Mid-Low Traps":0.5,"Rear Delt":0.5,Biceps:0.5}]],
-  "Shoulders":[["Barbell Shoulder Press",{"Upper Traps":0.5,"Front Delt":1,"Side Delt":0.5,Triceps:0.5}],["Dumbbell Shoulder Press",{"Upper Traps":0.5,"Front Delt":1,"Side Delt":0.5,Triceps:0.5}],["Barbell Push Press",{"Upper Traps":0.5,"Front Delt":1,"Side Delt":0.5,Triceps:0.5,Quads:0.5}],["Unilateral Dumbbell Push Press",{"Upper Traps":0.5,"Front Delt":1,"Side Delt":0.5,Triceps:0.5,Quads:0.5,Abs:0.5,Obliques:0.5}],["Dumbbell Lateral Raise",{"Upper Traps":0.5,"Side Delt":1}],["Full ROM Lateral Raise",{"Upper Traps":0.5,"Side Delt":1}],["Dumbbell Front Raise",{"Front Delt":1}],["Cable Front Raise",{"Front Delt":1}],["Upright Row",{"Upper Traps":1,"Front Delt":0.5,"Side Delt":1,Biceps:0.5}],["Power Clean",{"Upper Traps":1,"Mid-Low Traps":0.5,"Front Delt":0.5,Hamstrings:0.5,Glutes:1,Erectors:1,Quads:0.5}],["Clean and Press",{"Upper Traps":1,"Mid-Low Traps":0.5,"Front Delt":1,"Side Delt":0.5,Triceps:0.5,Quads:0.5,Hamstrings:0.5,Glutes:0.5,Erectors:0.5}],["Hang Clean and Press",{"Upper Traps":1,"Mid-Low Traps":0.5,"Front Delt":1,"Side Delt":0.5,Triceps:0.5,Quads:0.5,Hamstrings:0.5,Glutes:0.5,Erectors:0.5}],["Face Pull",{"Mid-Low Traps":1,"Rear Delt":1}],["Arnold Press",{"Front Delt":1,"Side Delt":0.5,"Upper Traps":0.5,Triceps:0.5}],["Seated Dumbbell Press",{"Front Delt":1,"Side Delt":0.5,Triceps:0.5}],["Cable Lateral Raise",{"Side Delt":1,"Upper Traps":0.5}],["Machine Lateral Raise",{"Side Delt":1,"Upper Traps":0.5}],["Reverse Pec Deck",{"Rear Delt":1,"Mid-Low Traps":0.5}]],
+  "Back / Lats":[["Barbell Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5,Erectors:0.5}],["Dumbbell Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5}],["Underhand Barbell Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5}],["Narrow Grip Cable Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5}],["Wide Grip Cable Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5}],["One Arm Cable Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5}],["Lat Pulldown",{Lats:1,"Mid-Low Traps":0.5,"Rear Delt":0.5,Biceps:0.5}],["One Arm Lat Pulldown",{Lats:1,"Mid-Low Traps":0.5,"Rear Delt":0.5,Biceps:0.5}],["Straight Arm Pulldown",{Lats:1}],["Pull-Ups",{Lats:1,"Mid-Low Traps":0.5,"Rear Delt":0.5,Biceps:0.5}],["Chin-Ups",{Lats:1,"Mid-Low Traps":0.5,"Rear Delt":0.5,Biceps:1}],["Bent Over Back Fly",{"Mid-Low Traps":0.5,"Rear Delt":1}],["T-Bar Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5,Erectors:0.5}],["Pendlay Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5,Erectors:0.5}],["Chest-Supported Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5}],["Meadows Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5,Erectors:0.5}],["Neutral Grip Lat Pulldown",{Lats:1,"Mid-Low Traps":0.5,Biceps:0.5,"Rear Delt":0.5}],["Wide Grip Pull-Up",{Lats:1,"Mid-Low Traps":0.5,"Rear Delt":0.5,Biceps:0.5}],["Assisted Pull-Up",{Lats:1,"Mid-Low Traps":0.5,"Rear Delt":0.5,Biceps:0.5}],["Inverted Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5}],["Seal Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5}]],
+  "Shoulders":[["Barbell Shoulder Press",{"Upper Traps":0.5,"Front Delt":1,"Side Delt":0.5,Triceps:0.5}],["Dumbbell Shoulder Press",{"Upper Traps":0.5,"Front Delt":1,"Side Delt":0.5,Triceps:0.5}],["Barbell Push Press",{"Upper Traps":0.5,"Front Delt":1,"Side Delt":0.5,Triceps:0.5,Quads:0.5}],["Unilateral Dumbbell Push Press",{"Upper Traps":0.5,"Front Delt":1,"Side Delt":0.5,Triceps:0.5,Quads:0.5,Abs:0.5,Obliques:0.5}],["Dumbbell Lateral Raise",{"Upper Traps":0.5,"Side Delt":1}],["Full ROM Lateral Raise",{"Upper Traps":0.5,"Side Delt":1}],["Dumbbell Front Raise",{"Front Delt":1}],["Cable Front Raise",{"Front Delt":1}],["Upright Row",{"Upper Traps":1,"Front Delt":0.5,"Side Delt":1,Biceps:0.5}],["Face Pull",{"Mid-Low Traps":1,"Rear Delt":1}],["Arnold Press",{"Front Delt":1,"Side Delt":0.5,"Upper Traps":0.5,Triceps:0.5}],["Cable Lateral Raise",{"Side Delt":1,"Upper Traps":0.5}],["Machine Lateral Raise",{"Side Delt":1,"Upper Traps":0.5}],["Reverse Pec Deck",{"Rear Delt":1,"Mid-Low Traps":0.5}],["Dumbbell Uppercut",{Triceps:0.5,"Front Delt":1,Obliques:0.5}]],
   "Traps":[["Dumbbell Shrug",{"Upper Traps":1}],["Trap Bar Shrug",{"Upper Traps":1}],["Cable Shrug",{"Upper Traps":1}],["Rack Pull",{"Upper Traps":1,Erectors:1,Hamstrings:0.5,Glutes:0.5}],["Barbell Shrug",{"Upper Traps":1}],["Farmer's Carry",{"Upper Traps":1,Forearms:1,Erectors:0.5,Abs:0.5,Obliques:0.5}]],
   "Biceps":[["Barbell Curl",{Biceps:1}],["Dumbbell Curl",{Biceps:1}],["Cable Curl",{Biceps:1}],["EZ Bar Curl",{Biceps:1}],["EZ Bar Curl Reverse Grip",{Biceps:0.5,Forearms:1}],["Hammer Curl",{Biceps:1,Forearms:0.5}],["Preacher Curl",{Biceps:1}],["Incline Dumbbell Curl",{Biceps:1}],["Spider Curl",{Biceps:1}],["Concentration Curl",{Biceps:1}],["Cable Hammer Curl",{Biceps:1,Forearms:0.5}]],
-  "Triceps":[["Dips",{Triceps:1,Chest:0.5,"Front Delt":0.5}],["EZ Bar Skullcrusher",{Triceps:1}],["Dumbbell Skullcrusher",{Triceps:1}],["Tricep Cable Pulldown",{Triceps:1}],["One Arm Dumbbell Tricep Press",{Triceps:1}],["Dumbbell Uppercut",{Triceps:0.5,"Front Delt":1,Obliques:0.5}],["Close-Grip Bench Press",{Triceps:1,Chest:0.5,"Front Delt":0.5}],["Overhead Cable Tricep Extension",{Triceps:1}],["Overhead Dumbbell Tricep Extension",{Triceps:1}],["Tricep Kickback",{Triceps:1}],["Diamond Push-Up",{Triceps:1,Chest:0.5,"Front Delt":0.5}]],
+  "Triceps":[["Dips",{Triceps:1,Chest:0.5,"Front Delt":0.5}],["EZ Bar Skullcrusher",{Triceps:1}],["Dumbbell Skullcrusher",{Triceps:1}],["Tricep Cable Pulldown",{Triceps:1}],["One Arm Dumbbell Tricep Press",{Triceps:1}],["Close-Grip Bench Press",{Triceps:1,Chest:0.5,"Front Delt":0.5}],["Overhead Cable Tricep Extension",{Triceps:1}],["Overhead Dumbbell Tricep Extension",{Triceps:1}],["Tricep Kickback",{Triceps:1}],["Diamond Push-Up",{Triceps:1,Chest:0.5,"Front Delt":0.5}]],
   "Forearms":[["Wrist Curl",{Forearms:1}],["Reverse Wrist Curl",{Forearms:1}]],
-  "Legs":[["Squat",{Quads:1,Glutes:1,Adductors:0.5,Erectors:0.5}],["Leg Press",{Quads:1,Glutes:1,Adductors:0.5}],["Leg Extension",{Quads:1}],["Dumbbell Lunge",{Quads:1,Glutes:1,Adductors:0.5}],["Dumbbell Split Squat",{Quads:1,Glutes:1,Adductors:0.5}],["Cossack Squat",{Quads:1,Glutes:1,Adductors:1,Erectors:0.5}],["Step Down Heel Tap",{Quads:1,Glutes:0.5}],["Trap Bar Deadlift",{"Upper Traps":0.5,Quads:1,Hamstrings:0.5,Glutes:1,Erectors:1}],["Deadlift",{Lats:0.5,"Upper Traps":0.5,Quads:0.5,Hamstrings:1,Glutes:1,Erectors:1}],["Stiff Leg Deadlift",{Hamstrings:1,Glutes:1,Erectors:1}],["Hamstring Curl",{Hamstrings:1}],["1 Leg Kettlebell Deadlift",{Hamstrings:1,Glutes:1,Erectors:0.5}],["Calf Press",{Calves:1}],["Front Squat",{Quads:1,Glutes:1,Adductors:0.5,Erectors:0.5,Abs:0.5}],["Hack Squat",{Quads:1,Glutes:0.5,Adductors:0.5}],["Bulgarian Split Squat",{Quads:1,Glutes:1,Adductors:0.5}],["Goblet Squat",{Quads:1,Glutes:1,Adductors:0.5}],["Sissy Squat",{Quads:1}],["Romanian Deadlift",{Hamstrings:1,Glutes:1,Erectors:0.5}],["Good Morning",{Hamstrings:1,Erectors:1,Glutes:0.5}],["Hip Thrust",{Glutes:1,Hamstrings:0.5}],["Glute Bridge",{Glutes:1,Hamstrings:0.5}],["Cable Pull-Through",{Glutes:1,Hamstrings:1,Erectors:0.5}],["Walking Lunge",{Quads:1,Glutes:1,Adductors:0.5}],["Reverse Lunge",{Quads:1,Glutes:1,Adductors:0.5}],["Single-Leg Romanian Deadlift",{Hamstrings:1,Glutes:1,Erectors:0.5,Obliques:0.5}],["Standing Calf Raise",{Calves:1}],["Hip Adduction Machine",{Adductors:1}],["Copenhagen Plank",{Adductors:1,Obliques:0.5}]],
-  "Core":[["Decline Sit Ups",{Abs:1,Obliques:0.5}],["Reverse Crunch",{Abs:1,Obliques:0.5}],["Cable Crunch",{Abs:1,Obliques:0.5}],["Crunch Machine",{Abs:1,Obliques:0.5}],["Yoga Ball Crunch",{Abs:1,Obliques:0.5}],["Yoga Ball Deadbug",{Abs:1,Obliques:0.5}],["Yoga Ball Plank Rollout",{Abs:1,Obliques:0.5,"Front Delt":0.5}],["Cable Side Bend",{Abs:0.5,Obliques:1}],["Side Bend",{Abs:0.5,Obliques:1}],["Cable Baseball Bat Swing",{"Side Delt":0.5,Abs:0.5,Obliques:1}],["Cable Axe Swing",{Abs:0.5,Obliques:1,Lats:0.5}],["Back Extension",{Hamstrings:0.5,Glutes:0.5,Erectors:1}],["Plank",{Abs:1,Obliques:0.5,"Front Delt":0.5}],["Hanging Leg Raise",{Abs:1,Obliques:0.5}],["Pallof Press",{Obliques:1,Abs:0.5}],["Russian Twist",{Obliques:1,Abs:0.5}],["Side Plank",{Obliques:1,Abs:0.5}],["Suitcase Carry",{Obliques:1,"Upper Traps":0.5,Forearms:0.5}]]
+  "Legs":[["Squat",{Quads:1,Glutes:1,Adductors:0.5,Erectors:0.5}],["Leg Press",{Quads:1,Glutes:1,Adductors:0.5}],["Leg Extension",{Quads:1}],["Dumbbell Lunge",{Quads:1,Glutes:1,Adductors:0.5}],["Dumbbell Split Squat",{Quads:1,Glutes:1,Adductors:0.5}],["Cossack Squat",{Quads:1,Glutes:1,Adductors:1,Erectors:0.5}],["Step Down Heel Tap",{Quads:1,Glutes:0.5}],["Trap Bar Deadlift",{"Upper Traps":0.5,Quads:1,Hamstrings:0.5,Glutes:1,Erectors:1}],["Deadlift",{Lats:0.5,"Upper Traps":0.5,Quads:0.5,Hamstrings:1,Glutes:1,Erectors:1}],["Stiff Leg Deadlift",{Hamstrings:1,Glutes:1,Erectors:1}],["Hamstring Curl",{Hamstrings:1}],["1 Leg Kettlebell Deadlift",{Hamstrings:1,Glutes:1,Erectors:0.5}],["Calf Press",{Calves:1}],["Front Squat",{Quads:1,Glutes:1,Adductors:0.5,Erectors:0.5,Abs:0.5}],["Hack Squat",{Quads:1,Glutes:0.5,Adductors:0.5}],["Bulgarian Split Squat",{Quads:1,Glutes:1,Adductors:0.5}],["Goblet Squat",{Quads:1,Glutes:1,Adductors:0.5}],["Sissy Squat",{Quads:1}],["Romanian Deadlift",{Hamstrings:1,Glutes:1,Erectors:0.5}],["Good Morning",{Hamstrings:1,Erectors:1,Glutes:0.5}],["Hip Thrust",{Glutes:1,Hamstrings:0.5}],["Glute Bridge",{Glutes:1,Hamstrings:0.5}],["Cable Pull-Through",{Glutes:1,Hamstrings:1,Erectors:0.5}],["Walking Lunge",{Quads:1,Glutes:1,Adductors:0.5}],["Reverse Lunge",{Quads:1,Glutes:1,Adductors:0.5}],["Single-Leg Romanian Deadlift",{Hamstrings:1,Glutes:1,Erectors:0.5,Obliques:0.5}],["Standing Calf Raise",{Calves:1}],["Hip Adduction Machine",{Adductors:1}],["Copenhagen Plank",{Adductors:1,Obliques:0.5}],["Seated Hamstring Curl",{Hamstrings:1}],["Lying Hamstring Curl",{Hamstrings:1}],["Nordic Curl",{Hamstrings:1}],["Seated Calf Raise",{Calves:1}],["Smith Machine Squat",{Quads:1,Glutes:1,Adductors:0.5}],["Belt Squat",{Quads:1,Glutes:1,Adductors:0.5}],["Pendulum Squat",{Quads:1,Glutes:0.5,Adductors:0.5}]],
+  "Core":[["Decline Sit Ups",{Abs:1,Obliques:0.5}],["Reverse Crunch",{Abs:1,Obliques:0.5}],["Cable Crunch",{Abs:1,Obliques:0.5}],["Crunch Machine",{Abs:1,Obliques:0.5}],["Yoga Ball Crunch",{Abs:1,Obliques:0.5}],["Yoga Ball Deadbug",{Abs:1,Obliques:0.5}],["Yoga Ball Plank Rollout",{Abs:1,Obliques:0.5,"Front Delt":0.5}],["Cable Side Bend",{Abs:0.5,Obliques:1}],["Side Bend",{Abs:0.5,Obliques:1}],["Cable Baseball Bat Swing",{"Side Delt":0.5,Abs:0.5,Obliques:1}],["Cable Axe Swing",{Abs:0.5,Obliques:1,Lats:0.5}],["Back Extension",{Hamstrings:0.5,Glutes:0.5,Erectors:1}],["Plank",{Abs:1,Obliques:0.5,"Front Delt":0.5}],["Hanging Leg Raise",{Abs:1,Obliques:0.5}],["Pallof Press",{Obliques:1,Abs:0.5}],["Russian Twist",{Obliques:1,Abs:0.5}],["Side Plank",{Obliques:1,Abs:0.5}],["Suitcase Carry",{Obliques:1,"Upper Traps":0.5,Forearms:0.5}]],
+  "Full Body":[["Power Clean",{"Upper Traps":1,"Mid-Low Traps":0.5,"Front Delt":0.5,Hamstrings:0.5,Glutes:1,Erectors:1,Quads:0.5}],["Clean and Press",{"Upper Traps":1,"Mid-Low Traps":0.5,"Front Delt":1,"Side Delt":0.5,Triceps:0.5,Quads:0.5,Hamstrings:0.5,Glutes:0.5,Erectors:0.5}],["Hang Clean and Press",{"Upper Traps":1,"Mid-Low Traps":0.5,"Front Delt":1,"Side Delt":0.5,Triceps:0.5,Quads:0.5,Hamstrings:0.5,Glutes:0.5,Erectors:0.5}]]
 };
 const ALL_MUS=["Chest","Lats","Upper Traps","Mid-Low Traps","Front Delt","Side Delt","Rear Delt","Biceps","Triceps","Forearms","Quads","Hamstrings","Glutes","Adductors","Calves","Abs","Erectors","Obliques"];
 
@@ -1477,11 +1486,11 @@ const ALL_MUS=["Chest","Lats","Upper Traps","Mid-Low Traps","Front Delt","Side D
 const ALL_PATTERNS=["Vertical Push","Vertical Pull","Horizontal Push","Horizontal Pull","Squat","Lunge","Hinge","Rotation","Anti-Rotation","Anti-Extension","Anti-Lateral Flexion","Carry"];
 // Pattern → array of exercise names. Look up reverse via EX_TO_PATTERNS (built below).
 const BUILTIN_EX_PATTERNS={
-  "Vertical Push":["Barbell Shoulder Press","Dumbbell Shoulder Press","Barbell Push Press","Unilateral Dumbbell Push Press","Clean and Press","Hang Clean and Press","Arnold Press","Seated Dumbbell Press","Dips"],
-  "Vertical Pull":["Lat Pulldown","One Arm Lat Pulldown","Pull-Ups","Chin-Ups","Neutral Grip Lat Pulldown","Wide Grip Pull-Up"],
+  "Vertical Push":["Barbell Shoulder Press","Dumbbell Shoulder Press","Barbell Push Press","Unilateral Dumbbell Push Press","Clean and Press","Hang Clean and Press","Arnold Press","Dips"],
+  "Vertical Pull":["Lat Pulldown","One Arm Lat Pulldown","Pull-Ups","Chin-Ups","Neutral Grip Lat Pulldown","Wide Grip Pull-Up","Assisted Pull-Up"],
   "Horizontal Push":["Barbell Bench Press","Dumbbell Bench Press","Incline Dumbbell Bench Press","Push-Up","Landmine Press","Incline Barbell Bench Press","Decline Barbell Bench Press","Machine Chest Press","Close-Grip Bench Press","Diamond Push-Up"],
-  "Horizontal Pull":["Barbell Row","Dumbbell Row","Underhand Barbell Row","Narrow Grip Cable Row","Wide Grip Cable Row","One Arm Cable Row","T-Bar Row","Pendlay Row","Chest-Supported Row","Meadows Row","Face Pull"],
-  "Squat":["Squat","Leg Press","Cossack Squat","Front Squat","Hack Squat","Goblet Squat","Sissy Squat"],
+  "Horizontal Pull":["Barbell Row","Dumbbell Row","Underhand Barbell Row","Narrow Grip Cable Row","Wide Grip Cable Row","One Arm Cable Row","T-Bar Row","Pendlay Row","Chest-Supported Row","Meadows Row","Face Pull","Inverted Row","Seal Row"],
+  "Squat":["Squat","Leg Press","Cossack Squat","Front Squat","Hack Squat","Goblet Squat","Sissy Squat","Smith Machine Squat","Belt Squat","Pendulum Squat"],
   "Lunge":["Dumbbell Lunge","Dumbbell Split Squat","Step Down Heel Tap","Bulgarian Split Squat","Walking Lunge","Reverse Lunge"],
   "Hinge":["Rack Pull","Trap Bar Deadlift","Deadlift","Stiff Leg Deadlift","1 Leg Kettlebell Deadlift","Romanian Deadlift","Good Morning","Hip Thrust","Glute Bridge","Cable Pull-Through","Single-Leg Romanian Deadlift","Back Extension","Power Clean","Clean and Press","Hang Clean and Press"],
   "Rotation":["Cable Baseball Bat Swing","Cable Axe Swing","Russian Twist"],
@@ -1678,7 +1687,8 @@ function nextBlockId(){
 }
 const MIN_DAYS=1,MAX_DAYS=7;
 const MAX_WEEKS=12; // generous cap; covers most mesocycle lengths
-const MAX_SETS=99;
+const MAX_SETS=20;      // shared by the planner and the mid-workout swap modal
+const MAX_DROPS=7, MAX_MINI_SETS=8, MAX_CLUSTERS=10;
 
 // Set-type system: each exercise row has a "type" indicating straight sets vs an intensifier.
 // Multipliers convert physical sets → effective Israetel-equivalent sets for the volume model.
@@ -2049,7 +2059,9 @@ function loadAllBlocks(){
 const RENAME_MIGRATIONS={
   "Lunge":"Dumbbell Lunge",
   "Back Fly":"Bent Over Back Fly",
-  "Back Bend":"Back Extension"
+  "Back Bend":"Back Extension",
+  // Merged: effectively the same lift as the standing/unspecified dumbbell press.
+  "Seated Dumbbell Press":"Dumbbell Shoulder Press"
 };
 // One-time persist of the weeks[] shape. loadAllBlocks already migrates in memory via
 // ensureWeeksShape; this writes the upgraded shape back to storage so it's durable even
@@ -2196,7 +2208,7 @@ function makePicker(rowEx,onChange){
   const display=document.createElement("button");display.className="ex-display";display.type="button";
   const dropdown=document.createElement("div");dropdown.className="ex-dropdown";
   const searchWrap=document.createElement("div");searchWrap.className="ex-search-wrap";
-  const search=document.createElement("input");search.className="ex-search";search.type="text";search.placeholder="Search exercises…";
+  const search=document.createElement("input");search.className="ex-search";search.type="text";search.placeholder="Search name, muscle, or pattern…";
   search.setAttribute("readonly","readonly");
   searchWrap.appendChild(search);
   const list=document.createElement("div");list.className="ex-list";
@@ -2214,16 +2226,15 @@ function makePicker(rowEx,onChange){
       const groupEl=document.createElement("div");groupEl.className="ex-group";groupEl.textContent=group;list.appendChild(groupEl);
       let groupHasVisible=false;
       items.forEach(([name, , meta])=>{
-        if(q&&!name.toLowerCase().includes(q))return;
+        if(!exMatchesQuery(name,q))return;
         groupHasVisible=true;anyVisible=true;
         const opt=document.createElement("div");opt.className="ex-option"+(name===currentVal?" selected":"");
-        // Every row (built-in or custom) gets a name area + edit pencil.
+        // Every row (built-in or custom) gets a two-line label (name + primary muscles) and an edit pencil.
         const row=document.createElement("div");row.className="ex-option-row";
-        const nm=document.createElement("span");nm.style.flex="1";nm.style.overflow="hidden";nm.style.textOverflow="ellipsis";nm.style.whiteSpace="nowrap";
-        nm.textContent=name;
+        const nm=buildExLabel(name);
         if(meta&&meta.custom){
           const tag=document.createElement("span");tag.className="ex-custom-tag";tag.textContent="custom";
-          nm.appendChild(tag);
+          nm.querySelector(".ex-label-name").appendChild(tag);
         }
         nm.onclick=e=>{e.stopPropagation();currentVal=name;onChange(name,false);updateDisplay();closeAllDropdowns();renderSummary();autoSave()};
         const edit=document.createElement("button");edit.className="ex-edit-btn";edit.type="button";edit.innerHTML='<i class="ti ti-pencil" aria-hidden="true"></i>';edit.setAttribute("aria-label","Edit exercise");
@@ -3498,6 +3509,54 @@ function totalRepsForSet(s){
 // Escape user-entered text (exercise/block/session names) before inserting into innerHTML.
 // Prevents names containing < > & " from breaking layout, and blocks script injection from a
 // shared backup file.
+// ===== Exercise picker helpers =====
+// Primary muscles (weight 1) of an exercise, in standard muscle order, e.g. "Quads · Glutes".
+function exPrimaryLabel(name){
+  const m=EX_BY_NAME[name]; if(!m)return "";
+  return ALL_MUS.filter(k=>m[k]>=1).join(" · ");
+}
+// Search match: exercise name, any primary muscle, or any movement pattern. So "adductors"
+// finds the Copenhagen plank and "vertical pull" finds every pulldown and pull-up.
+function exMatchesQuery(name, q){
+  if(!q)return true;
+  if(name.toLowerCase().includes(q))return true;
+  const m=EX_BY_NAME[name]||{};
+  if(ALL_MUS.some(k=>m[k]>=1 && k.toLowerCase().includes(q)))return true;
+  return (EX_TO_PATTERNS[name]||[]).some(p=>p.toLowerCase().includes(q));
+}
+// Similarity between two exercises for swap suggestions: shared movement patterns count most,
+// then weighted muscle overlap (sum of min weights / sum of max weights, 0..1).
+function exSimilarity(a, b){
+  const ma=EX_BY_NAME[a]||{}, mb=EX_BY_NAME[b]||{};
+  let mn=0, mx=0;
+  ALL_MUS.forEach(k=>{const x=ma[k]||0, y=mb[k]||0; mn+=Math.min(x,y); mx+=Math.max(x,y)});
+  const muscle = mx ? mn/mx : 0;
+  const pa=EX_TO_PATTERNS[a]||[], pb=new Set(EX_TO_PATTERNS[b]||[]);
+  const shared=pa.filter(p=>pb.has(p)).length;
+  return {score: shared*3 + muscle*4, shared, muscle};
+}
+// Up to `limit` exercises most similar to `name`, best first. A candidate needs a shared
+// pattern or at least half its muscle profile in common, so weak matches don't clutter the list.
+function similarExercises(name, limit){
+  const out=[];
+  Object.values(EX).forEach(items=>items.forEach(([n])=>{
+    if(n===name)return;
+    const sim=exSimilarity(name,n);
+    if(sim.shared>=1 || sim.muscle>=0.5)out.push([n,sim.score]);
+  }));
+  out.sort((x,y)=>y[1]-x[1]);
+  return out.slice(0,limit).map(x=>x[0]);
+}
+// Two-line label used in picker rows: name on top, primary muscles underneath.
+function buildExLabel(name){
+  const box=document.createElement("div");box.className="ex-label";
+  const nm=document.createElement("div");nm.className="ex-label-name";nm.textContent=name;
+  box.appendChild(nm);
+  const prim=exPrimaryLabel(name);
+  if(prim){const sub=document.createElement("div");sub.className="ex-sub";sub.textContent=prim;box.appendChild(sub)}
+  return box;
+}
+
 function esc(v){
   return String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 }
@@ -6560,23 +6619,38 @@ function buildSwapList(query){
   const list=document.getElementById("swap-list");
   list.innerHTML="";
   const q=query.toLowerCase().trim();
+  const addOption=(name)=>{
+    const isSelected = swapCtx && name===swapCtx.draft.ex;
+    const opt=document.createElement("div");opt.className="ex-option"+(isSelected?" selected":"");
+    opt.appendChild(buildExLabel(name));
+    opt.onclick=()=>{
+      if(!swapCtx)return;
+      swapCtx.draft.ex=name;
+      // Re-render the list to update the selection highlight
+      buildSwapList(document.getElementById("swap-search").value);
+    };
+    list.appendChild(opt);
+  };
+  // When swapping (not adding) and not searching, lead with the closest substitutes —
+  // the usual reason to swap is that the planned equipment is taken.
+  if(swapCtx && swapCtx.mode==="swap" && swapCtx.originalEx && !q){
+    const sims=similarExercises(swapCtx.originalEx, 6);
+    if(sims.length){
+      const g=document.createElement("div");g.className="ex-group ex-group-similar";
+      g.textContent=`Similar to ${swapCtx.originalEx}`;
+      list.appendChild(g);
+      sims.forEach(addOption);
+    }
+  }
+  let any=false;
   Object.entries(EX).forEach(([group,items])=>{
-    const visibleItems=items.filter(([n])=>!q||n.toLowerCase().includes(q));
+    const visibleItems=items.filter(([n])=>exMatchesQuery(n,q));
     if(!visibleItems.length)return;
+    any=true;
     const groupEl=document.createElement("div");groupEl.className="ex-group";groupEl.textContent=group;list.appendChild(groupEl);
-    visibleItems.forEach(([name])=>{
-      const isSelected = swapCtx && name===swapCtx.draft.ex;
-      const opt=document.createElement("div");opt.className="ex-option"+(isSelected?" selected":"");
-      opt.textContent=name;
-      opt.onclick=()=>{
-        if(!swapCtx)return;
-        swapCtx.draft.ex=name;
-        // Re-render the list to update the selection highlight
-        buildSwapList(document.getElementById("swap-search").value);
-      };
-      list.appendChild(opt);
-    });
+    visibleItems.forEach(([name])=>addOption(name));
   });
+  if(!any){const empty=document.createElement("div");empty.className="ex-empty";empty.textContent="No exercises found";list.appendChild(empty)}
 }
 document.getElementById("swap-search").addEventListener("input",e=>buildSwapList(e.target.value));
 
@@ -6618,15 +6692,15 @@ function renderSwapCounts(){
     if(swapCtx.draft.sets>1){swapCtx.draft.sets--;setsVal.textContent=swapCtx.draft.sets}
   };
   document.getElementById("swap-sets-plus").onclick=()=>{
-    if(swapCtx.draft.sets<10){swapCtx.draft.sets++;setsVal.textContent=swapCtx.draft.sets}
+    if(swapCtx.draft.sets<MAX_SETS){swapCtx.draft.sets++;setsVal.textContent=swapCtx.draft.sets}
   };
   // Structural count (varies by type)
   const section=document.getElementById("swap-struct-section");
   const t=swapCtx.draft.type;
   let label=null, key=null, min=1, max=7;
-  if(t==="drop"){label="Drops"; key="dropCount"; min=1; max=7}
-  else if(t==="myorep" || t==="restpause"){label="Mini-sets"; key="miniSetCount"; min=1; max=10}
-  else if(t==="cluster"){label="Clusters"; key="clusterCount"; min=2; max=10}
+  if(t==="drop"){label="Drops"; key="dropCount"; min=1; max=MAX_DROPS}
+  else if(t==="myorep" || t==="restpause"){label="Mini-sets"; key="miniSetCount"; min=1; max=MAX_MINI_SETS}
+  else if(t==="cluster"){label="Clusters"; key="clusterCount"; min=2; max=MAX_CLUSTERS}
   if(!label){section.style.display="none";return}
   section.style.display="";
   document.getElementById("swap-struct-label").textContent=label;
@@ -7777,7 +7851,7 @@ function renderPillRow(row, dayId, rowIdx){
       }
       // Show the drops −/+ controls only on the first sequence line (one set of controls per row)
       if(s===0){
-        lineEl.appendChild(buildCountControls("drops", row, dayId, rowIdx, "dropCount", 1, 7));
+        lineEl.appendChild(buildCountControls("drops", row, dayId, rowIdx, "dropCount", 1, MAX_DROPS));
       }
       wrap.appendChild(lineEl);
     }
@@ -7786,7 +7860,7 @@ function renderPillRow(row, dayId, rowIdx){
     // Pills show "weight × activation + miniReps" when target is set; placeholder otherwise.
     const countKey = type==="myorep" ? "miniSetCount" : (type==="restpause" ? "miniSetCount" : "clusterCount");
     const defaultCount = type==="myorep" ? 4 : (type==="restpause" ? 3 : 5);
-    const maxCount = type==="cluster" ? 10 : 8;
+    const maxCount = type==="cluster" ? MAX_CLUSTERS : MAX_MINI_SETS;
     if(typeof row[countKey]!=="number")row[countKey]=defaultCount;
     const internalN=Math.max(1,Math.min(maxCount,row[countKey]));
     for(let s=0;s<sets;s++){
@@ -8439,8 +8513,8 @@ function renderSummary(){
 
   document.getElementById("sum-legend").innerHTML=
     `<span><span class="leg-dot" style="background:var(--high-bg);border:0.5px solid var(--high-text)"></span>≥${HIGH}</span>`+
-    `<span><span class="leg-dot" style="background:var(--success-text)"></span>${NEUTRAL_LOW}–${HIGH-1}</span>`+
-    `<span><span class="leg-dot" style="background:var(--warn-text)"></span>${LOW}–${MID_HIGH}</span>`+
+    `<span><span class="leg-dot" style="background:var(--success-text)"></span>${NEUTRAL_LOW}–${HIGH-0.5}</span>`+
+    `<span><span class="leg-dot" style="background:var(--warn-text)"></span>${LOW}–${NEUTRAL_LOW-0.5}</span>`+
     `<span><span class="leg-dot" style="background:var(--danger-text)"></span>&lt;${LOW}</span>`;
 
   const sg=document.getElementById("sg");

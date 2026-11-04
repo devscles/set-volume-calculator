@@ -1,4 +1,4 @@
-const CACHE = 'training-20261103230415';
+const CACHE = 'training-20261103234526';
 // Core files: the app can't run without these, so install fails if they can't be cached.
 const CORE = ['./', './index.html', './manifest.json'];
 // CDN extras: cached best-effort, so a CDN hiccup can't block the whole install.
