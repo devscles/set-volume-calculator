@@ -134,14 +134,6 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .mult-edit-input:focus{border-color:var(--accent)}
 .mult-edit-default{font-size:10px;color:var(--text3);min-width:60px;font-variant-numeric:tabular-nums}
 .mult-edit-note{font-size:11px;color:var(--text3);font-style:italic}
-.flexify-bar{display:flex;align-items:center;gap:8px;padding:6px 14px;border-bottom:0.5px solid var(--border);font-size:11px;color:var(--text2);flex-shrink:0;flex-wrap:wrap}
-.flexify-label{text-transform:uppercase;letter-spacing:0.05em;font-weight:500}
-.flexify-btn{padding:5px 10px;font-size:12px;font-weight:500;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);cursor:pointer;font-family:inherit;touch-action:manipulation}
-.flexify-btn:active{background:var(--bg2)}
-.flexify-status{font-size:11px;color:var(--text2);margin-left:auto;white-space:nowrap;max-width:60%;overflow:hidden;text-overflow:ellipsis}
-.flexify-status.success{color:var(--success-text)}
-.flexify-status.warn{color:var(--warn-text)}
-.flexify-status.error{color:var(--danger-text)}
 .panels{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
 .panel{display:none;padding:12px 14px;min-width:0}
 .panel.active{display:block;animation:panelFadeIn 0.18s var(--ease)}
@@ -633,39 +625,16 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .drop-plateau-notice{font-size:10px;color:var(--text2);background:var(--bg);border:0.5px solid var(--border);border-radius:4px;padding:6px 8px;margin-bottom:8px;line-height:1.35;font-style:italic;opacity:0.9}
 
 /* Log-set modal */
-.logset-modal{max-width:340px}
 .logset-title{font-size:15px;font-weight:600;color:var(--text);text-align:center;margin-bottom:4px}
 .logset-target{font-size:12px;color:var(--text2);text-align:center;margin-bottom:14px;min-height:16px}
 .logset-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px}
 /* Weight row (always full width above either Reps or Activation+mini-sets) */
-.logset-weight-row{display:flex;flex-direction:column;gap:5px;margin-bottom:8px;min-width:0}
-.logset-weight-row label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.04em;font-weight:500}
-.logset-weight-row input{box-sizing:border-box;width:100%;padding:10px 8px;font-size:16px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg2);color:var(--text);outline:none;font-family:inherit;text-align:center;font-variant-numeric:tabular-nums;-moz-appearance:textfield}
-.logset-weight-row input:focus{border-color:var(--accent)}
 /* Myo-rep section */
-.logset-myorep{display:flex;flex-direction:column;gap:10px;margin-bottom:8px}
-.logset-minisets-wrap{background:var(--bg2);border-radius:var(--radius);padding:10px;border:0.5px solid var(--border)}
-.logset-minisets-label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.04em;font-weight:500;margin-bottom:8px;display:flex;align-items:center;gap:6px}
-.logset-mini-count{font-size:11px;color:var(--text3);text-transform:none;letter-spacing:0;font-weight:400;font-variant-numeric:tabular-nums}
-.logset-minisets{display:grid;grid-template-columns:repeat(auto-fill, minmax(48px, 1fr));gap:6px;margin-bottom:8px}
-.logset-mini-input{box-sizing:border-box;width:100%;padding:8px 4px;font-size:15px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);outline:none;font-family:inherit;text-align:center;font-variant-numeric:tabular-nums;-moz-appearance:textfield;min-width:0}
-.logset-mini-input:focus{border-color:var(--accent)}
-.logset-mini-input::-webkit-outer-spin-button,.logset-mini-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
-.logset-mini-controls{display:flex;justify-content:center;gap:6px}
-.logset-mini-btn{width:36px;height:32px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);font-size:16px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;touch-action:manipulation}
-.logset-mini-btn:active{background:var(--bg3)}
 .logset-field{display:flex;flex-direction:column;gap:5px;min-width:0}
 .logset-field label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.04em;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .logset-field input{box-sizing:border-box;width:100%;min-width:0;padding:10px 8px;font-size:16px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg2);color:var(--text);outline:none;font-family:inherit;text-align:center;font-variant-numeric:tabular-nums;-moz-appearance:textfield}
 .logset-field input::-webkit-outer-spin-button,.logset-field input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .logset-field input:focus{border-color:var(--accent)}
-.logset-rir-toggle{text-align:center;margin:8px 0 0}
-.logset-rir-link{background:none;border:none;color:var(--text2);font-size:12px;cursor:pointer;font-family:inherit;padding:4px}
-.logset-rir-row{display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap}
-.logset-rir-row label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.04em;font-weight:500;flex-shrink:0}
-.logset-rir-chips{display:flex;gap:4px;flex-wrap:wrap}
-.logset-rir-chip{min-width:30px;padding:5px 8px;font-size:12px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text2);cursor:pointer;font-family:inherit;font-variant-numeric:tabular-nums}
-.logset-rir-chip.active{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
 
 /* === Multi-set target editor (v2) === */
 /* The new target modal replaces the single-set editor with a per-set form
@@ -783,6 +752,10 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .ex-add{font-size:12px;padding:10px;border-top:0.5px solid var(--border);color:var(--text2);cursor:pointer;text-align:left;display:flex;align-items:center;gap:6px}
 .ex-add:active{background:var(--bg2)}
 .ex-add i{font-size:14px}
+.app-banner{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:1000;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--radius);background:var(--text);color:var(--bg);font-size:13px;line-height:1.35;box-shadow:0 4px 16px rgba(0,0,0,0.25)}
+.app-banner.error{background:var(--danger-text);color:#fff}
+.app-banner-msg{flex:1;min-width:0;overflow-wrap:anywhere}
+.app-banner button{flex-shrink:0;padding:6px 10px;border-radius:var(--radius);border:1px solid currentColor;background:transparent;color:inherit;font:inherit;font-weight:600;cursor:pointer}
 </style>
 </head>
 <body>
@@ -842,7 +815,6 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
   <button onclick="snoozeBackupReminder()">Later</button>
 </div>
 <!-- Hidden file inputs used by Settings (Flexify import + backup import) -->
-<input type="file" id="flexify-import-file" accept=".csv,text/csv" style="display:none" onchange="importFlexifyHistory(this.files[0])">
 <input type="file" id="backup-import-file" accept=".json,application/json" style="display:none" onchange="importBackup(this.files[0])">
 <div class="panels" id="panels-container">
   <div id="sum" class="panel"></div>
@@ -954,55 +926,6 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 </div>
 
 <!-- Log-set modal -->
-<div class="modal-bg input-modal" id="logset-bg">
-  <div class="modal logset-modal">
-    <div class="logset-title" id="logset-title">Log set</div>
-    <div class="logset-target" id="logset-target"></div>
-
-    <!-- Weight always shown on its own row for both modes -->
-    <div class="logset-weight-row">
-      <label for="logset-weight">Weight (<span id="logset-unit">lb</span>)</label>
-      <input type="text" inputmode="decimal" pattern="[0-9]*\.?[0-9]*" id="logset-weight" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-form-type="other" data-lpignore="true">
-    </div>
-
-    <!-- STRAIGHT mode: single Reps input -->
-    <div class="logset-fields" id="logset-straight-row">
-      <div class="logset-field" style="grid-column:1 / -1">
-        <label for="logset-reps">Reps</label>
-        <input type="text" inputmode="numeric" pattern="[0-9]*" id="logset-reps" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-form-type="other" data-lpignore="true">
-      </div>
-    </div>
-
-    <!-- MYO-REP mode: activation set + variable number of mini-sets -->
-    <div class="logset-myorep" id="logset-myorep-row" style="display:none">
-      <div class="logset-field">
-        <label for="logset-activation">Activation reps</label>
-        <input type="text" inputmode="numeric" pattern="[0-9]*" id="logset-activation" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-form-type="other" data-lpignore="true">
-      </div>
-      <div class="logset-minisets-wrap">
-        <div class="logset-minisets-label">Mini-sets <span id="logset-mini-count" class="logset-mini-count"></span></div>
-        <div class="logset-minisets" id="logset-minisets"></div>
-        <div class="logset-mini-controls">
-          <button type="button" class="logset-mini-btn" onclick="adjustMiniSets(-1)">−</button>
-          <button type="button" class="logset-mini-btn" onclick="adjustMiniSets(1)">+</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="logset-rir-toggle">
-      <button class="logset-rir-link" id="logset-rir-toggle" onclick="toggleRirRow()">+ Add RIR</button>
-    </div>
-    <div class="logset-rir-row" id="logset-rir-row" style="display:none">
-      <label>Reps in reserve:</label>
-      <div class="logset-rir-chips" id="logset-rir-chips"></div>
-    </div>
-    <div class="modal-actions">
-      <button onclick="closeLogSet()">Cancel</button>
-      <button class="danger" id="logset-delete" onclick="deleteLoggedSet()" style="display:none">Delete</button>
-      <button class="primary" onclick="saveLoggedSet()">Save</button>
-    </div>
-  </div>
-</div>
 
 <!-- Swap-exercise modal (mid-workout: replace exercise AND/OR prescription on a session row).
      Changes apply to the current session only — the underlying block plan stays untouched,
@@ -1225,16 +1148,6 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
       </details>
 
       <details class="help-section">
-        <summary>Flexify integration</summary>
-        <p>Export the current block as a Flexify-compatible plan CSV, or import your Flexify history CSV to populate the Actual summary view.</p>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 0 16px">
-          <button class="settings-btn" onclick="exportToFlexify()">Export current block</button>
-          <button class="settings-btn" onclick="document.getElementById('flexify-import-file').click()">Import history CSV…</button>
-        </div>
-        <p id="settings-flexify-status" style="font-size:11px;color:var(--text2);margin:8px 0 0 16px"></p>
-      </details>
-
-      <details class="help-section">
         <summary>Help &amp; documentation</summary>
         <p>Open the full help guide explaining every feature in detail.</p>
         <div style="margin:8px 0 0 16px">
@@ -1245,6 +1158,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
       <details class="help-section">
         <summary>About</summary>
         <p>Shred Sheet is a hypertrophy planning and workout tracking app, built collaboratively with Claude (Anthropic). Born as a spreadsheet, now decidedly not one. All data is stored locally on your device.</p>
+        <p style="font-size:11px;color:var(--text3)">Version <span id="app-version"></span></p>
       </details>
     </div>
   </div>
@@ -1466,10 +1380,57 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 </div>
 
 <script>
+// Build stamp, matched to the service-worker cache name. Shown in Settings → About.
+const APP_VERSION="20261111040307";
+
+// ===== App banner (crash reports, update notices) =====
+// Built with plain DOM calls and no app state, so it still works if the rest of the app failed
+// to load. One banner per kind; a new message of the same kind replaces the old one.
+function showAppBanner(kind, msg, actions){
+  try{
+    const old=document.getElementById("app-banner-"+kind); if(old)old.remove();
+    const b=document.createElement("div");
+    b.id="app-banner-"+kind; b.className="app-banner"+(kind==="error"?" error":"");
+    b.setAttribute("role", kind==="error"?"alert":"status");
+    const m=document.createElement("div"); m.className="app-banner-msg"; m.textContent=msg; b.appendChild(m);
+    (actions||[]).forEach(([label,fn])=>{
+      const btn=document.createElement("button"); btn.type="button"; btn.textContent=label;
+      btn.onclick=()=>{ try{fn()}catch(_){} b.remove(); };
+      b.appendChild(btn);
+    });
+    const x=document.createElement("button"); x.type="button"; x.textContent="✕"; x.setAttribute("aria-label","Dismiss");
+    x.onclick=()=>b.remove(); b.appendChild(x);
+    document.body.appendChild(b);
+  }catch(_){}
+}
+
+// ===== Crash reporting =====
+// Without this, an error during load leaves a half-built, unresponsive screen with no clue why.
+// Registered before any other code runs, so it also catches load-time crashes.
+let crashShown=0;
+function reportCrash(message, where){
+  if(crashShown>=3)return; // don't bury the screen in banners if errors repeat
+  crashShown++;
+  const detail=String(message||"Unknown error")+(where?` (${where})`:"");
+  showAppBanner("error","Something went wrong: "+detail+". Your saved data is safe — try reloading.",[
+    ["Copy",()=>{ try{navigator.clipboard.writeText(detail+"\nVersion "+APP_VERSION+"\n"+navigator.userAgent)}catch(_){} }],
+    ["Reload",()=>location.reload()]
+  ]);
+}
+window.addEventListener("error",e=>{
+  // Ignore failed loads of external files (icon font, Google Fonts) — those aren't app crashes.
+  if(!e.message && e.target && e.target!==window)return;
+  reportCrash(e.message, e.lineno?("line "+e.lineno):"");
+});
+window.addEventListener("unhandledrejection",e=>{
+  const r=e.reason;
+  reportCrash(r&&r.message?r.message:String(r), "async");
+});
+
 const BUILTIN_EX={
   "Chest":[["Barbell Bench Press",{Chest:1,"Front Delt":0.5,Triceps:0.5}],["Dumbbell Bench Press",{Chest:1,"Front Delt":0.5,Triceps:0.5}],["Incline Dumbbell Bench Press",{Chest:1,"Front Delt":0.5,Triceps:0.5}],["Dumbbell Fly",{Chest:1,"Front Delt":0.5}],["Cable Crossover",{Chest:1,"Front Delt":0.5}],["Pec Deck",{Chest:1,"Front Delt":0.5}],["Push-Up",{Chest:1,"Front Delt":0.5,Triceps:0.5}],["Landmine Press",{Chest:1,"Front Delt":0.5,Triceps:0.5}],["Dumbbell Pullover",{Chest:0.5,Lats:1}],["Incline Barbell Bench Press",{Chest:1,"Front Delt":0.5,Triceps:0.5}],["Decline Barbell Bench Press",{Chest:1,"Front Delt":0.5,Triceps:0.5}],["Incline Dumbbell Fly",{Chest:1,"Front Delt":0.5}],["Cable Fly Low-to-High",{Chest:1,"Front Delt":0.5}],["Cable Fly High-to-Low",{Chest:1,"Front Delt":0.5}],["Machine Chest Press",{Chest:1,"Front Delt":0.5,Triceps:0.5}]],
   "Back / Lats":[["Barbell Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5,Erectors:0.5}],["Dumbbell Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5}],["Underhand Barbell Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5}],["Narrow Grip Cable Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5}],["Wide Grip Cable Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5}],["One Arm Cable Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5}],["Lat Pulldown",{Lats:1,"Mid-Low Traps":0.5,"Rear Delt":0.5,Biceps:0.5}],["One Arm Lat Pulldown",{Lats:1,"Mid-Low Traps":0.5,"Rear Delt":0.5,Biceps:0.5}],["Straight Arm Pulldown",{Lats:1}],["Pull-Ups",{Lats:1,"Mid-Low Traps":0.5,"Rear Delt":0.5,Biceps:0.5}],["Chin-Ups",{Lats:1,"Mid-Low Traps":0.5,"Rear Delt":0.5,Biceps:1}],["Bent Over Back Fly",{"Mid-Low Traps":0.5,"Rear Delt":1}],["T-Bar Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5,Erectors:0.5}],["Pendlay Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5,Erectors:0.5}],["Chest-Supported Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5}],["Meadows Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5,Erectors:0.5}],["Neutral Grip Lat Pulldown",{Lats:1,"Mid-Low Traps":0.5,Biceps:0.5,"Rear Delt":0.5}],["Wide Grip Pull-Up",{Lats:1,"Mid-Low Traps":0.5,"Rear Delt":0.5,Biceps:0.5}],["Assisted Pull-Up",{Lats:1,"Mid-Low Traps":0.5,"Rear Delt":0.5,Biceps:0.5}],["Inverted Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5}],["Seal Row",{Lats:1,"Mid-Low Traps":1,"Rear Delt":0.5,Biceps:0.5}]],
-  "Shoulders":[["Barbell Shoulder Press",{"Upper Traps":0.5,"Front Delt":1,"Side Delt":0.5,Triceps:0.5}],["Dumbbell Shoulder Press",{"Upper Traps":0.5,"Front Delt":1,"Side Delt":0.5,Triceps:0.5}],["Barbell Push Press",{"Upper Traps":0.5,"Front Delt":1,"Side Delt":0.5,Triceps:0.5,Quads:0.5}],["Unilateral Dumbbell Push Press",{"Upper Traps":0.5,"Front Delt":1,"Side Delt":0.5,Triceps:0.5,Quads:0.5,Abs:0.5,Obliques:0.5}],["Dumbbell Lateral Raise",{"Upper Traps":0.5,"Side Delt":1}],["Full ROM Lateral Raise",{"Upper Traps":0.5,"Side Delt":1}],["Dumbbell Front Raise",{"Front Delt":1}],["Cable Front Raise",{"Front Delt":1}],["Upright Row",{"Upper Traps":1,"Front Delt":0.5,"Side Delt":1,Biceps:0.5}],["Face Pull",{"Mid-Low Traps":1,"Rear Delt":1}],["Arnold Press",{"Front Delt":1,"Side Delt":0.5,"Upper Traps":0.5,Triceps:0.5}],["Cable Lateral Raise",{"Side Delt":1,"Upper Traps":0.5}],["Machine Lateral Raise",{"Side Delt":1,"Upper Traps":0.5}],["Reverse Pec Deck",{"Rear Delt":1,"Mid-Low Traps":0.5}],["Dumbbell Uppercut",{Triceps:0.5,"Front Delt":1,Obliques:0.5}]],
+  "Shoulders":[["Barbell Shoulder Press",{"Upper Traps":0.5,"Front Delt":1,"Side Delt":0.5,Triceps:0.5}],["Dumbbell Shoulder Press",{"Upper Traps":0.5,"Front Delt":1,"Side Delt":0.5,Triceps:0.5}],["Barbell Push Press",{"Upper Traps":0.5,"Front Delt":1,"Side Delt":0.5,Triceps:0.5}],["Unilateral Dumbbell Push Press",{"Upper Traps":0.5,"Front Delt":1,"Side Delt":0.5,Triceps:0.5,Abs:0.5,Obliques:0.5}],["Dumbbell Lateral Raise",{"Upper Traps":0.5,"Side Delt":1}],["Full ROM Lateral Raise",{"Upper Traps":0.5,"Side Delt":1}],["Dumbbell Front Raise",{"Front Delt":1}],["Cable Front Raise",{"Front Delt":1}],["Upright Row",{"Upper Traps":1,"Front Delt":0.5,"Side Delt":1,Biceps:0.5}],["Face Pull",{"Mid-Low Traps":1,"Rear Delt":1}],["Arnold Press",{"Front Delt":1,"Side Delt":0.5,"Upper Traps":0.5,Triceps:0.5}],["Cable Lateral Raise",{"Side Delt":1,"Upper Traps":0.5}],["Machine Lateral Raise",{"Side Delt":1,"Upper Traps":0.5}],["Reverse Pec Deck",{"Rear Delt":1,"Mid-Low Traps":0.5}],["Dumbbell Uppercut",{Triceps:0.5,"Front Delt":1,Obliques:0.5}]],
   "Traps":[["Dumbbell Shrug",{"Upper Traps":1}],["Trap Bar Shrug",{"Upper Traps":1}],["Cable Shrug",{"Upper Traps":1}],["Rack Pull",{"Upper Traps":1,Erectors:1,Hamstrings:0.5,Glutes:0.5}],["Barbell Shrug",{"Upper Traps":1}],["Farmer's Carry",{"Upper Traps":1,Forearms:1,Erectors:0.5,Abs:0.5,Obliques:0.5}]],
   "Biceps":[["Barbell Curl",{Biceps:1}],["Dumbbell Curl",{Biceps:1}],["Cable Curl",{Biceps:1}],["EZ Bar Curl",{Biceps:1}],["EZ Bar Curl Reverse Grip",{Biceps:0.5,Forearms:1}],["Hammer Curl",{Biceps:1,Forearms:0.5}],["Preacher Curl",{Biceps:1}],["Incline Dumbbell Curl",{Biceps:1}],["Spider Curl",{Biceps:1}],["Concentration Curl",{Biceps:1}],["Cable Hammer Curl",{Biceps:1,Forearms:0.5}]],
   "Triceps":[["Dips",{Triceps:1,Chest:0.5,"Front Delt":0.5}],["EZ Bar Skullcrusher",{Triceps:1}],["Dumbbell Skullcrusher",{Triceps:1}],["Tricep Cable Pulldown",{Triceps:1}],["One Arm Dumbbell Tricep Press",{Triceps:1}],["Close-Grip Bench Press",{Triceps:1,Chest:0.5,"Front Delt":0.5}],["Overhead Cable Tricep Extension",{Triceps:1}],["Overhead Dumbbell Tricep Extension",{Triceps:1}],["Tricep Kickback",{Triceps:1}],["Diamond Push-Up",{Triceps:1,Chest:0.5,"Front Delt":0.5}]],
@@ -1561,105 +1522,6 @@ function rebuildPatterns(){
 }
 // (No eager call here — boot calls rebuildPatterns() after customs + overrides load.)
 
-// Mapping from our planner's exercise names to Flexify's exact spelling/case.
-// Used for CSV export to Flexify and CSV import from Flexify history.
-// Multiple Flexify names can map to one of our exercises (aliases listed in `aliases`).
-// Where Flexify has no matching entry, the value is null and the exercise can't be exported/matched.
-const FLEXIFY_NAME_MAP={
-  // Chest
-  "Barbell Bench Press":{flexify:"Barbell bench press"},
-  "Dumbbell Bench Press":{flexify:"Dumbbell bench press"},
-  "Incline Dumbbell Bench Press":{flexify:"Dumbbell incline bench"},
-  "Dumbbell Fly":{flexify:"Dumbbell fly"},
-  "Cable Crossover":{flexify:null},
-  "Pec Deck":{flexify:null},
-  "Push-Up":{flexify:null},
-  "Landmine Press":{flexify:null},
-  "Dumbbell Pullover":{flexify:"Dumbbell pullover"},
-  // Back / Lats
-  "Barbell Row":{flexify:"Barbell bent-over row"},
-  "Dumbbell Row":{flexify:"Dumbbell bent over row"},
-  "Underhand Barbell Row":{flexify:"Barbell Underhand Bent-over row"},
-  "Narrow Grip Cable Row":{flexify:null},
-  "Wide Grip Cable Row":{flexify:null},
-  "One Arm Cable Row":{flexify:"1 arm cable row"},
-  "Lat Pulldown":{flexify:"Lat Pulldown"},
-  "One Arm Lat Pulldown":{flexify:null},
-  "Straight Arm Pulldown":{flexify:"Straight arm pull-down"},
-  "Pull-Ups":{flexify:"Pull-up"},
-  "Chin-Ups":{flexify:"Chin-up"},
-  "Bent Over Back Fly":{flexify:"Bent over back fly",aliases:["Bench back fly"]},
-  // Shoulders
-  "Barbell Shoulder Press":{flexify:"Barbell shoulder press"},
-  // User confirmed: their Dumbbell Shoulder Press and Dumbbell overhead press are the same;
-  // Seated dumbbell shoulder press is intentionally distinct.
-  "Dumbbell Shoulder Press":{flexify:"Dumbbell overhead press",aliases:["dumbbell shoulder press"]},
-  "Barbell Push Press":{flexify:"Push press"},
-  "Unilateral Dumbbell Push Press":{flexify:"unilateral dumbbell push press"},
-  "Dumbbell Lateral Raise":{flexify:"Dumbbell lateral raise"},
-  "Full ROM Lateral Raise":{flexify:"Full ROM lateral raise"},
-  // User confirmed: alternating front raise merged into Dumbbell Front Raise
-  "Dumbbell Front Raise":{flexify:"Dumbbell front raise",aliases:["alternating front raise","front raise","slightly front raise","Full ROM front raise"]},
-  "Cable Front Raise":{flexify:"Cable front raise"},
-  "Upright Row":{flexify:"Upright row",aliases:["dumbbell upright row"]},
-  "Power Clean":{flexify:"Power Clean",aliases:["Clean"]},
-  "Clean and Press":{flexify:"Clean and press"},
-  "Hang Clean and Press":{flexify:"hang clean and press"},
-  "Face Pull":{flexify:null},
-  // Traps
-  "Dumbbell Shrug":{flexify:"Dumbbell shrug"},
-  "Trap Bar Shrug":{flexify:"trap bar shrug"},
-  "Cable Shrug":{flexify:null},
-  "Rack Pull":{flexify:null},
-  // Biceps
-  "Barbell Curl":{flexify:null},
-  "Dumbbell Curl":{flexify:"Dumbbell curl"},
-  "Cable Curl":{flexify:"cable curl"},
-  "EZ Bar Curl":{flexify:"ez bar curl"},
-  "EZ Bar Curl Reverse Grip":{flexify:"Reverse ez bar curl"},
-  "Hammer Curl":{flexify:"hammer curls"},
-  // Triceps
-  "Dips":{flexify:"Dips"},
-  // User confirmed: Skullcrushers (no qualifier) = EZ Bar Skullcrusher
-  "EZ Bar Skullcrusher":{flexify:"Skullcrushers"},
-  "Dumbbell Skullcrusher":{flexify:"Dumbbell skullcrusher"},
-  "Tricep Cable Pulldown":{flexify:"Tricep cable pulldown",aliases:["1 arm tricep cable pulldown"]},
-  "One Arm Dumbbell Tricep Press":{flexify:"1 arm dumbbell tricep press"},
-  "Dumbbell Uppercut":{flexify:"Dumbbell uppercut"},
-  // Legs
-  "Squat":{flexify:"Squat"},
-  "Leg Press":{flexify:"Leg press"},
-  "Leg Extension":{flexify:"Leg extension machine"},
-  "Dumbbell Lunge":{flexify:"Dumbbell lunge"},
-  "Dumbbell Split Squat":{flexify:"Dumbbell split squat"},
-  "Cossack Squat":{flexify:"Cossack squat"},
-  "Step Down Heel Tap":{flexify:"Step down heel tap"},
-  "Trap Bar Deadlift":{flexify:"trap bar deadlift"},
-  "Deadlift":{flexify:"Deadlift"},
-  "Stiff Leg Deadlift":{flexify:"Stiff led deadlift"},
-  "Hamstring Curl":{flexify:"Hamstring curl"},
-  "1 Leg Kettlebell Deadlift":{flexify:"Kettlebell 1 leg deadlift"},
-  "Calf Press":{flexify:"calf press",aliases:["calf raise"]},
-  // Core
-  "Decline Sit Ups":{flexify:"decline sit up"},
-  "Reverse Crunch":{flexify:"Reverse crunch"},
-  "Cable Crunch":{flexify:"cable crunch"},
-  "Crunch Machine":{flexify:"crunch machine"},
-  "Yoga Ball Crunch":{flexify:"Yoga ball crunch"},
-  "Yoga Ball Deadbug":{flexify:"yoga ball deadbug"},
-  "Yoga Ball Plank Rollout":{flexify:"yoga ball plank rolly outy"},
-  "Cable Side Bend":{flexify:"Cable side bend"},
-  "Side Bend":{flexify:"Side bends"},
-  "Cable Baseball Bat Swing":{flexify:"Cable baseball bat swing"},
-  "Cable Axe Swing":{flexify:"cable axe swing"},
-  "Back Extension":{flexify:"Back bend"}
-};
-// Reverse lookup: Flexify name (lowercased) → our planner name
-const FLEXIFY_TO_OURS={};
-Object.entries(FLEXIFY_NAME_MAP).forEach(([ours,info])=>{
-  if(info.flexify)FLEXIFY_TO_OURS[info.flexify.toLowerCase().trim()]=ours;
-  if(info.aliases)info.aliases.forEach(a=>{FLEXIFY_TO_OURS[a.toLowerCase().trim()]=ours});
-});
 
 // Mutable list of block IDs; starts as ["A","B","C"] but can grow/shrink.
 let BLOCKS=["A","B","C"];
@@ -1771,15 +1633,19 @@ function curDayIds(){return dayIdsOf(curBlock)}
 let customExercises=[];
 
 function loadCustomExercises(){
+  const raw=localStorage.getItem(CUSTOM_KEY);
+  if(!raw)return;
   try{
-    const raw=localStorage.getItem(CUSTOM_KEY);
-    if(raw){
-      const parsed=JSON.parse(raw);
-      if(Array.isArray(parsed))customExercises=parsed.filter(e=>e&&typeof e.name==="string"&&e.muscles);
-    }
-  }catch(e){customExercises=[]}
+    const parsed=JSON.parse(raw);
+    if(!Array.isArray(parsed))throw new Error("not a list");
+    customExercises=parsed.filter(e=>e&&typeof e.name==="string"&&e.muscles);
+  }catch(e){
+    customExercises=[];
+    quarantine(CUSTOM_KEY, raw, "Your custom exercises couldn't be read");
+  }
 }
 function saveCustomExercises(){
+  if(protectedKeys.has(CUSTOM_KEY))return;
   try{localStorage.setItem(CUSTOM_KEY,JSON.stringify(customExercises))}catch(e){}
 }
 
@@ -1874,12 +1740,6 @@ function saveBuiltinNameOverrides(){
 // Resolve any name (canonical or user-renamed) back to its canonical (original) form.
 // Returns the input if not a known built-in rename target.
 function resolveBuiltinName(name){return builtinNameReverseMap[name]||name}
-// Get the user-facing display name for a built-in (rename if set, else original)
-function displayNameFor(name){
-  // If `name` IS the canonical and has a rename, show the rename.
-  // If `name` IS already a rename (or unrelated), show as-is.
-  return builtinNameOverrides[name]||name;
-}
 
 // Returns the original built-in muscle map for a name (unmodified), or null if not built-in.
 // Accepts either the canonical name or a user-renamed version.
@@ -2009,6 +1869,38 @@ const mem={};
 function storageKey(b){return"trainblock_v4_"+b}
 
 // Load all blocks from localStorage on startup
+// ===== Damaged-data protection =====
+// If stored data can't be read, the app used to start empty and the next save overwrote the
+// unreadable original — unrecoverable. Now the original is first copied to a quarantine key
+// (included in backups) and you're told. If even that copy fails (e.g. storage full), the key is
+// marked protected and the app refuses to save over it.
+const QUARANTINE_PREFIX="trainblock_quarantine_";
+const protectedKeys=new Set();
+const loadProblems=[];
+function quarantine(key, raw, what){
+  const qKey=QUARANTINE_PREFIX+key+"_"+new Date().toISOString().replace(/[:.]/g,"-");
+  try{
+    localStorage.setItem(qKey, raw);
+    loadProblems.push(`${what} — the unreadable copy was set aside and is included in backups`);
+    return true;
+  }catch(e){
+    protectedKeys.add(key);
+    loadProblems.push(`${what} — it could not be set aside, so the app will NOT save over it. Export a backup from Settings now`);
+    return false;
+  }
+}
+// Write a block unless its stored copy is protected (unreadable and not quarantined).
+function writeBlock(b){
+  const k=storageKey(b);
+  if(protectedKeys.has(k)||!mem[b])return;
+  localStorage.setItem(k,JSON.stringify(mem[b]));
+}
+// Called at the end of boot: one alert summarizing anything that couldn't be loaded.
+function reportLoadProblems(){
+  if(!loadProblems.length)return;
+  alert("Some saved data couldn't be read:\n\n• "+loadProblems.join("\n• ")+"\n\nEverything else loaded normally.");
+}
+
 function loadAllBlocks(){
   BLOCKS.forEach(b=>{
     try{
@@ -2050,6 +1942,9 @@ function loadAllBlocks(){
         }
       }
     }catch(e){}
+    // Reaching here with stored data means it was unreadable or the wrong shape.
+    const rawStored=localStorage.getItem(storageKey(b));
+    if(rawStored)quarantine(storageKey(b), rawStored, `Block ${b}'s plan couldn't be read`);
     mem[b]=makeEmptyBlock(b);
   });
 }
@@ -2076,7 +1971,7 @@ function migrateBlocksToWeeks(){
       if(raw){
         const parsed=JSON.parse(raw);
         if(!parsed || !Array.isArray(parsed.weeks)){
-          localStorage.setItem(storageKey(b),JSON.stringify(mem[b]));
+          writeBlock(b);
         }
       }
     }catch(e){}
@@ -2124,7 +2019,7 @@ function migrateRenamedExercises(){
       });
     });
     if(blockChanged){
-      try{localStorage.setItem(storageKey(b),JSON.stringify(mem[b]))}catch(e){}
+      try{writeBlock(b)}catch(e){}
     }
   });
   // Also migrate built-in overrides keyed by old name
@@ -2189,7 +2084,7 @@ function flushSaves(){
   if(saveTimer){clearTimeout(saveTimer);saveTimer=null}
   if(dirtyBlocks.size===0)return;
   try{
-    dirtyBlocks.forEach(b=>{ if(mem[b])localStorage.setItem(storageKey(b),JSON.stringify(mem[b])) });
+    dirtyBlocks.forEach(b=>writeBlock(b));
     dirtyBlocks.clear();
     setSaveStatus("Saved", true);
     if(typeof renderStatusStrip==="function")renderStatusStrip();
@@ -2459,7 +2354,7 @@ function addBlock(){
   BLOCKS.push(newId);
   mem[newId]=makeEmptyBlock(newId);
   saveBlockList();
-  try{localStorage.setItem(storageKey(newId),JSON.stringify(mem[newId]))}catch(e){}
+  try{writeBlock(newId)}catch(e){}
   switchBlock(newId);
   // Scroll the block bar to bring the new block into view
   setTimeout(()=>{
@@ -2973,6 +2868,8 @@ function exportBackup(){
     const v=localStorage.getItem(k);
     if(v!==null)payload.data[k]=v;
   });
+  // Quarantined (unreadable) data travels with backups so it can be recovered later.
+  Object.keys(localStorage).filter(k=>k.startsWith(QUARANTINE_PREFIX)).forEach(k=>{payload.data[k]=localStorage.getItem(k)});
   const json=JSON.stringify(payload,null,2);
   const stamp=new Date().toISOString().slice(0,10);
   downloadFile(`shredsheet-backup-${stamp}.json`, json, "application/json");
@@ -2998,7 +2895,10 @@ function importBackup(file){
     for(const [k,v] of Object.entries(parsed.data)){
       if(typeof k!=="string"||!k.startsWith("trainblock_"))continue; // ignore foreign keys
       if(typeof v!=="string"){ alert(`Import failed: entry "${k}" is malformed. Nothing was changed.`); return; }
-      try{ JSON.parse(v) }catch(_){ alert(`Import failed: entry "${k}" is corrupted. Nothing was changed.`); return; }
+      // Quarantined entries are unreadable by definition — carry them over as-is.
+      if(!k.startsWith(QUARANTINE_PREFIX)){
+        try{ JSON.parse(v) }catch(_){ alert(`Import failed: entry "${k}" is corrupted. Nothing was changed.`); return; }
+      }
       entries.push([k,v]);
     }
     if(entries.length===0){ alert("Import failed: the file contains no Shred Sheet data. Nothing was changed."); return; }
@@ -4323,7 +4223,7 @@ function propagateExerciseRename(oldName, newName){
       if(!day)return;
       day.rows.forEach(row=>{if(row.ex===oldName){row.ex=newName;touched=true}});
     });
-    if(touched){try{localStorage.setItem(storageKey(b),JSON.stringify(mem[b]))}catch(e){}}
+    if(touched){try{writeBlock(b)}catch(e){}}
   });
   // Sessions: rename both the planned-row snapshots and the actual logged sets
   let sessionsTouched=false;
@@ -4411,7 +4311,7 @@ function deleteCustomExercise(){
         });
       });
     });
-    try{localStorage.setItem(storageKey(b),JSON.stringify(mem[b]))}catch(e){}
+    try{writeBlock(b)}catch(e){}
   });
   customExercises=customExercises.filter(e=>e.name!==name);
   saveCustomExercises();
@@ -4447,93 +4347,25 @@ function loadFlexifyHistory(){
         flexifyHistory=parsed.map(r=>({...r, date:new Date(r.date)})).filter(r=>!isNaN(r.date));
       }
     }
-  }catch(e){flexifyHistory=[]}
+  }catch(e){
+    flexifyHistory=[];
+    const raw=localStorage.getItem(FLEXIFY_HISTORY_KEY);
+    if(raw)quarantine(FLEXIFY_HISTORY_KEY, raw, "Your imported Flexify history couldn't be read");
+  }
 }
 function saveFlexifyHistory(){
+  if(protectedKeys.has(FLEXIFY_HISTORY_KEY))return;
   try{
     // Store ISO date strings to keep JSON clean
     const serializable=flexifyHistory.map(r=>({...r,date:r.date.toISOString()}));
     localStorage.setItem(FLEXIFY_HISTORY_KEY,JSON.stringify(serializable));
   }catch(e){
-    setFlexStatus("Couldn't save history — storage may be full","error");
+    alert("Couldn't save your imported history — device storage may be full. Export a backup from Settings.");
   }
 }
 
-function setFlexStatus(msg, cls){
-  const el=document.getElementById("flexify-status");
-  el.textContent=msg;
-  el.className="flexify-status"+(cls?" "+cls:"");
-  if(msg){
-    clearTimeout(setFlexStatus._t);
-    setFlexStatus._t=setTimeout(()=>{el.textContent="";el.className="flexify-status"},6000);
-  }
-}
 
-// ----- Export current block to a Flexify-compatible plans.csv -----
-function exportToFlexify(){
-  const block=mem[curBlock];
-  const blockName=block.name||("Block "+curBlock);
-  const ids=curDayIds();
-  if(ids.length===0){setFlexStatus("Nothing to export","error");return}
 
-  // Build rows: id,days,title,sequence,exercises
-  const rows=[["id","days","title","sequence","exercises"]];
-  const unmapped=new Set();
-  let exportedAny=false;
-  ids.forEach((d,i)=>{
-    const day=block.days[d];
-    const dayLabel=day.label||("Day "+(i+1));
-    // Collect each exercise that has at least 1 set and a Flexify mapping
-    const flexNames=[];
-    day.rows.forEach(row=>{
-      if(!row.ex||row.sets<=0)return;
-      // Map by canonical name so renamed built-ins (Squat → Back Squat) still export.
-      const info=FLEXIFY_NAME_MAP[row.ex]||FLEXIFY_NAME_MAP[resolveBuiltinName(row.ex)];
-      if(info&&info.flexify){
-        flexNames.push(info.flexify);
-      } else {
-        unmapped.add(row.ex);
-      }
-    });
-    if(flexNames.length===0)return;
-    const title=`${blockName} - ${dayLabel}`;
-    // Flexify uses semicolon-separated exercise names
-    rows.push([
-      String(i+1),
-      "",
-      csvEscape(title),
-      String(i),
-      csvEscape(flexNames.join(";"))
-    ]);
-    exportedAny=true;
-  });
-
-  if(!exportedAny){
-    setFlexStatus("No exercises to export — all rows empty or unmapped","error");
-    return;
-  }
-
-  const csv=rows.map(r=>r.join(",")).join("\n")+"\n";
-  const filename=`${slugify(blockName)}-flexify.csv`;
-  downloadFile(filename,csv,"text/csv");
-
-  let msg=`Exported ${rows.length-1} day${rows.length===2?"":"s"}`;
-  if(unmapped.size>0){
-    msg+=` — skipped ${unmapped.size} unmapped exercise${unmapped.size===1?"":"s"}`;
-    setFlexStatus(msg,"warn");
-    console.warn("Skipped (no Flexify mapping):",[...unmapped]);
-  } else {
-    setFlexStatus(msg,"success");
-  }
-}
-
-// CSV cell escape: wrap in quotes if it contains comma/quote/newline
-function csvEscape(s){
-  s=String(s);
-  if(/[",\n]/.test(s))return '"'+s.replace(/"/g,'""')+'"';
-  return s;
-}
-function slugify(s){return String(s).toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"")||"block"}
 function downloadFile(name,content,mime){
   const blob=new Blob([content],{type:mime});
   const url=URL.createObjectURL(blob);
@@ -4543,93 +4375,7 @@ function downloadFile(name,content,mime){
   setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url)},100);
 }
 
-// ----- Import Flexify history (graphs.csv) -----
-// Robust CSV parser handling quoted fields with embedded commas/quotes/newlines.
-function parseCSV(text){
-  const rows=[];
-  let row=[],cell="",inQuotes=false,i=0;
-  while(i<text.length){
-    const c=text[i];
-    if(inQuotes){
-      if(c==='"'&&text[i+1]==='"'){cell+='"';i+=2;continue}
-      if(c==='"'){inQuotes=false;i++;continue}
-      cell+=c;i++;
-    } else {
-      if(c==='"'){inQuotes=true;i++;continue}
-      if(c===','){row.push(cell);cell="";i++;continue}
-      if(c==='\n'||c==='\r'){
-        if(cell.length||row.length){row.push(cell);rows.push(row);row=[];cell=""}
-        // Skip combined \r\n
-        if(c==='\r'&&text[i+1]==='\n')i+=2;else i++;
-        continue;
-      }
-      cell+=c;i++;
-    }
-  }
-  if(cell.length||row.length){row.push(cell);rows.push(row)}
-  return rows;
-}
 
-function importFlexifyHistory(file){
-  if(!file){setFlexStatus("No file selected","error");return}
-  const reader=new FileReader();
-  reader.onload=e=>{
-    try{
-      const text=e.target.result;
-      const rows=parseCSV(text);
-      if(rows.length<2){setFlexStatus("CSV looks empty","error");return}
-      const header=rows[0].map(h=>h.trim().toLowerCase());
-      // Expected Flexify columns: id,name,reps,weight,created,unit,bodyWeight,duration,distance,cardio,hidden,incline
-      const col={
-        name:header.indexOf("name"),
-        reps:header.indexOf("reps"),
-        weight:header.indexOf("weight"),
-        created:header.indexOf("created"),
-        unit:header.indexOf("unit"),
-        bodyWeight:header.indexOf("bodyweight"),
-        hidden:header.indexOf("hidden")
-      };
-      if(col.name<0||col.created<0){
-        setFlexStatus("CSV doesn't look like Flexify history","error");
-        return;
-      }
-      const parsed=[];
-      const unmappedNames=new Set();
-      let skippedHidden=0,skippedBad=0;
-      for(let r=1;r<rows.length;r++){
-        const row=rows[r];
-        if(row.length<2)continue;
-        if(col.hidden>=0 && (row[col.hidden]||"").trim().toLowerCase()==="true"){skippedHidden++;continue}
-        const flexName=(row[col.name]||"").trim();
-        const dateStr=row[col.created]||"";
-        const d=new Date(dateStr);
-        if(!flexName||isNaN(d)){skippedBad++;continue}
-        const ours=FLEXIFY_TO_OURS[flexName.toLowerCase().trim()]||null;
-        if(!ours)unmappedNames.add(flexName);
-        const reps=parseFloat(row[col.reps])||0;
-        const weight=parseFloat(row[col.weight])||0;
-        const unit=col.unit>=0?(row[col.unit]||"").trim():"";
-        const bw=col.bodyWeight>=0?parseFloat(row[col.bodyWeight])||0:0;
-        parsed.push({date:d,ours,flexify:flexName,reps,weight,unit,bodyWeight:bw});
-      }
-      flexifyHistory=parsed;
-      saveFlexifyHistory();
-      let msg=`Loaded ${parsed.length} sets`;
-      if(unmappedNames.size>0)msg+=`, ${unmappedNames.size} unmapped exercise${unmappedNames.size===1?"":"s"}`;
-      setFlexStatus(msg,"success");
-      console.log("Flexify import:",{total:parsed.length,unmapped:[...unmappedNames],skippedHidden,skippedBad});
-      // Clear the file input so the same file can be re-imported
-      document.getElementById("flexify-import-file").value="";
-      // If on Summary, re-render so Actual mode reflects new data
-      renderSummary();
-    }catch(err){
-      console.error(err);
-      setFlexStatus("Failed to parse CSV","error");
-    }
-  };
-  reader.onerror=()=>setFlexStatus("Couldn't read file","error");
-  reader.readAsText(file);
-}
 
 // ----- Actual volume calculation -----
 // Pulls from native sessions if any exist (preferred), otherwise falls back to
@@ -5046,16 +4792,24 @@ function loadPrefs(){
 function savePrefs(){try{localStorage.setItem(PREFS_KEY,JSON.stringify(prefs))}catch(e){}}
 
 function loadSessions(){
+  const raw=localStorage.getItem(SESSIONS_KEY);
+  if(!raw)return;
   try{
-    const raw=localStorage.getItem(SESSIONS_KEY);
-    if(raw){
-      const parsed=JSON.parse(raw);
-      if(Array.isArray(parsed))sessions=parsed.filter(s=>s&&s.id&&Array.isArray(s.sets));
-    }
-  }catch(e){sessions=[]}
+    const parsed=JSON.parse(raw);
+    if(!Array.isArray(parsed))throw new Error("not a list");
+    const ok=s=>s&&s.id&&Array.isArray(s.sets);
+    const bad=parsed.filter(s=>!ok(s));
+    // Keep malformed entries rather than silently dropping them on the next save.
+    if(bad.length)quarantine(SESSIONS_KEY, JSON.stringify(bad), `${bad.length} workout record${bad.length===1?"":"s"} couldn't be read`);
+    sessions=parsed.filter(ok);
+  }catch(e){
+    sessions=[];
+    quarantine(SESSIONS_KEY, raw, "Your workout history couldn't be read");
+  }
 }
 let sessionSaveWarned=false;
 function saveSessions(){
+  if(protectedKeys.has(SESSIONS_KEY))return; // unreadable original couldn't be set aside — never overwrite it
   try{
     localStorage.setItem(SESSIONS_KEY,JSON.stringify(sessions));
     sessionSaveWarned=false;
@@ -5482,22 +5236,6 @@ function buildLoggedSummary(slotIdx, log, extraText, isAmrap){
   return summary;
 }
 
-// Shared "empty" header used when a set has been planned but not logged yet.
-// Shows the set number, type marker (e.g. star for AMRAP), and target if present.
-function buildEmptyHeader(slotIdx, tgt, isAmrap){
-  const empty=document.createElement("div");
-  empty.className="wo-card-empty";
-  const num=document.createElement("span");num.className="wo-card-slot-num";num.textContent=String(slotIdx+1);
-  empty.appendChild(num);
-  const hint=document.createElement("span");hint.className="wo-card-empty-hint";
-  if(tgt){
-    hint.innerHTML=`target <b>${fmtNum(tgt.weight)}×${tgt.reps}</b>${isAmrap?' <i class="ti ti-star" aria-hidden="true" style="font-size:11px;opacity:0.7"></i>':""}`;
-  } else {
-    hint.innerHTML=`tap to log${isAmrap?' <i class="ti ti-star" aria-hidden="true" style="font-size:11px;opacity:0.7"></i>':""}`;
-  }
-  empty.appendChild(hint);
-  return empty;
-}
 
 // ===== Basic inline cards (straight + AMRAP) =====
 function renderBasicInlineCards(wrap, s, pr){
@@ -7230,130 +6968,11 @@ function saveTargetMulti(){
 }
 document.getElementById("target-bg").addEventListener("click",e=>{if(e.target.id==="target-bg")closeTargetEditor()});
 
-// ===== Log-set modal =====
-let logSetCtx=null;
-function openLogSet(plannedRow, slotIdx, existing){
-  const s=sessions.find(x=>x.id===curWorkoutSessId);
-  if(!s)return;
-  const isMyo=plannedRow.type==="myorep";
-  logSetCtx={plannedRow, slotIdx, existing, isMyo, miniReps: existing?.miniSetReps?[...existing.miniSetReps]:null};
-  document.getElementById("logset-title").textContent=plannedRow.ex+(isMyo?" (myo-rep)":"");
-  // Compute last-session set for this exercise (across any past session, most recent first)
-  const lastSet=findLastSetForExercise(plannedRow.ex, s.id);
-  // Per-slot target: prefer targets[slotIdx], fall back to set 0, else null
-  const slotTarget = (Array.isArray(plannedRow.targets)&&plannedRow.targets[slotIdx]) ? plannedRow.targets[slotIdx]
-                  : (slotIdx===0&&plannedRow.target ? plannedRow.target : null);
-  // Stash on context so the rest of this function can refer to it
-  logSetCtx.slotTarget=slotTarget;
-  // Target / hint display
-  const targetEl=document.getElementById("logset-target");
-  if(slotTarget){
-    targetEl.innerHTML=`target <b>${fmtNum(slotTarget.weight)}${slotTarget.unit||prefs.preferredUnit} × ${slotTarget.reps}</b>`;
-  } else if(lastSet){
-    const ago=relativeDateText(new Date(lastSet.timestamp));
-    targetEl.innerHTML=`last time (${ago}): <b>${fmtSetReps(lastSet)}</b>`;
-  } else {
-    targetEl.textContent="";
-  }
-  document.getElementById("logset-unit").textContent=prefs.preferredUnit;
-
-  // Show/hide the two mode-specific rows
-  document.getElementById("logset-straight-row").style.display=isMyo?"none":"";
-  document.getElementById("logset-myorep-row").style.display=isMyo?"":"none";
-
-  // Pre-fill weight (priority: existing → slot target → last set in session → last set ever)
-  const weightInput=document.getElementById("logset-weight");
-  if(existing){
-    weightInput.value=existing.weight;
-  } else if(slotTarget){
-    weightInput.value=slotTarget.weight;
-  } else {
-    const prev=s.sets.filter(st=>st.rowIdx===plannedRow.idx).pop();
-    if(prev)weightInput.value=prev.weight;
-    else if(lastSet)weightInput.value=lastSet.weight;
-    else weightInput.value="";
-  }
-
-  if(isMyo){
-    const actInput=document.getElementById("logset-activation");
-    if(existing){
-      actInput.value=existing.reps;
-      logSetCtx.miniReps = existing.miniSetReps ? [...existing.miniSetReps] : [];
-    } else if(slotTarget){
-      actInput.value=slotTarget.reps;
-      logSetCtx.miniReps = newDefaultMiniSets();
-    } else if(lastSet&&lastSet.type==="myorep"){
-      actInput.value=lastSet.reps;
-      logSetCtx.miniReps = lastSet.miniSetReps?[...lastSet.miniSetReps]:newDefaultMiniSets();
-    } else {
-      actInput.value="";
-      logSetCtx.miniReps = newDefaultMiniSets();
-    }
-    renderMiniSetInputs();
-  } else {
-    const repsInput=document.getElementById("logset-reps");
-    if(existing){
-      repsInput.value=existing.reps;
-    } else if(slotTarget){
-      repsInput.value=slotTarget.reps;
-    } else {
-      const prev=s.sets.filter(st=>st.rowIdx===plannedRow.idx).pop();
-      if(prev)repsInput.value=prev.reps;
-      else if(lastSet&&lastSet.type!=="myorep")repsInput.value=lastSet.reps;
-      else repsInput.value="";
-    }
-  }
-
-  // RIR row
-  buildRirChips();
-  if(existing && existing.rir!==undefined){
-    showRirRow();
-    setActiveRir(existing.rir);
-  } else {
-    hideRirRow();
-  }
-  document.getElementById("logset-delete").style.display=existing?"":"none";
-  document.getElementById("logset-bg").classList.add("open");
-  setTimeout(()=>weightInput.focus(),60);
-}
 
 // Default mini-set template: 4 blank slots
 function newDefaultMiniSets(){return [null,null,null,null]}
 
-// Render the mini-set inputs based on logSetCtx.miniReps (array of numbers/nulls)
-function renderMiniSetInputs(){
-  const wrap=document.getElementById("logset-minisets");
-  wrap.innerHTML="";
-  const reps=logSetCtx.miniReps||[];
-  reps.forEach((v,i)=>{
-    const inp=document.createElement("input");
-    inp.type="text";inp.inputMode="numeric";inp.pattern="[0-9]*";
-    inp.className="logset-mini-input";
-    inp.placeholder="—";
-    inp.autocomplete="off";inp.dataset.idx=i;
-    if(v!==null&&v!==undefined)inp.value=v;
-    inp.addEventListener("input",e=>{
-      const idx=parseInt(e.target.dataset.idx,10);
-      const num=parseInt(e.target.value,10);
-      logSetCtx.miniReps[idx]=isNaN(num)?null:num;
-    });
-    wrap.appendChild(inp);
-  });
-  document.getElementById("logset-mini-count").textContent=`(${reps.length})`;
-}
 
-// Add or remove mini-set slots (kept between 0 and 8)
-function adjustMiniSets(delta){
-  if(!logSetCtx||!logSetCtx.isMyo)return;
-  let n=logSetCtx.miniReps.length+delta;
-  n=Math.max(0,Math.min(8,n));
-  if(n>logSetCtx.miniReps.length){
-    while(logSetCtx.miniReps.length<n)logSetCtx.miniReps.push(null);
-  } else {
-    logSetCtx.miniReps=logSetCtx.miniReps.slice(0,n);
-  }
-  renderMiniSetInputs();
-}
 
 // Format a logged set (or last-set hint) for human display
 function fmtSetReps(st){
@@ -7440,101 +7059,7 @@ function relativeDateText(d){
   if(diffDays<365)return Math.floor(diffDays/30)+" months ago";
   return Math.floor(diffDays/365)+" years ago";
 }
-function closeLogSet(){
-  logSetCtx=null;
-  document.getElementById("logset-bg").classList.remove("open");
-}
-function toggleRirRow(){
-  const row=document.getElementById("logset-rir-row");
-  if(row.style.display==="none"){showRirRow()}else{hideRirRow()}
-}
-function showRirRow(){
-  document.getElementById("logset-rir-row").style.display="flex";
-  document.getElementById("logset-rir-toggle").style.display="none";
-}
-function hideRirRow(){
-  document.getElementById("logset-rir-row").style.display="none";
-  document.getElementById("logset-rir-toggle").style.display="";
-  document.getElementById("logset-rir-toggle").textContent="+ Add RIR";
-  setActiveRir(null);
-}
-function buildRirChips(){
-  const wrap=document.getElementById("logset-rir-chips");
-  wrap.innerHTML="";
-  ["0","1","2","3","4","5+"].forEach(v=>{
-    const b=document.createElement("button");
-    b.className="logset-rir-chip";b.type="button";b.textContent=v;b.dataset.val=v;
-    b.onclick=()=>setActiveRir(v==="5+"?5:parseInt(v,10));
-    wrap.appendChild(b);
-  });
-}
-function setActiveRir(val){
-  document.querySelectorAll("#logset-rir-chips .logset-rir-chip").forEach(c=>{
-    c.classList.toggle("active", (val!==null && c.dataset.val===String(val)) || (val===5 && c.dataset.val==="5+"));
-  });
-  if(logSetCtx)logSetCtx.rir=val;
-}
 
-function saveLoggedSet(){
-  if(!logSetCtx)return;
-  const s=sessions.find(x=>x.id===curWorkoutSessId);
-  if(!s){closeLogSet();return}
-  const w=parseFloat(document.getElementById("logset-weight").value);
-  if(isNaN(w)||w<0){alert("Please enter a valid weight.");return}
-  const pr=logSetCtx.plannedRow;
-
-  let r, miniSetReps=null;
-  if(logSetCtx.isMyo){
-    r=parseInt(document.getElementById("logset-activation").value,10);
-    if(isNaN(r)||r<=0){alert("Please enter the activation set reps.");return}
-    // Filter out null/blank mini-sets, keep only positive integers
-    miniSetReps=(logSetCtx.miniReps||[]).map(v=>{
-      const n=parseInt(v,10);
-      return isNaN(n)||n<=0 ? null : n;
-    }).filter(v=>v!==null);
-  } else {
-    r=parseInt(document.getElementById("logset-reps").value,10);
-    if(isNaN(r)||r<0){alert("Please enter valid reps.");return}
-  }
-
-  const setRec={
-    rowIdx:pr.idx,
-    ex:pr.ex,
-    type:pr.type,
-    weight:w,
-    reps:r,
-    unit:prefs.preferredUnit,
-    timestamp:new Date().toISOString()
-  };
-  if(miniSetReps!==null)setRec.miniSetReps=miniSetReps;
-  if(logSetCtx.rir!==undefined&&logSetCtx.rir!==null)setRec.rir=logSetCtx.rir;
-  // Use slot-specific target if available, else fall back to legacy single target
-  const tgt = logSetCtx.slotTarget || pr.target;
-  if(tgt){setRec.targetWeight=tgt.weight;setRec.targetReps=tgt.reps}
-
-  if(logSetCtx.existing){
-    const idx=s.sets.indexOf(logSetCtx.existing);
-    if(idx>=0)s.sets[idx]={...s.sets[idx],...setRec};
-  } else {
-    s.sets.push(setRec);
-  }
-  saveSessions();
-  closeLogSet();
-  renderWorkoutBody();
-  // New log: (re)start the rest timer at full duration regardless of any running timer
-  if(!logSetCtx?.existing)startRestTimer();
-}
-function deleteLoggedSet(){
-  if(!logSetCtx||!logSetCtx.existing)return;
-  if(!confirm("Delete this logged set?"))return;
-  const s=sessions.find(x=>x.id===curWorkoutSessId);
-  if(!s){closeLogSet();return}
-  const idx=s.sets.indexOf(logSetCtx.existing);
-  if(idx>=0)s.sets.splice(idx,1);
-  saveSessions();
-  closeLogSet();
-  renderWorkoutBody();
-}
 
 // ===== Rest timer =====
 let restTimer={id:null, endsAt:0, durationSec:0};
@@ -7581,7 +7106,6 @@ function toggleRestTimer(){
 }
 
 // Backdrop click + escape
-document.getElementById("logset-bg").addEventListener("click",e=>{if(e.target.id==="logset-bg")closeLogSet()});
 // Note: we deliberately don't close the workout modal on backdrop click — user could lose data accidentally
 
 // Days start with this many exercise slots; they grow past it as needed.
@@ -8708,14 +8232,35 @@ const _active=activeSession();
 if(_active)openWorkoutModal(_active.id);
 // Check if a backup reminder should be shown (after sessions and prefs are loaded)
 checkBackupReminder();
+{const v=document.getElementById("app-version");if(v)v.textContent=APP_VERSION;}
+reportLoadProblems();          // tell the user if any saved data was unreadable and set aside
 // Ask the browser to mark this origin's storage as persistent so training history isn't
 // evicted under storage pressure. Silently ignored where unsupported.
-try{ if(navigator.storage&&navigator.storage.persist)navigator.storage.persist() }catch(e){}
+try{ if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{}) }catch(e){}
 // Register the service worker only for the web/PWA build. Inside the Capacitor native shell
 // the files are served locally from the app bundle, so a service worker is unnecessary and can
 // occasionally serve stale assets — detect Capacitor and skip registration there.
 if('serviceWorker' in navigator && !(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform())){
-  navigator.serviceWorker.register('sw.js');
+  // Update detection. A new sw.js installs, takes control (skipWaiting + clients.claim), and
+  // fires controllerchange — but this page is still running the old code. Tell the user and
+  // let them reload when convenient. Skipped on first install (no previous controller).
+  const hadController=!!navigator.serviceWorker.controller;
+  let updateShown=false;
+  navigator.serviceWorker.addEventListener("controllerchange",()=>{
+    if(!hadController||updateShown)return;
+    updateShown=true;
+    showAppBanner("update","A new version of Shred Sheet is ready.",[["Reload",()=>{flushSaves();location.reload()}]]);
+  });
+  navigator.serviceWorker.register('sw.js').then(reg=>{
+    // An installed PWA resumes without navigating, so the browser rarely re-checks for updates.
+    // Check when the app comes back to the foreground, at most once an hour.
+    let lastCheck=Date.now();
+    document.addEventListener("visibilitychange",()=>{
+      if(document.visibilityState==="visible" && Date.now()-lastCheck>3600000){
+        lastCheck=Date.now(); reg.update().catch(()=>{});
+      }
+    });
+  }).catch(()=>{}); // registration can fail offline or in private mode; the app still works
 }
 </script>
 </body>
