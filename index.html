@@ -14,8 +14,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
 <style>
-:root{--bg:#ffffff;--bg2:#f5f4ef;--bg3:#ecebe5;--text:#1a1a1a;--text2:#6b6b6b;--text3:#a0a0a0;--border:rgba(0,0,0,0.12);--border2:rgba(0,0,0,0.22);--radius:8px;--danger-bg:#fcebeb;--danger-text:#9a2727;--warn-bg:#fcf3d6;--warn-text:#7a5400;--success-bg:#eaf3de;--success-text:#3b6d11;--high-bg:#efe1f7;--high-text:#5a2a82;--shadow:rgba(0,0,0,0.15);--overlay:rgba(0,0,0,0.4);--accent:#1d5670;--accent-text:#ffffff;--ease:cubic-bezier(0.4,0,0.2,1)}
-@media(prefers-color-scheme:dark){:root{--bg:#1c1c1e;--bg2:#2c2c2e;--bg3:#3a3a3c;--text:#f2f2f7;--text2:#aeaeb2;--text3:#636366;--border:rgba(255,255,255,0.12);--border2:rgba(255,255,255,0.22);--danger-bg:#3a1a1a;--danger-text:#f09595;--warn-bg:#3a2e0f;--warn-text:#e6c45f;--success-bg:#1a2e10;--success-text:#97c459;--high-bg:#2c1c3e;--high-text:#d4a5ff;--shadow:rgba(0,0,0,0.6);--overlay:rgba(0,0,0,0.65);--accent:#5fb7d4;--accent-text:#0a1a22}}
+:root{--int-90:#3C3489;--int-80:#534AB7;--int-70:#7F77DD;--int-60:#AFA9EC;--int-lt60:#CECBF6;--int-unrated:#B4B2A9;--bg:#ffffff;--bg2:#f5f4ef;--bg3:#ecebe5;--text:#1a1a1a;--text2:#6b6b6b;--text3:#a0a0a0;--border:rgba(0,0,0,0.12);--border2:rgba(0,0,0,0.22);--radius:8px;--danger-bg:#fcebeb;--danger-text:#9a2727;--warn-bg:#fcf3d6;--warn-text:#7a5400;--success-bg:#eaf3de;--success-text:#3b6d11;--high-bg:#efe1f7;--high-text:#5a2a82;--shadow:rgba(0,0,0,0.15);--overlay:rgba(0,0,0,0.4);--accent:#1d5670;--accent-text:#ffffff;--ease:cubic-bezier(0.4,0,0.2,1)}
+@media(prefers-color-scheme:dark){:root{--int-90:#CECBF6;--int-80:#AFA9EC;--int-70:#7F77DD;--int-60:#534AB7;--int-lt60:#3C3489;--int-unrated:#5F5E5A;--bg:#1c1c1e;--bg2:#2c2c2e;--bg3:#3a3a3c;--text:#f2f2f7;--text2:#aeaeb2;--text3:#636366;--border:rgba(255,255,255,0.12);--border2:rgba(255,255,255,0.22);--danger-bg:#3a1a1a;--danger-text:#f09595;--warn-bg:#3a2e0f;--warn-text:#e6c45f;--success-bg:#1a2e10;--success-text:#97c459;--high-bg:#2c1c3e;--high-text:#d4a5ff;--shadow:rgba(0,0,0,0.6);--overlay:rgba(0,0,0,0.65);--accent:#5fb7d4;--accent-text:#0a1a22}}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-feature-settings:"cv11","ss01"}
 body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
@@ -525,6 +525,12 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .wo-card-input{box-sizing:border-box;padding:7px 8px;font-size:15px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);outline:none;font-family:inherit;text-align:center;font-variant-numeric:tabular-nums;min-width:0}
 .wo-card-input:focus{border-color:var(--accent)}
 .wo-card-weight{width:78px}
+/* Bodyweight toggle beside workout weight fields */
+.wo-bw-btn{padding:6px 8px;font-size:11px;font-weight:600;letter-spacing:0.03em;border-radius:var(--radius);border:0.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;font-family:inherit;touch-action:manipulation}
+.wo-bw-btn.active{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
+.wo-card-input.is-bw{color:var(--text2);font-weight:600;text-align:center}
+.wo-weight-wrap{display:flex;gap:4px;align-items:center}
+.wo-weight-wrap input{flex:1;min-width:0}
 .wo-card-reps{width:62px}
 .wo-card-unit-label{font-size:11px;color:var(--text2);flex-shrink:0}
 .wo-card-x{font-size:13px;color:var(--text3);margin:0 2px;flex-shrink:0}
@@ -731,6 +737,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .ce-patterns{display:grid;grid-template-columns:repeat(2,1fr);gap:5px}
 .ce-pat-btn{padding:7px 8px;font-size:12px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text2);cursor:pointer;text-align:center;font-family:inherit;touch-action:manipulation}
 .ce-pat-btn.on{background:var(--accent);color:var(--accent-text);border-color:var(--accent);font-weight:500}
+.ce-check{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text);cursor:pointer}
 .ce-hint{font-size:11px;color:var(--text3);margin-top:4px;line-height:1.4}
 .ce-link-btn{background:none;border:none;padding:4px 0;margin-top:4px;font-size:11px;color:var(--accent);cursor:pointer;font-family:inherit;text-decoration:underline}
 .ce-link-btn:active{opacity:0.7}
@@ -756,6 +763,26 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .app-banner.error{background:var(--danger-text);color:#fff}
 .app-banner-msg{flex:1;min-width:0;overflow-wrap:anywhere}
 .app-banner button{flex-shrink:0;padding:6px 10px;border-radius:var(--radius);border:1px solid currentColor;background:transparent;color:inherit;font:inherit;font-weight:600;cursor:pointer}
+.i-card{border-radius:var(--radius);padding:10px 12px;background:var(--bg2);cursor:pointer;user-select:none;-webkit-user-select:none;display:flex;flex-direction:column;gap:6px;transition:transform 0.08s ease}
+.i-card:active{transform:scale(0.98)}
+.i-card.open{grid-column:1/-1;cursor:default}
+.i-head{display:flex;align-items:baseline;gap:6px;font-size:12px;font-weight:500}
+.i-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.i-total{font-size:11px;color:var(--text2);font-weight:500;white-space:nowrap}
+.i-chev{font-size:10px;opacity:0.7;transition:transform 0.15s var(--ease)}
+.i-card.open .i-chev{transform:rotate(180deg)}
+.i-bar{display:flex;height:8px;border-radius:4px;overflow:hidden;background:var(--bg3)}
+.i-bar span{display:block;height:100%}
+.i-detail{display:none;font-size:12px;line-height:1.45;padding-top:4px}
+.i-card.open .i-detail{display:block}
+.i-row{display:flex;align-items:center;gap:6px;margin-top:6px}
+.i-row .i-blabel{flex:1;font-weight:500}
+.i-row .i-bsets{color:var(--text2);font-size:11px}
+.i-dot{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+.i-exlist{color:var(--text2);font-size:11px;margin-left:15px}
+.i-empty{grid-column:1/-1;font-size:12px;color:var(--text2);padding:12px 4px}
+.graph-legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:11px;color:var(--text2);margin:2px 0 6px}
+.graph-legend-swatch{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:3px;margin-right:5px}
 </style>
 </head>
 <body>
@@ -893,6 +920,10 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
         <label class="ce-label">Movement patterns</label>
         <div class="ce-patterns" id="ce-patterns"></div>
         <div class="ce-hint">Optional. Tap any that apply — used by the Summary → Patterns tab. Most isolation lifts have none.</div>
+      </div>
+      <div class="ce-field">
+        <label class="ce-check"><input type="checkbox" id="ce-bodyweight"> Bodyweight exercise</label>
+        <div class="ce-hint">Your logged bodyweight counts toward the load, so the weight you enter is added weight (BW = none). Turn on for exercises that lift nearly your whole body, like dips and pull-ups.</div>
       </div>
       <div class="ce-error" id="ce-error"></div>
     </div>
@@ -1042,7 +1073,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
     <div class="logset-fields">
       <div class="logset-field">
         <label>Weight (<span id="histset-unit">lb</span>)</label>
-        <input type="text" inputmode="decimal" pattern="[0-9]*\.?[0-9]*" id="histset-weight" placeholder="—" autocomplete="off">
+        <input type="text" inputmode="decimal" pattern="[0-9]*\.?[0-9]*" id="histset-weight" placeholder="0 = BW" autocomplete="off">
       </div>
       <div class="logset-field">
         <label>Reps</label>
@@ -1145,6 +1176,18 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
             <input type="radio" name="weight-unit" value="kg" onchange="setPreferredUnit(this.value)"> Kilograms (kg)
           </label>
         </div>
+      </details>
+
+      <details class="help-section" id="settings-bodyweight">
+        <summary>Bodyweight</summary>
+        <p>For bodyweight exercises like dips and pull-ups, your bodyweight counts toward the load: a set at +25 is your bodyweight plus 25. That puts bodyweight and weighted sets on the same scale for estimated 1RM, Intensity, and the History volume graph. Log a new weight whenever it changes; each set uses your weight at the time.</p>
+        <div style="display:flex;gap:8px;align-items:center;margin:8px 0 0 16px">
+          <input type="text" inputmode="decimal" class="ce-input" id="bw-input" placeholder="180" autocomplete="off" style="width:90px">
+          <span id="bw-unit" style="font-size:13px;color:var(--text2)">lb</span>
+          <button class="settings-btn primary" onclick="addBodyweightEntry()">Save</button>
+        </div>
+        <div id="bw-log" style="margin:10px 0 0 16px;font-size:12px;color:var(--text2)"></div>
+        <p class="help-note">Choose which exercises count bodyweight in each exercise's editor. Dips, pull-ups, chin-ups, and wide-grip pull-ups are on by default.</p>
       </details>
 
       <details class="help-section">
@@ -1257,6 +1300,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
           <li><b>RIR</b> (Reps in Reserve) is optional — tap "+ Add RIR" in the log modal if you want to track it.</li>
           <li><b>Tap the exercise name</b> to swap it for a different exercise mid-workout (handy when a machine is taken). Existing logged sets keep their original name; new ones use the swapped exercise.</li>
           <li><b>Rest timer</b> at the bottom auto-starts when you log a set. Tap to start/stop manually. <b>Long-press the timer</b> to pick a different default duration (30s through 5min).</li>
+          <li><b>Bodyweight:</b> tap <b>BW</b> next to the weight field for bodyweight exercises with no added load. Bodyweight sets show as "BW" everywhere and count as Unrated in the Intensity view. For weighted dips or pull-ups, enter just the added weight instead.</li>
           <li><b>Finish</b> closes out the workout and saves it to history.</li>
           <li><b>Close (×)</b> leaves it as "in progress" — you can resume from the day tab later.</li>
         </ul>
@@ -1298,11 +1342,13 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
         </ul>
         <p>Graph metrics:</p>
         <ul>
-          <li><b>Weight</b> — the load lifted per set</li>
+          <li><b>Weight</b> — the weight you logged per set (for bodyweight exercises, the added weight)</li>
           <li><b>Est 1RM</b> — Epley-formula estimated one-rep max from your actual sets (useful for trending strength when you're not maxing out). Sets logged at <b>1 rep</b> are treated as <b>true 1RMs</b> and drawn as <b>squares</b> instead of circles; multi-rep sets are estimated and drawn as circles. When a day has both a true 1RM and a higher Epley estimate from a multi-rep set, the true 1RM wins as the best-of-day point — a measured single is more truthful than an estimate.</li>
           <li><b>Volume</b> — weight × reps per set</li>
           <li><b>Sets</b> — daily aggregated effective set count, with set-type multipliers applied</li>
+          <li><b>Reps</b> — best reps per session, with a separate line for each load (bodyweight, +25 lb, and so on), since reps at different loads aren't comparable. The four most-used loads get their own colored lines; any others appear as gray dots. This is the way to track progress on bodyweight exercises.</li>
         </ul>
+        <p><b>Bodyweight exercises:</b> for exercises marked as bodyweight exercises (dips, pull-ups, chin-ups, and wide-grip pull-ups by default), your bodyweight from Settings counts toward the load. So Est 1RM, Volume, and the Intensity view treat 12 bodyweight pull-ups and 8 at +25 lb as the same kind of effort and put them on one scale. Each set uses the bodyweight you'd logged at the time. Without a logged bodyweight, they fall back to the added weight alone. Turn the setting on or off in each exercise's editor.</p>
         <p><b>Browse by exercise</b> from the top of the History list is the fastest way to find a graph if you remember the exercise but not the date.</p>
         <p><b>Migrating Flexify history:</b> if you've imported a Flexify CSV but haven't yet tracked native workouts, a "Migrate" button appears at the top of the History list. It groups your imported sets into one synthetic session per calendar day, flagged "IMPORTED" so you can tell them apart. Migration is non-destructive — your original Flexify data stays available.</p>
         <p>The Summary's <b>Actual</b> mode automatically uses native sessions if any exist, falling back to raw Flexify history only if no sessions are present.</p>
@@ -1325,7 +1371,13 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 
       <details class="help-section">
         <summary>Summary tab</summary>
-        <p>Shows weekly volume per muscle group. Tap any muscle card to expand a per-day exercise breakdown.</p>
+        <p>The Summary has three sections, each with Planned and Actual modes:</p>
+        <ul>
+          <li><b>Volume</b> — weighted sets per muscle group. Tap a muscle card to expand a per-day exercise breakdown.</li>
+          <li><b>Intensity</b> — the same sets, grouped by load as a percentage of your estimated 1RM: 90%+, 80–89%, 70–79%, 60–69%, and under 60%. Tap a card to see which exercises fall in each band. Each card's total matches its Volume card.</li>
+          <li><b>Patterns</b> — which movement patterns your plan or recent training covers.</li>
+        </ul>
+        <p><b>How Intensity is calculated:</b> each logged set is compared with your best estimated 1RM for that exercise over the 12 weeks up to that set, so older sets are judged against your strength at the time. In Planned mode, each set's weight target is compared with your current estimated 1RM. Bodyweight sets, planned sets without a weight target, and exercises with no logged history are listed as <i>Unrated</i>. For sets taken close to failure, the band mostly reflects rep count: by the estimate the app uses, a hard set of 5 lands near 86%, 10 near 75%, and 15 near 67%.</p>
         <p><b>Traps are split into Upper and Mid-Low</b> because they're often trained unequally — plenty of shrugs and carries (upper) but little mid-trap retraction from rows and face pulls (mid-low), or vice versa. Each sub-region gets its own volume count and colour, so you can spot an under-trained region that a single combined number would hide. Volume from a given exercise is divided across the regions it targets, so each sub-region shows fewer sets than a combined group would — the thresholds below apply <em>per sub-region</em>.</p>
         <p><b>Colour coding (Planned mode):</b></p>
         <ul>
@@ -1381,7 +1433,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 
 <script>
 // Build stamp, matched to the service-worker cache name. Shown in Settings → About.
-const APP_VERSION="20261111040307";
+const APP_VERSION="20261111170743";
 
 // ===== App banner (crash reports, update notices) =====
 // Built with plain DOM calls and no app state, so it still works if the rest of the app failed
@@ -2006,6 +2058,31 @@ function migrateCustomNameCollisions(){
   if(changed){ saveCustomExercises(); rebuildEX(); rebuildPatterns(); }
 }
 
+// One-time: 1 lb was used as shorthand for bodyweight before the app had a bodyweight option.
+// Convert every weight of exactly 1 — logged sets, saved targets, plan rows in every week, and
+// imported history — to 0, the bodyweight value. Runs once (prefs flag), after blocks load.
+function migrateBodyweightShorthand(){
+  if(prefs.bwShorthandMigrated)return;
+  let changed=0;
+  const fix=o=>{ if(o && o.weight===1){ o.weight=0; changed++; } };
+  const fixTargets=row=>{ if(!row)return; if(Array.isArray(row.targets))row.targets.forEach(fix); fix(row.target); };
+  sessions.forEach(sess=>{
+    (sess.sets||[]).forEach(fix);
+    (sess.plannedRows||[]).forEach(fixTargets);
+  });
+  BLOCKS.forEach(b=>{
+    const before=changed;
+    forEachDayAllWeeks(b, day=>{ (day.rows||[]).forEach(fixTargets) });
+    if(changed>before){ try{writeBlock(b)}catch(e){} }
+  });
+  const histBefore=changed;
+  if(Array.isArray(flexifyHistory))flexifyHistory.forEach(fix);
+  if(changed>histBefore)saveFlexifyHistory();
+  if(changed)saveSessions();
+  prefs.bwShorthandMigrated=true;
+  savePrefs();
+}
+
 function migrateRenamedExercises(){
   let changed=false;
   BLOCKS.forEach(b=>{
@@ -2624,8 +2701,38 @@ function closeHelp(){document.getElementById("help-bg").classList.remove("open")
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeHelp();closeHistory();closeSettings();closeResetModal();closeNumpad&&closeNumpad();closeDeleteBlockModal&&closeDeleteBlockModal();closeCustomEditor&&closeCustomEditor()}});
 
 // ===== Settings modal =====
+// ----- Bodyweight log (Settings) -----
+function renderBodyweightLog(){
+  const box=document.getElementById("bw-log"); if(!box)return;
+  const unitEl=document.getElementById("bw-unit"); if(unitEl)unitEl.textContent=prefs.preferredUnit;
+  const log=Array.isArray(prefs.bodyweightLog)?prefs.bodyweightLog:[];
+  box.innerHTML="";
+  if(!log.length){ box.textContent="No bodyweight logged yet."; return; }
+  log.slice().reverse().slice(0,8).forEach(e=>{
+    const row=document.createElement("div");
+    row.style.cssText="display:flex;align-items:center;gap:8px;padding:2px 0";
+    const label=document.createElement("span"); label.style.flex="1";
+    label.textContent=`${localDayKeyToDate(e.date).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"})} — ${fmtNum(e.weight)} ${e.unit}`;
+    const del=document.createElement("button"); del.type="button"; del.className="settings-btn"; del.textContent="Remove";
+    del.style.cssText="padding:2px 8px;font-size:11px";
+    del.onclick=()=>{ prefs.bodyweightLog=prefs.bodyweightLog.filter(x=>x!==e); savePrefs(); renderBodyweightLog(); renderSummary(); };
+    row.appendChild(label); row.appendChild(del); box.appendChild(row);
+  });
+}
+function addBodyweightEntry(){
+  const inp=document.getElementById("bw-input");
+  const w=parseFloat(inp.value);
+  if(!(w>0)){ alert("Enter your bodyweight as a number."); return; }
+  const today=localDayKey(new Date());
+  const log=(Array.isArray(prefs.bodyweightLog)?prefs.bodyweightLog:[]).filter(e=>e.date!==today); // one entry per day
+  log.push({date:today, weight:w, unit:prefs.preferredUnit});
+  log.sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0);
+  prefs.bodyweightLog=log; savePrefs();
+  inp.value=""; renderBodyweightLog(); renderSummary();
+}
 function openSettings(){
   refreshSettingsUI();
+  renderBodyweightLog();
   document.getElementById("settings-bg").classList.add("open");
 }
 function closeSettings(){document.getElementById("settings-bg").classList.remove("open")}
@@ -2840,6 +2947,7 @@ document.getElementById("settings-bg").addEventListener("click",e=>{if(e.target.
 
 // ===== Backup / restore =====
 const BACKUP_KEYS=[
+  "trainblock_bw_exercises_v1",
   "trainblock_list_v1",
   "trainblock_custom_v1",
   "trainblock_builtin_overrides_v1",
@@ -3169,7 +3277,7 @@ function openHistSetEditor(sessId, set){
   else if(set.type==="restpause")typeNote = ` (rest-pause — only initial weight/reps editable)`;
   document.getElementById("histset-sub").innerHTML = `<span style="font-variant-numeric:tabular-nums">${fmtSetReps(set)}</span>${typeNote}${dateStr?` · ${dateStr}`:""}`;
   document.getElementById("histset-unit").textContent = set.unit || prefs.preferredUnit;
-  document.getElementById("histset-weight").value = set.weight ?? "";
+  document.getElementById("histset-weight").value = isBW(set.weight) ? "BW" : (set.weight ?? "");
   document.getElementById("histset-reps").value = set.reps ?? "";
   document.getElementById("histset-rir").value = (set.rir!==undefined&&set.rir!==null) ? set.rir : "";
   document.getElementById("histset-bg").classList.add("open");
@@ -3180,7 +3288,7 @@ function closeHistSetEditor(){
 }
 function histSetSave(){
   if(!histSetCtx)return;
-  const w=parseFloat(document.getElementById("histset-weight").value);
+  const w=parseWeightInput(document.getElementById("histset-weight").value);
   const r=parseInt(document.getElementById("histset-reps").value,10);
   const rirRaw=document.getElementById("histset-rir").value.trim();
   if(isNaN(w)||w<0||isNaN(r)||r<=0){
@@ -3253,7 +3361,7 @@ function renderExerciseGraph(exName){
   metaRow.innerHTML=`<span>${all.length} set${all.length===1?"":"s"} logged · first ${firstDateStr}</span>`;
   const toggleWrap=document.createElement("div");toggleWrap.style.cssText="display:flex;gap:8px;align-items:center;flex-wrap:wrap";
   const toggle=document.createElement("div");toggle.className="graph-toggle";
-  [["weight","Weight"],["estimated1rm","Est 1RM"],["volume","Volume"],["setCount","Sets"]].forEach(([key,label])=>{
+  [["weight","Weight"],["estimated1rm","Est 1RM"],["volume","Volume"],["setCount","Sets"],["reps","Reps"]].forEach(([key,label])=>{
     const b=document.createElement("button");b.textContent=label;b.className=graphMetric===key?"active":"";
     b.onclick=()=>{graphMetric=key;prefs.graphMetric=key;savePrefs();renderExerciseGraph(exName)};
     toggle.appendChild(b);
@@ -3294,7 +3402,19 @@ function renderExerciseGraph(exName){
 
   // Graph container
   const container=document.createElement("div");container.className="graph-container";
-  container.appendChild(buildSvgGraph(all));
+  const graphSvg=buildSvgGraph(all);
+  // Multi-line metrics (Reps) attach a legend describing each line.
+  if(graphSvg.legendItems&&graphSvg.legendItems.length){
+    const lg=document.createElement("div");lg.className="graph-legend";
+    graphSvg.legendItems.forEach(it=>{
+      const sp=document.createElement("span");
+      const sw=document.createElement("span");sw.className="graph-legend-swatch";sw.style.background=it.color;
+      sp.appendChild(sw); sp.appendChild(document.createTextNode(it.label));
+      lg.appendChild(sp);
+    });
+    container.appendChild(lg);
+  }
+  container.appendChild(graphSvg);
   body.appendChild(container);
 
   // Data table summary by session
@@ -3310,7 +3430,7 @@ function renderExerciseGraph(exName){
   const dates=Object.keys(bySession).sort().reverse();
   dates.forEach(d=>{
     const sets=bySession[d];
-    const best=sets.reduce((b,s)=>est1rm(s)>est1rm(b)?s:b,sets[0]);
+    const best=sets.reduce((b,s)=>isBetterSet(s,b)?s:b,sets[0]);
     const vol=sets.reduce((sum,s)=>sum+totalVolumeForSet(s),0);
     // Effective set count = sum of multipliers. If any intensifiers contributed, mark with *
     const effSets=sets.reduce((sum,s)=>sum+getSetTypeMult(s.type||"straight",s),0);
@@ -3319,7 +3439,7 @@ function renderExerciseGraph(exName){
     // Main row: tappable, toggles the .open class which reveals the sub-row beneath
     const tr=document.createElement("tr");
     tr.className="graph-table-row";
-    tr.innerHTML=`<td class="graph-table-chev"><span class="chev">▸</span></td><td>${localDayKeyToDate(d).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"2-digit"})}</td><td>${fmtNum(best.weight)}×${fmtRepsOnly(best)}</td><td>${fmtNum(vol)}</td><td title="${hasIntens?'includes intensifier sets (multiplied)':''}">${setsCell}</td>`;
+    tr.innerHTML=`<td class="graph-table-chev"><span class="chev">▸</span></td><td>${localDayKeyToDate(d).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"2-digit"})}</td><td>${fmtW(best.weight)}×${fmtRepsOnly(best)}</td><td>${fmtNum(vol)}</td><td title="${hasIntens?'includes intensifier sets (multiplied)':''}">${setsCell}</td>`;
     tbl.appendChild(tr);
     // Detail row: hidden by default; reveals every set logged on this day in chronological order.
     // Best set (the one shown in the main row) is marked with ▸ so the user can see which is which.
@@ -3334,7 +3454,7 @@ function renderExerciseGraph(exName){
       const typeInfo = (st.type && st.type!=="straight") ? ` <span class="graph-set-type">${getSetTypeInfo(st.type).short}</span>` : "";
       // For complex set types, show the full rep breakdown via fmtRepsOnly (which already
       // formats drop-rep arrays, myo mini-sets, etc.)
-      return `<div class="graph-set-line"><span class="graph-set-marker">${marker}</span><span class="graph-set-num">${i+1}.</span><span class="graph-set-vals">${fmtNum(st.weight)}${st.unit||""} × ${fmtRepsOnly(st)}${rir}</span>${typeInfo}</div>`;
+      return `<div class="graph-set-line"><span class="graph-set-marker">${marker}</span><span class="graph-set-num">${i+1}.</span><span class="graph-set-vals">${fmtW(st.weight,st.unit)} × ${fmtRepsOnly(st)}${rir}</span>${typeInfo}</div>`;
     }).join("");
     detailCell.innerHTML=`<div class="graph-set-list">${setLines}</div>`;
     detailTr.appendChild(detailCell);
@@ -3457,14 +3577,95 @@ function buildExLabel(name){
   return box;
 }
 
+// ===== Bodyweight =====
+// A weight of 0 means bodyweight (no added load). Shown as "BW", never "0lb".
+function isBW(w){return w===0||w==="0"}
+// Weight for display: "BW" for bodyweight, otherwise the number plus its unit (if given).
+function fmtW(w, unit){return isBW(w)?"BW":fmtNum(w)+(unit||"")}
+// Parse a weight field: "BW" (any case) means bodyweight → 0. Otherwise a number, or NaN.
+function parseWeightInput(v){
+  const t=String(v==null?"":v).trim();
+  return /^bw$/i.test(t)?0:parseFloat(t);
+}
+
+// Add a "BW" toggle beside a workout weight field. On: the field reads "BW" and is locked,
+// and the set saves with weight 0 (bodyweight). A prefilled 0 — from a bodyweight target or
+// the last session — switches it on automatically. `container` is where the button goes,
+// right after the field.
+function attachBWToggle(wInp, st, container){
+  const b=document.createElement("button");
+  b.type="button"; b.className="wo-bw-btn"; b.textContent="BW";
+  b.title="Bodyweight (no added load)"; b.setAttribute("aria-label","Bodyweight");
+  const turnOn=()=>{ b.classList.add("active"); wInp.readOnly=true; wInp.classList.add("is-bw"); st.weight="BW"; wInp.value="BW"; };
+  if(isBW(st.weight)||/^bw$/i.test(String(st.weight)))turnOn();
+  if(wInp.placeholder==="0")wInp.placeholder="BW";
+  b.onclick=()=>{
+    if(b.classList.contains("active")){
+      b.classList.remove("active"); wInp.readOnly=false; wInp.classList.remove("is-bw");
+      st.weight=""; wInp.value=""; wInp.focus();
+    } else turnOn();
+  };
+  container.appendChild(b);
+}
+
 function esc(v){
   return String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 }
 
+// ===== Bodyweight load =====
+// For "bodyweight exercises" (dips, pull-ups...), a set's real load is your bodyweight plus the
+// weight you logged, which is the added weight (0 = bodyweight only). Logged sets always store
+// just the added weight, so changing your bodyweight log or an exercise's setting never rewrites
+// history. With no bodyweight logged, everything falls back to the added weight alone.
+const DEFAULT_BW_EXERCISES=new Set(["Dips","Pull-Ups","Chin-Ups","Wide Grip Pull-Up"]);
+const BW_EXERCISES_KEY="trainblock_bw_exercises_v1";
+let bwExerciseOverrides={}; // canonical built-in name → true/false (only where it differs from default)
+function loadBwExerciseOverrides(){
+  try{ const p=JSON.parse(localStorage.getItem(BW_EXERCISES_KEY)||"{}"); if(p&&typeof p==="object"&&!Array.isArray(p))bwExerciseOverrides=p }catch(e){}
+}
+function saveBwExerciseOverrides(){ try{localStorage.setItem(BW_EXERCISES_KEY,JSON.stringify(bwExerciseOverrides))}catch(e){} }
+function isBodyweightExercise(name){
+  if(!name)return false;
+  const custom=customExercises.find(e=>e.name===name);
+  if(custom)return !!custom.bodyweight;
+  const canon=resolveBuiltinName(name);
+  if(Object.prototype.hasOwnProperty.call(bwExerciseOverrides,canon))return !!bwExerciseOverrides[canon];
+  return DEFAULT_BW_EXERCISES.has(canon);
+}
+// Bodyweight on a given date: the latest log entry on or before that day, else the earliest
+// entry (so sets logged before you started recording still get a sensible value). null if none.
+function bodyweightAt(when){
+  const log=prefs.bodyweightLog;
+  if(!Array.isArray(log)||!log.length)return null;
+  const day=localDayKey(when==null?new Date():new Date(when));
+  let found=null;
+  for(const e of log){ if(e.date<=day)found=e; else break; }
+  return (found||log[0]).weight;
+}
+function setTime(set){ return set.timestamp||set.sessionDate||set.date||null }
+// Extra load from bodyweight for this set (0 unless it's a bodyweight exercise and bodyweight is known).
+function bodyweightExtra(set){
+  if(!set||!isBodyweightExercise(set.ex))return 0;
+  const bw=bodyweightAt(setTime(set));
+  return bw>0?bw:0;
+}
+// Total load lifted on a set: added weight plus bodyweight for bodyweight exercises.
+function loadOf(set){ return (set&&set.weight||0)+bodyweightExtra(set) }
+
 function est1rm(set){
-  if(!set||!set.weight||!set.reps)return 0;
-  if(set.reps===1)return set.weight;
-  return set.weight*(1+set.reps/30);
+  if(!set||!set.reps)return 0;
+  const w=loadOf(set);
+  if(!w)return 0;
+  if(set.reps===1)return w;
+  return w*(1+set.reps/30);
+}
+// Is set a stronger than set b? Estimated 1RM first; on a tie, more reps wins. The tie-break
+// matters for bodyweight sets with no load to compare (push-ups, or any bodyweight set before a
+// bodyweight is logged): they all estimate 0, and without it the FIRST set would always "win".
+function isBetterSet(a, b){
+  const ea=est1rm(a), eb=est1rm(b);
+  if(ea!==eb)return ea>eb;
+  return (a.reps||0)>(b.reps||0);
 }
 
 // Return a YYYY-MM-DD key for the LOCAL calendar day of a date input.
@@ -3496,8 +3697,10 @@ function localDayKeyToDate(key){
 // Myo-rep / rest-pause mini-sets ARE at the same weight as the initial, so those use one weight.
 // Cluster mini-sets are also all at the same weight.
 function totalVolumeForSet(s){
-  if(!s||!s.weight||!s.reps)return 0;
-  const w=s.weight;
+  if(!s||!s.reps)return 0;
+  const extra=bodyweightExtra(s); // bodyweight added to every segment for bodyweight exercises
+  const w=(s.weight||0)+extra;
+  if(!w)return 0;
   if(s.type==="drop"){
     let vol=w*s.reps; // initial segment
     if(Array.isArray(s.dropWeights)&&Array.isArray(s.dropReps)){
@@ -3505,7 +3708,7 @@ function totalVolumeForSet(s){
         const dr=s.dropReps[i];
         // Drop weight at index i; if a weight wasn't recorded, fall back to the initial weight
         // (better an over-estimate than dropping the segment's volume entirely).
-        const dw=(s.dropWeights&&typeof s.dropWeights[i]==="number")?s.dropWeights[i]:w;
+        const dw=(s.dropWeights&&typeof s.dropWeights[i]==="number")?s.dropWeights[i]+extra:w;
         if(typeof dr==="number"&&dr>0)vol+=dw*dr;
       }
     }
@@ -3548,6 +3751,7 @@ function buildSvgGraph(sets){
   // We use preserveAspectRatio="none" because we control axis labels in viewBox space
   svg.setAttribute("preserveAspectRatio","none");
   function metric(s){
+    if(graphMetric==="reps")return s.reps||0;
     if(graphMetric==="estimated1rm")return est1rm(s);
     if(graphMetric==="volume")return totalVolumeForSet(s);
     return s.weight||0;
@@ -3585,6 +3789,26 @@ function buildSvgGraph(sets){
   } else {
     points=sets.map(s=>({t:new Date(s.timestamp||s.sessionDate).getTime(),m:metric(s),src:s}));
   }
+  // Reps metric: reps at different loads aren't comparable, so each load gets its own line.
+  // The 4 most-used loads (by number of days) get colored lines; the rest are gray dots.
+  const isReps = graphMetric==="reps";
+  const SERIES_COLORS=["#534AB7","#1D9E75","#D85A30","#BA7517"], OTHER_COLOR="#888780";
+  const seriesColor={};
+  if(isReps){
+    const keyOf=s=>(s.weight||0)+"|"+(isBW(s.weight)?"":(s.unit||""));
+    points.forEach(p=>{p.series=keyOf(p.src)});
+    const days={};
+    points.forEach(p=>{(days[p.series]=days[p.series]||new Set()).add(localDayKey(p.t))});
+    const top=Object.keys(days).sort((a,b)=>days[b].size-days[a].size).slice(0,4)
+      .sort((a,b)=>parseFloat(a)-parseFloat(b)); // bodyweight first, then lightest to heaviest
+    top.forEach((k,i)=>{seriesColor[k]=SERIES_COLORS[i]});
+    // For bodyweight exercises the logged number is added weight, so label it "+25 lb".
+    const plus=isBodyweightExercise(sets[0]&&sets[0].ex)?"+":"";
+    const label=k=>{const [w,u]=k.split("|"); return isBW(Number(w))?"Bodyweight":`${plus}${fmtNum(Number(w))}${u?" "+u:""}`};
+    svg.legendItems=top.map(k=>({label:label(k),color:seriesColor[k]}));
+    if(Object.keys(days).length>top.length)svg.legendItems.push({label:"Other loads",color:OTHER_COLOR});
+  }
+  const colorOf=p=>isReps?(seriesColor[p.series]||OTHER_COLOR):"var(--accent)";
   if(points.length===0)return svg;
 
   // Compute best-per-day points (always — used for trend line and "best only" view).
@@ -3592,7 +3816,7 @@ function buildSvgGraph(sets){
   // a measured single is more truthful than an estimate, even if the estimate computes higher.
   const byDayBest={};
   points.forEach(p=>{
-    const d=localDayKey(p.t);
+    const d=localDayKey(p.t)+(isReps?"#"+p.series:"");
     const cur=byDayBest[d];
     const isTrue1rm = graphMetric==="estimated1rm" && p.src && p.src.reps===1;
     const curIsTrue1rm = cur && graphMetric==="estimated1rm" && cur.src && cur.src.reps===1;
@@ -3601,7 +3825,7 @@ function buildSvgGraph(sets){
     else if(isTrue1rm && !curIsTrue1rm)replace=true; // true 1RM always wins over estimate
     else if(!isTrue1rm && curIsTrue1rm)replace=false; // never let estimate win over true 1RM
     else if(p.m > cur.m)replace=true; // otherwise standard "highest metric wins"
-    if(replace)byDayBest[d]={t:p.t,m:p.m,src:p.src,isAggregate:p.isAggregate,daySets:p.daySets};
+    if(replace)byDayBest[d]={t:p.t,m:p.m,src:p.src,isAggregate:p.isAggregate,daySets:p.daySets,series:p.series};
   });
   const dailyMax=Object.values(byDayBest).sort((a,b)=>a.t-b.t);
 
@@ -3736,12 +3960,13 @@ function buildSvgGraph(sets){
     }
     const s=p.src;
     const repsShort=fmtRepsOnly(s);
-    let line2=`${fmtNum(s.weight)}${s.unit||""}×${repsShort}`;
+    let line2=`${fmtW(s.weight,s.unit)}×${repsShort}`;
     if(graphMetric==="estimated1rm"){
-      if(s.reps===1)line2=`${fmtNum(s.weight)}${s.unit||""} actual 1RM`;
-      else line2=`~${Math.round(est1rm(s))}${s.unit||""} 1RM (est) · ${fmtNum(s.weight)}×${s.reps}`;
+      if(s.reps===1)line2=bodyweightExtra(s)?`${fmtNum(loadOf(s))}${s.unit||""} actual 1RM · ${fmtW(s.weight)}`:`${fmtW(s.weight,s.unit)} actual 1RM`;
+      else line2=`~${Math.round(est1rm(s))}${s.unit||""} 1RM (est) · ${fmtW(s.weight)}×${s.reps}`;
     }
-    if(graphMetric==="volume")line2=`vol ${fmtNum(totalVolumeForSet(s))} · ${fmtNum(s.weight)}×${repsShort}`;
+    if(graphMetric==="volume")line2=`vol ${fmtNum(totalVolumeForSet(s))} · ${fmtW(s.weight)}×${repsShort}`;
+    if(graphMetric==="reps")line2=`${s.reps} rep${s.reps===1?"":"s"} · ${fmtW(s.weight,s.unit)}${repsShort!==String(s.reps)?" ("+repsShort+")":""}`;
     return [line2, date];
   }
 
@@ -3802,7 +4027,7 @@ function buildSvgGraph(sets){
           c=document.createElementNS("http://www.w3.org/2000/svg","circle");
           c.setAttribute("cx",cx);c.setAttribute("cy",cy);c.setAttribute("r","5");
         }
-        c.setAttribute("fill","var(--accent)");c.setAttribute("opacity","0.4");
+        c.setAttribute("fill",colorOf(p));c.setAttribute("opacity","0.4");
         c.style.cursor="pointer";
         svg.appendChild(c);
         // Smaller hit zone (r=10) than the per-day dots so dense overlapping sets don't all
@@ -3814,13 +4039,18 @@ function buildSvgGraph(sets){
         svg.appendChild(hit);
       });
     }
-    // Trend line: best-set-per-day
-    if(dailyMax.length>1){
-      const path=dailyMax.map((p,i)=>`${i===0?"M":"L"} ${px(p.t).toFixed(1)} ${py(p.m).toFixed(1)}`).join(" ");
+    // Trend line: best-set-per-day — one line per load in Reps mode (other loads: dots only)
+    const lineGroups = isReps
+      ? Object.keys(seriesColor).map(k=>dailyMax.filter(p=>p.series===k))
+      : [dailyMax];
+    lineGroups.forEach(grp=>{
+    if(grp.length>1){
+      const path=grp.map((p,i)=>`${i===0?"M":"L"} ${px(p.t).toFixed(1)} ${py(p.m).toFixed(1)}`).join(" ");
       const line=document.createElementNS("http://www.w3.org/2000/svg","path");
-      line.setAttribute("d",path);line.setAttribute("fill","none");line.setAttribute("stroke","var(--accent)");line.setAttribute("stroke-width","2");line.setAttribute("opacity","0.85");
+      line.setAttribute("d",path);line.setAttribute("fill","none");line.setAttribute("stroke",isReps?colorOf(grp[0]):"var(--accent)");line.setAttribute("stroke-width","2");line.setAttribute("opacity","0.85");
       svg.appendChild(line);
     }
+    });
     // Best-per-day points: always shown as the prominent dots
     dailyMax.forEach(p=>{
       const cx=px(p.t), cy=py(p.m);
@@ -3834,7 +4064,7 @@ function buildSvgGraph(sets){
         c=document.createElementNS("http://www.w3.org/2000/svg","circle");
         c.setAttribute("cx",cx);c.setAttribute("cy",cy);c.setAttribute("r","5");
       }
-      c.setAttribute("fill","var(--accent)");c.setAttribute("stroke","var(--bg)");c.setAttribute("stroke-width","1.5");
+      c.setAttribute("fill",colorOf(p));c.setAttribute("stroke","var(--bg)");c.setAttribute("stroke-width","1.5");
       c.style.cursor="pointer";
       svg.appendChild(c);
       addHitTarget(cx, cy, ()=>showTooltip(cx,cy,tipLines(p)));
@@ -4029,6 +4259,7 @@ function openCustomEditor(existingName){
     const pats = isBuiltin ? getBuiltinPatterns(canonicalName) : getCustomPatterns(existingName);
     pats.forEach(p=>ceCtx.patterns.add(p));
   }
+  document.getElementById("ce-bodyweight").checked = existingName ? isBodyweightExercise(existingName) : false;
 
   document.getElementById("ce-title").textContent=existingName?"Edit exercise":"New exercise";
   const nameInput=document.getElementById("ce-name");
@@ -4041,7 +4272,8 @@ function openCustomEditor(existingName){
   // Reset-muscles is only for built-ins that have been muscle-overridden
   // Reset-to-default is offered when a built-in has a muscle OR pattern override.
   const hasPatternOverride=isBuiltin&&(Object.prototype.hasOwnProperty.call(patternOverrides,canonicalName)||Object.prototype.hasOwnProperty.call(patternOverrides,(builtinNameOverrides[canonicalName]||canonicalName)));
-  document.getElementById("ce-reset").style.display=(hasMuscleOverride||hasPatternOverride)?"":"none";
+  const hasBwOverride=isBuiltin&&Object.prototype.hasOwnProperty.call(bwExerciseOverrides,canonicalName);
+  document.getElementById("ce-reset").style.display=(hasMuscleOverride||hasPatternOverride||hasBwOverride)?"":"none";
   setCeError("");
   refreshMuscleButtons();
   refreshPatternButtons();
@@ -4113,6 +4345,11 @@ function saveCustomExercise(){
     if(musclesEqual(muscles,original))delete builtinOverrides[canon];
     else builtinOverrides[canon]=muscles;
     saveBuiltinOverrides();
+    // Bodyweight setting: store only where it differs from the built-in default.
+    const bwOn=document.getElementById("ce-bodyweight").checked;
+    if(bwOn===DEFAULT_BW_EXERCISES.has(canon))delete bwExerciseOverrides[canon];
+    else bwExerciseOverrides[canon]=bwOn;
+    saveBwExerciseOverrides();
 
     // Rename handling: save name override, propagate to data.
     if(rawName!==oldDisplayName){
@@ -4180,14 +4417,14 @@ function saveCustomExercise(){
     const idx=customExercises.findIndex(e=>e.name===ceCtx.editingName);
     if(idx>=0){
       const oldName=customExercises[idx].name;
-      customExercises[idx]={name:rawName,muscles};
+      customExercises[idx]={name:rawName,muscles,bodyweight:document.getElementById("ce-bodyweight").checked};
       if(oldName!==rawName){
         propagateExerciseRename(oldName, rawName);
       }
       persistPatternSelection(oldName, false, rawName);
     }
   } else {
-    customExercises.push({name:rawName,muscles});
+    customExercises.push({name:rawName,muscles,bodyweight:document.getElementById("ce-bodyweight").checked});
     persistPatternSelection(rawName, false, null);
   }
   saveCustomExercises();
@@ -4251,9 +4488,11 @@ function musclesEqual(a,b){
 function resetBuiltinOverride(){
   if(!ceCtx||!ceCtx.isBuiltin||!ceCtx.canonicalName)return;
   const display=builtinNameOverrides[ceCtx.canonicalName]||ceCtx.canonicalName;
-  if(!confirm(`Reset "${display}" to its default muscle weights and movement patterns?`))return;
+  if(!confirm(`Reset "${display}" to its default muscle weights, movement patterns, and bodyweight setting?`))return;
   delete builtinOverrides[ceCtx.canonicalName];
   saveBuiltinOverrides();
+  delete bwExerciseOverrides[ceCtx.canonicalName];
+  saveBwExerciseOverrides();
   // Also clear any pattern override so it returns to the built-in default patterns.
   delete patternOverrides[ceCtx.canonicalName];
   delete patternOverrides[display];
@@ -4718,14 +4957,14 @@ function openExerciseHistory(exName){
   const dates=Object.keys(bySession).sort().reverse();
   dates.forEach(d=>{
     const sets=bySession[d];
-    const best=sets.reduce((b,x)=>est1rm(x)>est1rm(b)?x:b,sets[0]);
+    const best=sets.reduce((b,x)=>isBetterSet(x,b)?x:b,sets[0]);
     const vol=sets.reduce((sum,x)=>sum+totalVolumeForSet(x),0);
     const effSets=sets.reduce((sum,x)=>sum+getSetTypeMult(x.type||"straight",x),0);
     const hasIntens=sets.some(x=>{const t=x.type||"straight";return t!=="straight"&&t!=="amrap"});
     const setsCell=hasIntens?`${fmtNum(effSets)}*`:String(sets.length);
     const tr=document.createElement("tr");
     tr.className="graph-table-row";
-    tr.innerHTML=`<td class="graph-table-chev"><span class="chev">▸</span></td><td>${localDayKeyToDate(d).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"2-digit"})}</td><td>${fmtNum(best.weight)}×${fmtRepsOnly(best)}</td><td>${fmtNum(vol)}</td><td title="${hasIntens?'includes intensifier sets (multiplied)':''}">${setsCell}</td>`;
+    tr.innerHTML=`<td class="graph-table-chev"><span class="chev">▸</span></td><td>${localDayKeyToDate(d).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"2-digit"})}</td><td>${fmtW(best.weight)}×${fmtRepsOnly(best)}</td><td>${fmtNum(vol)}</td><td title="${hasIntens?'includes intensifier sets (multiplied)':''}">${setsCell}</td>`;
     tbl.appendChild(tr);
     // Detail row: every set from that day in chronological order, best marked with ▸.
     const detailTr=document.createElement("tr");
@@ -4737,7 +4976,7 @@ function openExerciseHistory(exName){
       const marker = st===best ? "▸" : " ";
       const rir = (st.rir!==undefined&&st.rir!==null) ? ` @${st.rir}R` : "";
       const typeInfo = (st.type && st.type!=="straight") ? ` <span class="graph-set-type">${getSetTypeInfo(st.type).short}</span>` : "";
-      return `<div class="graph-set-line"><span class="graph-set-marker">${marker}</span><span class="graph-set-num">${i+1}.</span><span class="graph-set-vals">${fmtNum(st.weight)}${st.unit||""} × ${fmtRepsOnly(st)}${rir}</span>${typeInfo}</div>`;
+      return `<div class="graph-set-line"><span class="graph-set-marker">${marker}</span><span class="graph-set-num">${i+1}.</span><span class="graph-set-vals">${fmtW(st.weight,st.unit)} × ${fmtRepsOnly(st)}${rir}</span>${typeInfo}</div>`;
     }).join("");
     detailCell.innerHTML=`<div class="graph-set-list">${setLines}</div>`;
     detailTr.appendChild(detailCell);
@@ -4779,9 +5018,14 @@ function loadPrefs(){
         if(typeof p.lastBackupAt==="string")prefs.lastBackupAt=p.lastBackupAt;
         if(typeof p.backupReminderSnoozedUntil==="string")prefs.backupReminderSnoozedUntil=p.backupReminderSnoozedUntil;
         if(p.flexifyMigrated===true)prefs.flexifyMigrated=true;
+        if(p.bwShorthandMigrated===true)prefs.bwShorthandMigrated=true;
+        if(Array.isArray(p.bodyweightLog))prefs.bodyweightLog=p.bodyweightLog
+          .filter(e=>e&&/^\d{4}-\d{2}-\d{2}$/.test(e.date)&&Number(e.weight)>0)
+          .map(e=>({date:e.date,weight:Number(e.weight),unit:e.unit||"lb"}))
+          .sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0);
         if(typeof p.graphShowAllSets==="boolean")prefs.graphShowAllSets=p.graphShowAllSets;
         if(["all","3m","6m","1y"].includes(p.graphRange))prefs.graphRange=p.graphRange;
-        if(["weight","estimated1rm","volume","setCount"].includes(p.graphMetric))prefs.graphMetric=p.graphMetric;
+        if(["weight","estimated1rm","volume","setCount","reps"].includes(p.graphMetric))prefs.graphMetric=p.graphMetric;
       }
     }
   }catch(e){}
@@ -5226,7 +5470,7 @@ function buildLoggedSummary(slotIdx, log, extraText, isAmrap){
   const main=document.createElement("span");main.className="wo-card-main-text";
   const tgt={weight:log.targetWeight, reps:log.targetReps};
   const missed = tgt.reps && log.reps < tgt.reps;
-  main.innerHTML = `${fmtNum(log.weight)}<span class="wo-card-unit">${log.unit||prefs.preferredUnit}</span> × <b>${log.reps}</b>${extraText?`<span class="wo-card-extra">${extraText}</span>`:""}${isAmrap?' <i class="ti ti-star" aria-hidden="true" style="font-size:11px;opacity:0.7"></i>':""}`;
+  main.innerHTML = `${isBW(log.weight)?"BW":`${fmtNum(log.weight)}<span class="wo-card-unit">${log.unit||prefs.preferredUnit}</span>`} × <b>${log.reps}</b>${extraText?`<span class="wo-card-extra">${extraText}</span>`:""}${isAmrap?' <i class="ti ti-star" aria-hidden="true" style="font-size:11px;opacity:0.7"></i>':""}`;
   if(missed)main.classList.add("missed");
   summary.appendChild(check);summary.appendChild(num);summary.appendChild(main);
   if(log.rir!==undefined){
@@ -5315,7 +5559,7 @@ function buildBasicCard(s, pr, slotIdx, existing){
   }
   if(tgt){
     const tgtHint=document.createElement("span");tgtHint.className="wo-card-tgt-hint";
-    tgtHint.textContent=`target ${fmtNum(tgt.weight)}×${tgt.reps}`;
+    tgtHint.textContent=`target ${fmtW(tgt.weight)}×${tgt.reps}`;
     headerRow.appendChild(tgtHint);
   }
   card.appendChild(headerRow);
@@ -5330,6 +5574,7 @@ function buildBasicCard(s, pr, slotIdx, existing){
   wInp.placeholder = tgt ? String(tgt.weight) : "weight";
   wInp.oninput=e=>{st.weight=e.target.value};
   inputsRow.appendChild(wInp);
+  attachBWToggle(wInp, st, inputsRow);
   const unitEl=document.createElement("span");unitEl.className="wo-card-unit-label";unitEl.textContent=prefs.preferredUnit;
   inputsRow.appendChild(unitEl);
   const xEl=document.createElement("span");xEl.className="wo-card-x";xEl.textContent="×";
@@ -5348,7 +5593,7 @@ function buildBasicCard(s, pr, slotIdx, existing){
 
   // Save handler
   const trySave=()=>{
-    const w=parseFloat(st.weight);
+    const w=parseWeightInput(st.weight);
     const r=parseInt(st.reps,10);
     if(isNaN(w)||w<0||isNaN(r)||r<0){
       // Don't save silently bad values, but also don't alert on every blur — just leave the editor.
@@ -5469,7 +5714,7 @@ function buildClusterCard(s, pr, slotIdx, existing){
   headerRow.appendChild(num);
   if(tgt){
     const tgtHint=document.createElement("span");tgtHint.className="wo-card-tgt-hint";
-    tgtHint.textContent=`target ${fmtNum(tgt.weight)}×${tgt.reps}`;
+    tgtHint.textContent=`target ${fmtW(tgt.weight)}×${tgt.reps}`;
     headerRow.appendChild(tgtHint);
   }
   card.appendChild(headerRow);
@@ -5482,6 +5727,7 @@ function buildClusterCard(s, pr, slotIdx, existing){
   wInp.autocomplete="off";wInp.setAttribute("data-lpignore","true");
   wInp.oninput=e=>{st.weight=e.target.value};
   inputsRow.appendChild(wInp);
+  attachBWToggle(wInp, st, inputsRow);
   inputsRow.appendChild(Object.assign(document.createElement("span"),{className:"wo-card-unit-label",textContent:prefs.preferredUnit}));
   inputsRow.appendChild(Object.assign(document.createElement("span"),{className:"wo-card-x",textContent:"×"}));
   const rInp=document.createElement("input");
@@ -5506,7 +5752,7 @@ function buildClusterCard(s, pr, slotIdx, existing){
   card.appendChild(clustersRow);
 
   const trySave=()=>{
-    const w=parseFloat(st.weight);
+    const w=parseWeightInput(st.weight);
     const r=parseInt(st.reps,10);
     const c=parseInt(st.clusters,10);
     if(isNaN(w)||w<0||isNaN(r)||r<=0||isNaN(c)||c<=0)return;
@@ -5608,7 +5854,7 @@ function buildRestPauseCard(s, pr, slotIdx, existing){
   headerRow.appendChild(num);
   if(tgt){
     const tgtHint=document.createElement("span");tgtHint.className="wo-card-tgt-hint";
-    tgtHint.textContent=`target ${fmtNum(tgt.weight)}×${tgt.reps}`;
+    tgtHint.textContent=`target ${fmtW(tgt.weight)}×${tgt.reps}`;
     headerRow.appendChild(tgtHint);
   }
   // Manual 20s timer button — same pattern as myo-rep cards.
@@ -5628,6 +5874,7 @@ function buildRestPauseCard(s, pr, slotIdx, existing){
   wInp.autocomplete="off";wInp.setAttribute("data-lpignore","true");
   wInp.oninput=e=>{st.weight=e.target.value};
   inputsRow.appendChild(wInp);
+  attachBWToggle(wInp, st, inputsRow);
   inputsRow.appendChild(Object.assign(document.createElement("span"),{className:"wo-card-unit-label",textContent:prefs.preferredUnit}));
   inputsRow.appendChild(Object.assign(document.createElement("span"),{className:"wo-card-x",textContent:"×"}));
   const rInp=document.createElement("input");
@@ -5673,7 +5920,7 @@ function buildRestPauseCard(s, pr, slotIdx, existing){
   card.appendChild(miniRow);
 
   const trySave=()=>{
-    const w=parseFloat(st.weight);
+    const w=parseWeightInput(st.weight);
     const r=parseInt(st.reps,10);
     if(isNaN(w)||w<0||isNaN(r)||r<=0)return;
     const miniSetReps=st.miniReps.map(v=>{
@@ -5747,7 +5994,7 @@ function buildMyoCard(s, pr, slotIdx, existing){
     summary.className="myo-card-summary";
     const miniText=Array.isArray(existing.miniSetReps)&&existing.miniSetReps.length>0
       ? `+${existing.miniSetReps.join(",")}` : "";
-    summary.innerHTML=`<div class="myo-card-summary-main"><span class="wo-card-check" aria-hidden="true"><i class="ti ti-check"></i></span> ${fmtNum(existing.weight)}${existing.unit||prefs.preferredUnit} × <b>${existing.reps}</b>${miniText}</div>${existing.rir!==undefined?`<div class="myo-card-summary-rir">@${existing.rir} RIR</div>`:""}`;
+    summary.innerHTML=`<div class="myo-card-summary-main"><span class="wo-card-check" aria-hidden="true"><i class="ti ti-check"></i></span> ${fmtW(existing.weight,existing.unit||prefs.preferredUnit)} × <b>${existing.reps}</b>${miniText}</div>${existing.rir!==undefined?`<div class="myo-card-summary-rir">@${existing.rir} RIR</div>`:""}`;
     const actions=document.createElement("div");actions.className="myo-card-actions";
     const editBtn=document.createElement("button");editBtn.type="button";editBtn.className="myo-card-edit";editBtn.textContent="Edit";
     editBtn.onclick=()=>{
@@ -5836,7 +6083,10 @@ function buildMyoCard(s, pr, slotIdx, existing){
   wInp.value=st.weight;wInp.placeholder=myoCardTgt?String(myoCardTgt.weight):"—";
   wInp.oninput=e=>{st.weight=e.target.value};
   wInp.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();e.target.blur()}};
-  wRow.appendChild(wLbl);wRow.appendChild(wInp);
+  wRow.appendChild(wLbl);
+  const wWrap=document.createElement("div");wWrap.className="wo-weight-wrap";
+  wWrap.appendChild(wInp); attachBWToggle(wInp, st, wWrap);
+  wRow.appendChild(wWrap);
   card.appendChild(wRow);
 
   // Activation reps row
@@ -5907,7 +6157,7 @@ function saveMyorepInline(s, pr, slotIdx, existing){
   const stateKey=myoStateKey(pr,slotIdx);
   const st=myorepInlineState[stateKey];
   if(!st)return;
-  const w=parseFloat(st.weight);
+  const w=parseWeightInput(st.weight);
   const a=parseInt(st.activation,10);
   if(isNaN(w)||w<0){alert("Please enter a valid weight.");return}
   if(isNaN(a)||a<=0){alert("Please enter activation reps.");return}
@@ -6927,7 +7177,7 @@ function saveTargetMulti(){
       }
       continue;
     }
-    const w=parseFloat(d.weight);
+    const w=parseWeightInput(d.weight);
     const r=parseInt(d.reps,10);
     // For drop sets, drops-only with no initial weight/reps is invalid.
     // Allow w===0 for bodyweight movements (matches the logging validators, which accept 0).
@@ -6978,6 +7228,7 @@ function newDefaultMiniSets(){return [null,null,null,null]}
 function fmtSetReps(st){
   if(!st)return "";
   const u=st.unit||prefs.preferredUnit;
+  if(isBW(st.weight))return `BW × ${fmtRepsOnly(st)}`;
   const w=fmtNum(st.weight);
   return `${w}${u} × ${fmtRepsOnly(st)}`;
 }
@@ -7043,7 +7294,7 @@ function findLastSetForExercise(exName, excludeSessionId){
   let best=null;
   for(const st of sess.sets){
     if(st.ex!==exName)continue;
-    if(!best||est1rm(st)>est1rm(best))best=st;
+    if(!best||isBetterSet(st,best))best=st;
   }
   return best;
 }
@@ -7426,7 +7677,7 @@ function buildSetPill(row, dayId, rowIdx, setIdx, opts){
   const u=tgt?(tgt.unit||prefs.preferredUnit):prefs.preferredUnit;
   if(tgt){
     // Filled state — show the target
-    let text=`${fmtNum(tgt.weight)}×${tgt.reps}`;
+    let text=`${fmtW(tgt.weight)}×${tgt.reps}`;
     if(opts.extended==="myorep" || opts.extended==="restpause"){
       const placeholder = opts.extended==="restpause" ? "?" : String(Math.max(1,Math.floor(tgt.reps/3)));
       const minis = Array(opts.internalN).fill(placeholder).join(",");
@@ -7878,6 +8129,151 @@ function getCoveredExercisesForPatterns(mode){
   return covered;
 }
 
+// ===== Intensity view =====
+// Sets per muscle, grouped by load as a % of estimated 1RM. Counting matches the Volume view
+// exactly (secondary muscles 0.5, set-type multipliers), so each card's total equals its
+// Volume card. Bodyweight sets and exercises with no history go in "Unrated".
+const INTENSITY_BUCKETS=[
+  {key:"90",label:"90%+",min:0.9},
+  {key:"80",label:"80–89%",min:0.8},
+  {key:"70",label:"70–79%",min:0.7},
+  {key:"60",label:"60–69%",min:0.6},
+  {key:"lt60",label:"Under 60%",min:0},
+  {key:"unrated",label:"Unrated"}
+];
+const INTENSITY_REF_DAYS=84; // 1RM reference window: best estimate in the 12 weeks up to the set
+function intensityBucket(pct){
+  if(pct==null||!isFinite(pct)||pct<=0)return "unrated";
+  for(const b of INTENSITY_BUCKETS){ if(b.min!=null && pct>=b.min)return b.key }
+  return "lt60";
+}
+// Per-exercise history of estimated 1RMs, sorted by time, from the selected data source.
+function buildE1rmIndex(source){
+  const idx={};
+  const add=(ex,t,w,r)=>{ if(!ex||!(r>0))return; const e=est1rm({ex,weight:w||0,reps:r,timestamp:t}); if(e>0)(idx[ex]=idx[ex]||[]).push({t,e}) };
+  if(source==="sessions"){
+    sessions.forEach(s=>s.sets.forEach(st=>add(st.ex, new Date(st.timestamp||s.date).getTime(), st.weight, st.reps)));
+  } else {
+    flexifyHistory.forEach(rec=>add(rec.ours, new Date(rec.date).getTime(), rec.weight, rec.reps));
+  }
+  Object.values(idx).forEach(a=>a.sort((x,y)=>x.t-y.t));
+  return idx;
+}
+// Best estimated 1RM for an exercise in the INTENSITY_REF_DAYS up to and including time t.
+function refE1rm(idx, ex, t){
+  const a=idx[ex]; if(!a)return 0;
+  const from=t-INTENSITY_REF_DAYS*86400000;
+  let lo=0, hi=a.length;
+  while(lo<hi){ const mid=(lo+hi)>>1; if(a[mid].t<from)lo=mid+1; else hi=mid }
+  let best=0;
+  for(let i=lo;i<a.length && a[i].t<=t;i++) if(a[i].e>best)best=a[i].e;
+  return best;
+}
+// Returns {m: {total, buckets:{key:{sum, ex:{name:sum}}}}} for every muscle with volume.
+function calcIntensity(mode, ids){
+  const source=prefs.actualSource||"sessions";
+  const idx=buildE1rmIndex(source);
+  const out={};
+  const credit=(exName, pct, mult)=>{
+    const key=intensityBucket(pct);
+    Object.entries(exMuscles(exName)).forEach(([m,w])=>{
+      const amt=w*mult; if(!amt)return;
+      const M=out[m]||(out[m]={total:0,buckets:{}});
+      const B=M.buckets[key]||(M.buckets[key]={sum:0,ex:{}});
+      M.total+=amt; B.sum+=amt; B.ex[exName]=(B.ex[exName]||0)+amt;
+    });
+  };
+  if(mode==="actual"){
+    const cutoff=Date.now()-ACTUAL_WINDOW_DAYS*86400000;
+    if(source==="sessions"){
+      sessions.forEach(s=>{
+        if(s.status==="in_progress")return; // same rule as the Volume view
+        s.sets.forEach(st=>{
+          const t=new Date(st.timestamp||s.date).getTime();
+          if(t<cutoff)return;
+          const load=loadOf({...st,timestamp:t});
+          const ref=load>0?refE1rm(idx, st.ex, t):0;
+          credit(st.ex, ref?load/ref:null, getSetTypeMult(st.type||"straight", st));
+        });
+      });
+    } else {
+      flexifyHistory.forEach(rec=>{
+        const t=new Date(rec.date).getTime();
+        if(t<cutoff||!rec.ours)return;
+        const load=loadOf({ex:rec.ours,weight:rec.weight,timestamp:t});
+        const ref=load>0?refE1rm(idx, rec.ours, t):0;
+        credit(rec.ours, ref?load/ref:null, 1);
+      });
+    }
+  } else {
+    // Planned: each planned set's weight target vs. the current estimated 1RM.
+    const now=Date.now();
+    ids.forEach(d=>{
+      const day=mem[curBlock].days[d]; if(!day)return;
+      day.rows.forEach(row=>{
+        if(!row.ex||!(row.sets>0))return;
+        const mult=plannedRowMult(row);
+        const ref=refE1rm(idx, row.ex, now);
+        for(let i=0;i<row.sets;i++){
+          const tgt=resolveSlotTarget(row,i);
+          // Target weight is the added weight; bodyweight exercises add your current bodyweight.
+          const load=tgt&&isFinite(Number(tgt.weight))?loadOf({ex:row.ex,weight:Number(tgt.weight),timestamp:now}):0;
+          credit(row.ex, (load>0&&ref)?load/ref:null, mult);
+        }
+      });
+    });
+  }
+  return out;
+}
+function renderIntensityCards(ids){
+  const sg=document.getElementById("sg");
+  const meta=document.getElementById("sum-meta");
+  const legend=document.getElementById("sum-legend");
+  const openNow=new Set(Array.from(document.querySelectorAll(".i-card.open")).map(e=>e.dataset.muscle));
+  const data=calcIntensity(summaryMode, ids);
+  const blk=mem[curBlock];
+  meta.textContent = summaryMode==="actual"
+    ? `Sets by % of estimated 1RM — last ${ACTUAL_WINDOW_DAYS} days`
+    : `Planned sets by target % of estimated 1RM${(blk&&blk.weekCount>1)?` · Week ${curWeek+1}`:""}`;
+  legend.innerHTML=INTENSITY_BUCKETS.map(b=>`<span><span class="leg-dot" style="background:var(--int-${b.key})"></span>${b.key==="lt60"?"&lt;60%":b.label}</span>`).join("");
+  const show=n=>fmtNum(r05(n));
+  const setsWord=n=>`${show(n)} set${r05(n)===1?"":"s"}`;
+  const muscles=ALL_MUS.filter(m=>data[m]&&r05(data[m].total)>0).sort((a,b)=>data[b].total-data[a].total);
+  if(!muscles.length){
+    const e=document.createElement("div");e.className="i-empty";
+    e.textContent = summaryMode==="actual" ? `No logged sets in the last ${ACTUAL_WINDOW_DAYS} days.` : "No exercises planned for this week yet.";
+    sg.appendChild(e); return;
+  }
+  muscles.forEach(m=>{
+    const M=data[m];
+    const card=document.createElement("div");
+    card.className="i-card"+(openNow.has(m)?" open":"");
+    card.dataset.muscle=m;
+    const head=document.createElement("div");head.className="i-head";
+    head.innerHTML=`<span class="i-name">${esc(m)}</span><span class="i-total">${setsWord(M.total)}</span><span class="i-chev">▾</span>`;
+    card.appendChild(head);
+    const bar=document.createElement("div");bar.className="i-bar";
+    const detail=document.createElement("div");detail.className="i-detail";
+    INTENSITY_BUCKETS.forEach(b=>{
+      const B=M.buckets[b.key]; if(!B||r05(B.sum)<=0)return;
+      const seg=document.createElement("span");
+      seg.style.width=(100*B.sum/M.total)+"%"; seg.style.background=`var(--int-${b.key})`;
+      seg.title=`${b.label}: ${setsWord(B.sum)}`;
+      bar.appendChild(seg);
+      const row=document.createElement("div");row.className="i-row";
+      row.innerHTML=`<span class="i-dot" style="background:var(--int-${b.key})"></span><span class="i-blabel">${b.label}</span><span class="i-bsets">${setsWord(B.sum)}</span>`;
+      detail.appendChild(row);
+      const exl=document.createElement("div");exl.className="i-exlist";
+      exl.textContent=Object.entries(B.ex).sort((x,y)=>y[1]-x[1]).map(([n,v])=>`${n} ${show(v)}`).join(" · ");
+      detail.appendChild(exl);
+    });
+    card.appendChild(bar);
+    card.appendChild(detail);
+    card.onclick=()=>card.classList.toggle("open");
+    sg.appendChild(card);
+  });
+}
+
 function renderPatternCards(ids, actualDisabled){
   const sg=document.getElementById("sg");
   const meta=document.getElementById("sum-meta");
@@ -8018,7 +8414,8 @@ function renderSummary(){
   if(summaryMode==="actual"&&!hasHistory)summaryMode="planned";
   el.innerHTML=`
     <div class="sum-view-tabs">
-      <button class="sum-view-tab ${summaryView==='muscles'?'active':''}" id="sum-view-muscles">Muscles</button>
+      <button class="sum-view-tab ${summaryView==='muscles'?'active':''}" id="sum-view-muscles">Volume</button>
+      <button class="sum-view-tab ${summaryView==='intensity'?'active':''}" id="sum-view-intensity">Intensity</button>
       <button class="sum-view-tab ${summaryView==='patterns'?'active':''}" id="sum-view-patterns">Patterns</button>
     </div>
     <div class="sum-toggle">
@@ -8030,12 +8427,17 @@ function renderSummary(){
     <div class="summary-grid" id="sg"></div>`;
 
   document.getElementById("sum-view-muscles").onclick=()=>{summaryView="muscles";renderSummary()};
+  document.getElementById("sum-view-intensity").onclick=()=>{summaryView="intensity";renderSummary()};
   document.getElementById("sum-view-patterns").onclick=()=>{summaryView="patterns";renderSummary()};
   document.getElementById("sum-planned").onclick=()=>{summaryMode="planned";renderSummary()};
   document.getElementById("sum-actual").onclick=()=>{if(!actualDisabled){summaryMode="actual";renderSummary()}};
 
   if(summaryView==="patterns"){
     renderPatternCards(ids, actualDisabled);
+    return;
+  }
+  if(summaryView==="intensity"){
+    renderIntensityCards(ids);
     return;
   }
 
@@ -8208,6 +8610,7 @@ loadBuiltinOverrides();
 loadBuiltinNameOverrides();
 loadSetTypeOverrides();
 loadPatternOverrides();       // per-exercise movement-pattern overrides
+loadBwExerciseOverrides();    // which exercises count bodyweight toward the load
 loadPrefs();                  // user preferences (units, default rest)
 loadSessions();               // native workout history
 migrateMuscleSplits();        // map old Chest/Traps muscle tags to new sub-groups (idempotent)
@@ -8219,6 +8622,7 @@ migrateBlocksToWeeks();       // upgrade legacy {days} blocks to {weeks:[{days}]
 loadFlexifyHistory();         // load any imported Flexify history (legacy import path)
 migrateRenamedExercises();    // rename old exercise names in stored data (blocks + sessions + flexify)
 migrateCustomNameCollisions(); // rename customs that clash with newly added built-ins
+migrateBodyweightShorthand();  // one-time: 1 lb shorthand → bodyweight (0)
 // Restore the last-selected block if it still exists; otherwise fall back to the first.
 try{const savedBlock=localStorage.getItem(CUR_BLOCK_KEY);if(savedBlock&&BLOCKS.includes(savedBlock))curBlock=savedBlock}catch(e){}
 if(!BLOCKS.includes(curBlock))curBlock=BLOCKS[0];
