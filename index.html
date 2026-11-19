@@ -49,6 +49,8 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .tab-sum{flex:1;padding:8px 1px;font-size:12px;font-weight:500;text-align:center;cursor:pointer;border:none;background:none;color:var(--text2);border-bottom:2px solid transparent;margin-bottom:-1px;min-height:44px;min-width:0;font-family:inherit;transition:color 0.15s var(--ease),border-color 0.15s var(--ease)}
 .tabs.compact .tab-sum{font-size:11px}
 .tab-sum.active{color:var(--accent);border-bottom-color:var(--accent)}
+.nano-lifter{margin-left:auto;flex:0 1 80px;min-width:52px;height:48px;border-radius:6px;display:block;cursor:pointer;touch-action:manipulation}
+.nano-lifter.off{display:none}
 .day-mgr{display:flex;align-items:center;gap:8px;padding:0 14px;margin-bottom:8px;font-size:11px;color:var(--text2);flex-shrink:0;min-height:30px}
 .day-mgr-label{text-transform:uppercase;letter-spacing:0.05em;font-weight:500}
 .day-mgr-btn{width:28px;height:28px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit;touch-action:manipulation}
@@ -69,26 +71,6 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .backup-banner button{padding:5px 10px;font-size:11px;font-weight:500;border-radius:var(--radius);border:0.5px solid var(--warn-text);background:transparent;color:var(--warn-text);cursor:pointer;font-family:inherit;flex-shrink:0}
 .backup-banner button:first-of-type{background:var(--warn-text);color:var(--warn-bg);font-weight:600}
 
-/* === Status strip (own row between block-label and day-mgr) ===
-   Left: contextual text; right: muscle pips (only notable muscles shown). */
-.status-strip{display:flex;align-items:center;gap:8px;padding:5px 10px;margin:0 0 8px;font-size:11px;color:var(--text2);background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);flex-shrink:0;min-height:28px}
-.status-strip:empty{display:none}
-.status-text{flex:1;min-width:0;text-align:left;background:transparent;border:none;color:var(--text2);font:inherit;font-size:11px;cursor:pointer;padding:2px 0;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.status-text:empty{display:none}
-.status-text:active{opacity:0.7}
-/* Muscle pips: only notable muscles (red/yellow = behind, green = ahead). Hidden if no notable muscles. */
-.status-muscles{display:flex;align-items:center;gap:4px;flex-shrink:0}
-.status-muscles:empty{display:none}
-.muscle-pip{display:inline-flex;align-items:center;gap:3px;padding:2px 6px;border-radius:999px;font-size:10px;line-height:1;cursor:pointer;border:0.5px solid transparent;background:transparent;font-family:inherit;color:var(--text2);font-weight:500}
-.muscle-pip-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
-.muscle-pip.low .muscle-pip-dot{background:var(--danger-text)}
-.muscle-pip.medium .muscle-pip-dot{background:var(--warn-text)}
-/* High band dot now uses the same purple as the Summary high tier, so the
-   "ahead" indication is visually consistent across the two surfaces. */
-.muscle-pip.high .muscle-pip-dot{background:var(--high-text)}
-.muscle-pip:active{background:var(--bg)}
-/* Brief highlight when scrolled to from the status strip */
-.muscle-card-highlight{outline:1.5px solid var(--accent);outline-offset:2px;transition:outline-color 0.3s var(--ease)}
 .muscle-ex-list{max-height:55vh;overflow-y:auto;margin:12px 0;border-top:0.5px solid var(--border);border-bottom:0.5px solid var(--border)}
 .muscle-ex-row{display:flex;align-items:center;justify-content:space-between;padding:8px 4px;font-size:13px;border-bottom:0.5px solid var(--border)}
 .muscle-ex-row:last-child{border-bottom:none}
@@ -685,6 +667,15 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .tgt-seq-card.focused .tgt-seq-line .tgt-unit,
 .tgt-seq-card.focused .tgt-seq-line .tgt-x,
 .tgt-seq-card.focused .tgt-seq-line .tgt-suffix{color:var(--accent)}
+.tgt-mode-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.tgt-mode-seg{display:inline-flex;border:0.5px solid var(--border2);border-radius:var(--radius);overflow:hidden}
+.tgt-mode-seg button{background:transparent;border:0;padding:5px 12px;font-size:12px;color:var(--text2);font-family:inherit;cursor:pointer;touch-action:manipulation}
+.tgt-mode-seg button+button{border-left:0.5px solid var(--border2)}
+.tgt-mode-seg button.on{background:var(--accent);color:var(--accent-text);font-weight:500}
+.tgt-mode-ref{font-size:11px;color:var(--text2);text-align:right;font-variant-numeric:tabular-nums}
+.tgt-mode-ref .kind-actual{color:var(--success-text)}
+.tgt-mode-ref .kind-est{color:var(--text2)}
+.tgt-pct-hint{font-size:11px;color:var(--text3);white-space:nowrap;flex-shrink:0;font-variant-numeric:tabular-nums}
 .tgt-seq-footer{font-size:10px;color:var(--text3);font-style:italic;padding-top:2px;opacity:0.85}
 
 /* "Start workout" button on day panels */
@@ -723,6 +714,18 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
    wins the stacking order and the editor renders invisibly underneath. */
 #ce-bg{z-index:210}
 #exhist-bg{z-index:230}
+#calc1rm-bg{z-index:230}
+.calc-ref{background:var(--bg2);border-radius:var(--radius);padding:10px 12px;margin:4px 0 10px}
+.calc-ref-label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.04em}
+.calc-ref-label.actual{color:var(--success-text)}
+.calc-ref-val{font-size:22px;font-weight:500;color:var(--text);font-variant-numeric:tabular-nums;margin:2px 0}
+.calc-ref-sub{font-size:12px;color:var(--text2);line-height:1.4}
+.calc-table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+.calc-table td{padding:8px 4px;border-top:0.5px solid var(--border)}
+.calc-table td.pct{color:var(--text2);width:56px}
+.calc-table td.w{text-align:right;font-weight:500;color:var(--text)}
+.calc-table td.tot{text-align:right;color:var(--text3);font-size:12px;width:90px}
+.calc-foot{font-size:11px;color:var(--text3);margin-top:8px;line-height:1.4}
 .ce-modal{background:var(--bg);border-radius:12px;padding:16px;width:100%;max-width:340px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 8px 32px var(--shadow)}
 .ce-title{font-size:15px;font-weight:500;color:var(--text);text-align:center;margin-bottom:12px}
 .ce-body{overflow-y:auto;flex:1;padding-right:4px}
@@ -813,11 +816,6 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
     <span class="save-status saved" id="save-status">Saved</span>
   </div>
 </div>
-<!-- Row 3: dedicated status strip — context text + muscle activity dots -->
-<div class="status-strip" id="status-strip" style="display:none">
-  <button class="status-text" id="status-strip-text" type="button"></button>
-  <div class="status-muscles" id="status-strip-muscles"></div>
-</div>
 <!-- Row 4: Days +/- and Weeks +/- controls -->
 <div class="day-mgr" id="day-mgr">
   <span class="day-mgr-label">Days</span>
@@ -829,6 +827,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
   <button class="day-mgr-btn" id="week-remove" title="Remove last week" aria-label="Remove last week">−</button>
   <span class="day-mgr-count" id="week-count">1</span>
   <button class="day-mgr-btn" id="week-add" title="Add a week" aria-label="Add a week">+</button>
+  <canvas class="nano-lifter" id="nano-lifter" role="img" aria-label="A little pixel lifter working out. Tap for the next lift."></canvas>
 </div>
 <!-- Week selector pills (shown only when weekCount > 1) -->
 <div class="week-bar" id="week-bar" style="display:none"></div>
@@ -1017,6 +1016,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
       </div>
       <button class="target-modal-close" type="button" onclick="closeTargetEditor()" aria-label="Close"><i class="ti ti-x" aria-hidden="true"></i></button>
     </div>
+    <div class="tgt-mode-row" id="target-mode-row"></div>
     <div class="target-modal-body" id="target-body"></div>
     <div class="target-modal-note" id="target-note"></div>
     <div class="modal-actions">
@@ -1046,6 +1046,17 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
     <div id="exhist-body"></div>
     <div class="modal-actions">
       <button onclick="closeExerciseHistory()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Intensity calculator popup, opened from the workout view -->
+<div class="modal-bg" id="calc1rm-bg">
+  <div class="modal">
+    <div class="modal-title" id="calc1rm-title">Intensity</div>
+    <div id="calc1rm-body"></div>
+    <div class="modal-actions">
+      <button onclick="closeIntensityCalc()">Close</button>
     </div>
   </div>
 </div>
@@ -1175,6 +1186,14 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
           <label style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:13px;color:var(--text);cursor:pointer">
             <input type="radio" name="weight-unit" value="kg" onchange="setPreferredUnit(this.value)"> Kilograms (kg)
           </label>
+        </div>
+      </details>
+
+      <details class="help-section">
+        <summary>Gym buddy</summary>
+        <p>The little pixel lifter beside Days and Weeks. Tap him to skip to the next lift. He holds still if your phone is set to reduce motion.</p>
+        <div style="margin:8px 0 0 16px">
+          <label class="ce-check"><input type="checkbox" id="settings-lifter" onchange="setShowLifter(this.checked)"> Show him</label>
         </div>
       </details>
 
@@ -1433,7 +1452,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 
 <script>
 // Build stamp, matched to the service-worker cache name. Shown in Settings → About.
-const APP_VERSION="20261111170743";
+const APP_VERSION="20261119115919";
 
 // ===== App banner (crash reports, update notices) =====
 // Built with plain DOM calls and no app state, so it still works if the rest of the app failed
@@ -2164,7 +2183,6 @@ function flushSaves(){
     dirtyBlocks.forEach(b=>writeBlock(b));
     dirtyBlocks.clear();
     setSaveStatus("Saved", true);
-    if(typeof renderStatusStrip==="function")renderStatusStrip();
   }catch(e){
     setSaveStatus("Save failed", false);
   }
@@ -2475,7 +2493,6 @@ function switchBlock(b){
   // Keep curTab valid for the new block
   if(curTab!=="sum"&&!ids.includes(curTab))curTab=ids[0]||"sum";
   showTab(curTab);
-  renderStatusStrip();
   const status=document.getElementById("save-status");status.textContent="Saved";status.classList.add("saved");
 }
 function showTab(id){
@@ -2490,7 +2507,6 @@ function showTab(id){
   // an exercise renamed, sets logged in another day's workout).
   if(id==="sum")renderSummary();
   else if(mem[curBlock] && mem[curBlock].days[id])renderDay(id);
-  renderStatusStrip();
 }
 
 // Day-manager: add/remove days. Each week has its OWN day count — adding a day to Week 2
@@ -2579,7 +2595,6 @@ function selectWeek(w){
     curDayIds().forEach(renderDay);
   }
   renderSummary();
-  renderStatusStrip();
 }
 function addWeek(){
   const blk=mem[curBlock];
@@ -2603,7 +2618,6 @@ function addWeek(){
   syncBlockButtons();
   curDayIds().forEach(renderDay);
   renderSummary();
-  renderStatusStrip();
   autoSave();
 }
 function removeWeek(){
@@ -2631,7 +2645,6 @@ function removeWeek(){
   syncBlockButtons();
   curDayIds().forEach(renderDay);
   renderSummary();
-  renderStatusStrip();
   autoSave();
 }
 // Deep clone a days object (so a copied week doesn't share row references with its source).
@@ -2755,6 +2768,8 @@ function refreshSettingsUI(){
   document.getElementById("settings-rest-current").textContent=`Currently: ${fmtRestDuration(prefs.defaultRestSec)}`;
   // Unit
   document.querySelectorAll('input[name="weight-unit"]').forEach(r=>{r.checked=(r.value===prefs.preferredUnit)});
+  // Gym buddy
+  {const cb=document.getElementById("settings-lifter");if(cb)cb.checked=prefs.showLifter!==false;}
   // Set type multiplier editors
   renderMultiplierEditors();
   // Exercise list (re-render every settings open so renames/additions show up)
@@ -4657,175 +4672,6 @@ function calcActualVolume(){
   return {totals, sessionsCounted:counted, firstDate, lastDate, source:"flexify"};
 }
 
-// ===== Dynamic status strip =====
-// Combines a contextual text status (left) with a compact muscle activity report (right).
-// Uses a 14-day window; thresholds scaled 2× from Pak's MED guidelines.
-const STATUS_WINDOW_DAYS=14;
-
-// Calculate per-muscle volumes from logged sets over the last STATUS_WINDOW_DAYS days.
-// Mirrors calcActualVolume's logic but with a shorter window and bypassing in-progress sessions.
-function calcStatusStripVolume(){
-  const now=new Date();
-  const cutoff=new Date(now.getTime()-STATUS_WINDOW_DAYS*24*60*60*1000);
-  const totals={};ALL_MUS.forEach(m=>totals[m]=0);
-  let lastSessionDate=null;
-  const source=prefs.actualSource||"sessions";
-  if(source==="sessions"){
-    sessions.forEach(s=>{
-      if(s.status==="in_progress")return;
-      s.sets.forEach(st=>{
-        const t=new Date(st.timestamp||s.date);
-        if(t<cutoff)return;
-        const mults=exMuscles(st.ex);
-        const mult=getSetTypeMult(st.type||"straight", st);
-        Object.entries(mults).forEach(([m,w])=>{totals[m]=(totals[m]||0)+w*mult});
-        if(!lastSessionDate||t>lastSessionDate)lastSessionDate=t;
-      });
-    });
-  } else {
-    flexifyHistory.forEach(rec=>{
-      if(rec.date<cutoff)return;
-      if(!rec.ours)return;
-      const mults=exMuscles(rec.ours);
-      Object.entries(mults).forEach(([m,w])=>{totals[m]=(totals[m]||0)+w});
-      if(!lastSessionDate||rec.date>lastSessionDate)lastSessionDate=rec.date;
-    });
-  }
-  return {totals, lastSessionDate};
-}
-
-// Find a currently-active (in-progress) session, if any.
-function findInProgressSession(){
-  return sessions.find(s=>s.status==="in_progress");
-}
-
-// Render the status strip. Called on app boot, after any session change, and on tab switches.
-function renderStatusStrip(){
-  const textEl=document.getElementById("status-strip-text");
-  const musclesEl=document.getElementById("status-strip-muscles");
-  if(!textEl||!musclesEl)return;
-
-  const volStatus=calcStatusStripVolume();
-
-  // --- Left side: only show context that isn't already visible elsewhere in the UI ---
-  // Day count, sets/wk, etc. are already shown by the day tabs and the Summary tab,
-  // so we DON'T repeat them here. Instead: surface workout state + recency only.
-  const inProgress=findInProgressSession();
-  let textContent="";
-  let textAction=null;
-
-  if(inProgress){
-    const blockName=inProgress.blockName||"Workout";
-    const dayLabel=inProgress.dayLabel||"";
-    // Base "ago" on the most recent activity — the latest logged set's timestamp — rather than
-    // the session creation time, so a session started hours before the first set doesn't read
-    // as "8h ago" the moment you log set one. Falls back to creation time if nothing logged yet.
-    let refTime=new Date(inProgress.date).getTime();
-    if(Array.isArray(inProgress.sets)&&inProgress.sets.length){
-      const lastTs=inProgress.sets.reduce((mx,st)=>{
-        const t=st.timestamp?new Date(st.timestamp).getTime():0;
-        return t>mx?t:mx;
-      },0);
-      if(lastTs>refTime)refTime=lastTs;
-    }
-    const minsAgo=Math.max(0,Math.floor((Date.now()-refTime)/60000));
-    const ago = minsAgo<60 ? `${minsAgo}m ago` : `${Math.floor(minsAgo/60)}h ago`;
-    textContent = `${blockName}${dayLabel?" · "+dayLabel:""} in progress · ${ago}`;
-    textAction = ()=>{ if(typeof openWorkoutModal==="function")openWorkoutModal(inProgress.id) };
-  } else {
-    // Surface info that isn't shown elsewhere: total planned weekly set volume (with intensifier multipliers)
-    // and how long since the last workout. Volume number is the whole point of the app, so it's first.
-    const ids=curDayIds();
-    let weeklySets=0;
-    ids.forEach(d=>{
-      mem[curBlock].days[d].rows.forEach(r=>{
-        if(r.ex&&r.sets>0)weeklySets += r.sets * plannedRowMult(r);
-      });
-    });
-    const parts=[];
-    if(weeklySets>0)parts.push(`~${Math.round(weeklySets)} sets/wk planned`);
-    if(volStatus.lastSessionDate){
-      const daysAgo=Math.floor((Date.now()-volStatus.lastSessionDate.getTime())/(24*60*60*1000));
-      if(daysAgo===0)parts.push("trained today");
-      else if(daysAgo===1)parts.push("trained yesterday");
-      else parts.push(`${daysAgo}d since last workout`);
-    } else if(weeklySets>0){
-      parts.push("no workouts logged yet");
-    }
-    textContent = parts.join(" · ");
-    textAction = ()=>{ if(typeof openHistory==="function")openHistory() };
-  }
-  // If text is empty AND no notable muscles, the strip self-hides via :empty rule on the container.
-  textEl.textContent=textContent;
-  textEl.onclick=textAction;
-
-  // --- Right side: muscle indicators (only notable muscles shown) ---
-  const scale=2; // 14-day window vs the planner's 7-day weekly thresholds
-  const HIGH=15*scale, LOW=6*scale, NEUTRAL_LOW=10*scale;
-  function classify(t){
-    if(t>=HIGH)return "high";
-    if(t<LOW)return "low";
-    if(t<NEUTRAL_LOW)return "medium";
-    return "neutral";
-  }
-  const notable=[];
-  ALL_MUS.forEach(m=>{
-    const t=volStatus.totals[m]||0;
-    const cls=classify(t);
-    if(cls!=="neutral")notable.push({muscle:m, cls, total:t});
-  });
-  notable.sort((a,b)=>{
-    const order={low:0, medium:1, high:2};
-    if(order[a.cls]!==order[b.cls])return order[a.cls]-order[b.cls];
-    return a.total-b.total;
-  });
-  const MAX_PIPS=5; // tighter cap since this lives inline now
-  const shown=notable.slice(0,MAX_PIPS);
-  musclesEl.innerHTML="";
-  shown.forEach(({muscle,cls})=>{
-    const pip=document.createElement("button");
-    pip.type="button";
-    pip.className=`muscle-pip ${cls}`;
-    pip.title=`${muscle}: ${cls==="low"?"behind":cls==="medium"?"below target":"ahead"}`;
-    const dot=document.createElement("span");dot.className="muscle-pip-dot";
-    const lbl=document.createElement("span");
-    lbl.textContent=shortMuscleLabel(muscle);
-    pip.appendChild(dot);pip.appendChild(lbl);
-    pip.onclick=()=>{showTab("sum");setTimeout(()=>scrollToMuscleInSummary(muscle),50);};
-    musclesEl.appendChild(pip);
-  });
-  // Show the strip when it has anything to display; hide when fully empty
-  const strip=document.getElementById("status-strip");
-  if(strip)strip.style.display = (textContent || shown.length>0) ? "" : "none";
-}
-
-// Shorter labels for the status strip pips (full names are too long for the compact view).
-function shortMuscleLabel(m){
-  const short={
-    "Front Delt":"F.Delt",
-    "Side Delt":"S.Delt",
-    "Rear Delt":"R.Delt",
-    "Hamstrings":"Hams",
-    "Erectors":"Erect",
-    "Obliques":"Obl"
-  };
-  return short[m]||m;
-}
-
-// Scroll the Summary panel to a specific muscle's card after switching to that tab.
-function scrollToMuscleInSummary(muscle){
-  const sg=document.getElementById("sg");
-  if(!sg)return;
-  // The summary cards have data-muscle attributes (added when rendering)
-  const card=sg.querySelector(`[data-muscle="${CSS.escape(muscle)}"]`);
-  if(card){
-    card.scrollIntoView({behavior:"smooth", block:"center"});
-    // Briefly highlight it
-    card.classList.add("muscle-card-highlight");
-    setTimeout(()=>card.classList.remove("muscle-card-highlight"), 1500);
-  }
-}
-
 // Opens a modal listing every exercise that targets the given muscle, sorted by contribution weight.
 // Triggered by long-pressing a muscle card on the Summary tab.
 function openMuscleExercises(muscle){
@@ -4925,6 +4771,51 @@ function closeMuscleExercises(){
 // as the History page's table (date · best set · volume · sets), so the user can glance at
 // recent performance for the exercise they're about to lift without leaving the workout.
 // Excludes the current in-progress session so it shows only PRIOR history.
+// Intensity calculator: the reference 1RM (actual or estimated) and the weights for every
+// 10% from 90% down to 50%, rounded the same way percentage targets are.
+const CALC_PCTS=[90,80,70,60,50];
+function openIntensityCalc(exName){
+  document.getElementById("calc1rm-title").textContent=exName;
+  const body=document.getElementById("calc1rm-body");
+  const ref=referenceOneRm(exName);
+  const unit=prefs.preferredUnit;
+  if(!ref){
+    body.innerHTML='<div class="graph-empty">No history for this exercise yet. Log a set and the calculator fills in.</div>';
+    document.getElementById("calc1rm-bg").classList.add("open");
+    return;
+  }
+  const now=new Date().toISOString();
+  const bwExtra=bodyweightExtra({ex:exName,weight:0,timestamp:now});
+  const isBwEx=bwExtra>0;
+  const date=d=>new Date(d).toLocaleDateString(undefined,{month:"short",day:"numeric",year:ref.stale?"numeric":undefined});
+  const r=n=>fmtNum(Math.round(n));
+  const src=ref.set;
+  const srcTxt=`${fmtSetReps({weight:src.weight,reps:src.reps,unit})} on ${date(src.t)}`;
+  const other = ref.kind==="actual"
+    ? (ref.estimated?` · estimated 1RM is ${r(ref.estimated)} ${unit}`:"")
+    : (ref.actual?` · best single is ${r(ref.actual)} ${unit}`:"");
+  const lines=[esc(srcTxt+other)];
+  if(isBwEx)lines.push(`Includes ${esc(fmtNum(bwExtra))} ${unit} bodyweight.`);
+  if(ref.stale)lines.push("Nothing logged in the last 12 weeks, so this is from your most recent training.");
+  const rows=CALC_PCTS.map(p=>{
+    const w=weightForPct(exName,p,ref);
+    const shown = isBwEx ? (w>0?`BW+${fmtNum(w)} ${unit}`:"BW") : `${fmtNum(w)} ${unit}`;
+    const tot = isBwEx ? `<td class="tot">${r(ref.value*p/100)} ${unit} total</td>` : "";
+    return `<tr><td class="pct">${p}%</td><td class="w">${esc(shown)}</td>${tot}</tr>`;
+  }).join("");
+  body.innerHTML=`
+    <div class="calc-ref">
+      <div class="calc-ref-label${ref.kind==="actual"?" actual":""}">${ref.kind==="actual"?"Actual 1RM":"Estimated 1RM"}</div>
+      <div class="calc-ref-val">${r(ref.value)} ${unit}</div>
+      <div class="calc-ref-sub">${lines.join("<br>")}</div>
+    </div>
+    <table class="calc-table">${rows}</table>
+    <div class="calc-foot">Rounded to the nearest ${unit==="kg"?"2.5 kg":"5 lb"}. Best from the last 12 weeks.</div>`;
+  document.getElementById("calc1rm-bg").classList.add("open");
+}
+function closeIntensityCalc(){document.getElementById("calc1rm-bg").classList.remove("open")}
+document.getElementById("calc1rm-bg").addEventListener("click",e=>{if(e.target.id==="calc1rm-bg")closeIntensityCalc()});
+
 function openExerciseHistory(exName){
   const titleEl=document.getElementById("exhist-title");
   const subEl=document.getElementById("exhist-sub");
@@ -5004,7 +4895,7 @@ function closeExerciseHistory(){
 const SESSIONS_KEY="trainblock_sessions_v1";
 const PREFS_KEY="trainblock_prefs_v1";
 let sessions=[];
-let prefs={preferredUnit:"lb", defaultRestSec:90, actualSource:"sessions", lastBackupAt:null, backupReminderSnoozedUntil:null, flexifyMigrated:false, graphShowAllSets:false, graphMetric:"weight", graphRange:"all"};
+let prefs={preferredUnit:"lb", defaultRestSec:90, actualSource:"sessions", lastBackupAt:null, backupReminderSnoozedUntil:null, flexifyMigrated:false, graphShowAllSets:false, graphMetric:"weight", graphRange:"all", showLifter:true};
 
 function loadPrefs(){
   try{
@@ -5024,6 +4915,7 @@ function loadPrefs(){
           .map(e=>({date:e.date,weight:Number(e.weight),unit:e.unit||"lb"}))
           .sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0);
         if(typeof p.graphShowAllSets==="boolean")prefs.graphShowAllSets=p.graphShowAllSets;
+        if(typeof p.showLifter==="boolean")prefs.showLifter=p.showLifter;
         if(["all","3m","6m","1y"].includes(p.graphRange))prefs.graphRange=p.graphRange;
         if(["weight","estimated1rm","volume","setCount","reps"].includes(p.graphMetric))prefs.graphMetric=p.graphMetric;
       }
@@ -5065,8 +4957,6 @@ function saveSessions(){
       alert("Couldn't save your workout history — device storage may be full.\n\nYour latest sets are NOT saved. Export a backup from Settings now, then free up space.");
     }
   }
-  // Status strip reflects logged sets, so re-render whenever sessions change.
-  if(typeof renderStatusStrip==="function")renderStatusStrip();
 }
 
 // Returns the currently-in-progress session, if any.
@@ -5096,8 +4986,8 @@ function createSessionFromPlan(blockId, dayId){
       // Snapshot the plan into a workout-friendly shape. We carry per-set targets so the
       // workout can show "target X×Y" for each set/sequence, and carry the planned structural
       // counts (drops/mini-sets/clusters) so the workout interface starts at the right size.
-      const targets = Array.isArray(r.targets) ? r.targets.slice(0, r.sets)
-                    : (r.target ? [r.target] : []);
+      const targets = resolvePctTargets(r.ex, Array.isArray(r.targets) ? r.targets.slice(0, r.sets)
+                    : (r.target ? [r.target] : []), Date.now());
       const pr={
         idx:i,
         ex:r.ex,
@@ -5361,7 +5251,14 @@ function renderWorkoutBody(){
     histBtn.setAttribute("aria-label","Show history for "+pr.ex);
     histBtn.innerHTML='<i class="ti ti-history" aria-hidden="true"></i>';
     histBtn.onclick=(e)=>{e.stopPropagation();openExerciseHistory(pr.ex)};
-    head.appendChild(nm);head.appendChild(tEl);head.appendChild(histBtn);
+    // Intensity calculator — current 1RM and the weights for 50–90% of it.
+    const calcBtn=document.createElement("button");
+    calcBtn.className="wo-ex-hist wo-ex-calc";calcBtn.type="button";
+    calcBtn.title="Intensity calculator";
+    calcBtn.setAttribute("aria-label","Intensity calculator for "+pr.ex);
+    calcBtn.innerHTML='<i class="ti ti-percentage" aria-hidden="true"></i>';
+    calcBtn.onclick=(e)=>{e.stopPropagation();openIntensityCalc(pr.ex)};
+    head.appendChild(nm);head.appendChild(tEl);head.appendChild(histBtn);head.appendChild(calcBtn);
     wrap.appendChild(head);
 
     // Branch on set type. All 5 types now use inline editor cards (no popup modal).
@@ -5435,7 +5332,7 @@ function saveInlineSet(s, pr, slotIdx, existing, partial){
     ...partial
   };
   const tgt=resolveSlotTarget(pr,slotIdx);
-  if(tgt){rec.targetWeight=tgt.weight;rec.targetReps=tgt.reps}
+  if(tgt){if(tgtHasWeight(tgt))rec.targetWeight=tgt.weight;rec.targetReps=tgt.reps;if(isPctTarget(tgt))rec.targetPct=Number(tgt.pct)}
   if(existing){
     const idx=s.sets.indexOf(existing);
     if(idx>=0)s.sets[idx]={...s.sets[idx],...rec};
@@ -5539,7 +5436,7 @@ function buildBasicCard(s, pr, slotIdx, existing){
     const prevThisSession=s.sets.filter(st=>st.rowIdx===pr.idx).pop();
     const seed=prevThisSession||lastSet;
     const initWeight = existing ? String(existing.weight)
-                     : tgt ? String(tgt.weight)
+                     : tgtHasWeight(tgt) ? String(tgt.weight)
                      : seed ? String(seed.weight) : "";
     const initReps = existing ? String(existing.reps)
                    : tgt ? String(tgt.reps)
@@ -5559,7 +5456,7 @@ function buildBasicCard(s, pr, slotIdx, existing){
   }
   if(tgt){
     const tgtHint=document.createElement("span");tgtHint.className="wo-card-tgt-hint";
-    tgtHint.textContent=`target ${fmtW(tgt.weight)}×${tgt.reps}`;
+    tgtHint.textContent=fmtTgtHint(tgt);
     headerRow.appendChild(tgtHint);
   }
   card.appendChild(headerRow);
@@ -5571,7 +5468,7 @@ function buildBasicCard(s, pr, slotIdx, existing){
   wInp.className="wo-card-input wo-card-weight";
   wInp.autocomplete="off";wInp.setAttribute("data-form-type","other");wInp.setAttribute("data-lpignore","true");
   wInp.value=st.weight;
-  wInp.placeholder = tgt ? String(tgt.weight) : "weight";
+  wInp.placeholder = tgtHasWeight(tgt) ? String(tgt.weight) : "weight";
   wInp.oninput=e=>{st.weight=e.target.value};
   inputsRow.appendChild(wInp);
   attachBWToggle(wInp, st, inputsRow);
@@ -5700,7 +5597,7 @@ function buildClusterCard(s, pr, slotIdx, existing){
     const lastSet=findLastSetForExercise(pr.ex, s.id);
     clusterInlineState[stateKey]={
       editing:true,
-      weight: existing?String(existing.weight) : tgt?String(tgt.weight) : lastSet?String(lastSet.weight) : "",
+      weight: existing?String(existing.weight) : tgtHasWeight(tgt)?String(tgt.weight) : lastSet?String(lastSet.weight) : "",
       reps: existing?String(existing.reps) : tgt?String(tgt.reps) : "3",
       clusters: String(existing?.clusterCount || pr.clusterCount || 5),
       rir: existing?.rir
@@ -5714,7 +5611,7 @@ function buildClusterCard(s, pr, slotIdx, existing){
   headerRow.appendChild(num);
   if(tgt){
     const tgtHint=document.createElement("span");tgtHint.className="wo-card-tgt-hint";
-    tgtHint.textContent=`target ${fmtW(tgt.weight)}×${tgt.reps}`;
+    tgtHint.textContent=fmtTgtHint(tgt);
     headerRow.appendChild(tgtHint);
   }
   card.appendChild(headerRow);
@@ -5723,7 +5620,7 @@ function buildClusterCard(s, pr, slotIdx, existing){
   const inputsRow=document.createElement("div");inputsRow.className="wo-card-inputs";
   const wInp=document.createElement("input");
   wInp.type="text";wInp.inputMode="decimal";wInp.pattern="[0-9]*\\.?[0-9]*";
-  wInp.className="wo-card-input wo-card-weight";wInp.value=st.weight;wInp.placeholder=tgt?String(tgt.weight):"weight";
+  wInp.className="wo-card-input wo-card-weight";wInp.value=st.weight;wInp.placeholder=tgtHasWeight(tgt)?String(tgt.weight):"weight";
   wInp.autocomplete="off";wInp.setAttribute("data-lpignore","true");
   wInp.oninput=e=>{st.weight=e.target.value};
   inputsRow.appendChild(wInp);
@@ -5840,7 +5737,7 @@ function buildRestPauseCard(s, pr, slotIdx, existing){
     const lastSet=findLastSetForExercise(pr.ex, s.id);
     restPauseInlineState[stateKey]={
       editing:true,
-      weight: existing?String(existing.weight) : tgt?String(tgt.weight) : lastSet?String(lastSet.weight) : "",
+      weight: existing?String(existing.weight) : tgtHasWeight(tgt)?String(tgt.weight) : lastSet?String(lastSet.weight) : "",
       reps: existing?String(existing.reps) : tgt?String(tgt.reps) : "",
       miniReps: Array(plannedMinis).fill(""),
       rir: existing?.rir
@@ -5854,7 +5751,7 @@ function buildRestPauseCard(s, pr, slotIdx, existing){
   headerRow.appendChild(num);
   if(tgt){
     const tgtHint=document.createElement("span");tgtHint.className="wo-card-tgt-hint";
-    tgtHint.textContent=`target ${fmtW(tgt.weight)}×${tgt.reps}`;
+    tgtHint.textContent=fmtTgtHint(tgt);
     headerRow.appendChild(tgtHint);
   }
   // Manual 20s timer button — same pattern as myo-rep cards.
@@ -5870,7 +5767,7 @@ function buildRestPauseCard(s, pr, slotIdx, existing){
   const inputsRow=document.createElement("div");inputsRow.className="wo-card-inputs";
   const wInp=document.createElement("input");
   wInp.type="text";wInp.inputMode="decimal";wInp.pattern="[0-9]*\\.?[0-9]*";
-  wInp.className="wo-card-input wo-card-weight";wInp.value=st.weight;wInp.placeholder=tgt?String(tgt.weight):"weight";
+  wInp.className="wo-card-input wo-card-weight";wInp.value=st.weight;wInp.placeholder=tgtHasWeight(tgt)?String(tgt.weight):"weight";
   wInp.autocomplete="off";wInp.setAttribute("data-lpignore","true");
   wInp.oninput=e=>{st.weight=e.target.value};
   inputsRow.appendChild(wInp);
@@ -6040,7 +5937,7 @@ function buildMyoCard(s, pr, slotIdx, existing){
       myorepInlineState[stateKey].miniReps = existing.miniSetReps ? [...existing.miniSetReps].concat(Array(Math.max(0,4-existing.miniSetReps.length)).fill(null)) : newDefaultMiniSets();
       if(existing.rir!==undefined)myorepInlineState[stateKey].rir=existing.rir;
     } else if(myoSlotTgt){
-      myorepInlineState[stateKey].weight=String(myoSlotTgt.weight);
+      myorepInlineState[stateKey].weight=tgtHasWeight(myoSlotTgt)?String(myoSlotTgt.weight):"";
       myorepInlineState[stateKey].activation=String(myoSlotTgt.reps);
     } else {
       const lastSet=findLastSetForExercise(pr.ex, s.id);
@@ -6080,7 +5977,7 @@ function buildMyoCard(s, pr, slotIdx, existing){
   const wLbl=document.createElement("label");wLbl.textContent=`Weight (${prefs.preferredUnit})`;
   const wInp=document.createElement("input");wInp.type="text";wInp.inputMode="decimal";wInp.pattern="[0-9]*\\.?[0-9]*";
   wInp.autocomplete="off";wInp.setAttribute("data-form-type","other");wInp.setAttribute("data-lpignore","true");
-  wInp.value=st.weight;wInp.placeholder=myoCardTgt?String(myoCardTgt.weight):"—";
+  wInp.value=st.weight;wInp.placeholder=tgtHasWeight(myoCardTgt)?String(myoCardTgt.weight):"—";
   wInp.oninput=e=>{st.weight=e.target.value};
   wInp.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();e.target.blur()}};
   wRow.appendChild(wLbl);
@@ -6173,7 +6070,7 @@ function saveMyorepInline(s, pr, slotIdx, existing){
   if(st.rir!==undefined&&st.rir!==null)rec.rir=st.rir;
   const myoTgt = (Array.isArray(pr.targets)&&pr.targets[slotIdx]) ? pr.targets[slotIdx]
                 : (slotIdx===0&&pr.target ? pr.target : null);
-  if(myoTgt){rec.targetWeight=myoTgt.weight;rec.targetReps=myoTgt.reps}
+  if(myoTgt){if(tgtHasWeight(myoTgt))rec.targetWeight=myoTgt.weight;rec.targetReps=myoTgt.reps;if(isPctTarget(myoTgt))rec.targetPct=Number(myoTgt.pct)}
   if(existing){
     const idx=s.sets.indexOf(existing);
     if(idx>=0)s.sets[idx]={...s.sets[idx],...rec};
@@ -6308,7 +6205,7 @@ function buildDropCard(s, pr, slotIdx, existing){
       const prevThisSession=s.sets.filter(st=>st.rowIdx===pr.idx).pop();
       const seed=prevThisSession||lastSet;
       if(dropSlotTgt){
-        st0.weights[0]=dropSlotTgt.weight;
+        st0.weights[0]=tgtHasWeight(dropSlotTgt)?Number(dropSlotTgt.weight):null;
         st0.reps[0]=dropSlotTgt.reps;
         // Seed user-planned drop weights (if any) before cascade. The cascade fills any
         // remaining nulls with the ~20% step-down.
@@ -6483,7 +6380,7 @@ function saveDropInline(s, pr, slotIdx, existing){
   if(st.rir!==undefined&&st.rir!==null)rec.rir=st.rir;
   const dropTgt = (Array.isArray(pr.targets)&&pr.targets[slotIdx]) ? pr.targets[slotIdx]
                 : (slotIdx===0&&pr.target ? pr.target : null);
-  if(dropTgt){rec.targetWeight=dropTgt.weight;rec.targetReps=dropTgt.reps}
+  if(dropTgt){if(tgtHasWeight(dropTgt))rec.targetWeight=dropTgt.weight;rec.targetReps=dropTgt.reps;if(isPctTarget(dropTgt))rec.targetPct=Number(dropTgt.pct)}
   if(existing){
     const idx=s.sets.indexOf(existing);
     if(idx>=0)s.sets[idx]={...s.sets[idx],...rec};
@@ -6844,7 +6741,9 @@ function openTargetEditor(dayId, rowIdx, setIdx){
     const t=getRowTarget(row,i);
     draft.push(t?{...t, dropWeights: Array.isArray(t.dropWeights)?[...t.dropWeights]:undefined}:null);
   }
-  targetCtx={dayId, rowIdx, focusSetIdx:Math.max(0,Math.min(totalSeqs-1,setIdx)), type, row, draft};
+  const mode=(row.targetMode==="pct"||draft.some(isPctTarget))?"pct":"weight";
+  targetCtx={dayId, rowIdx, focusSetIdx:Math.max(0,Math.min(totalSeqs-1,setIdx)), type, row, draft,
+             mode, ref:referenceOneRm(row.ex)};
 
   // Header text
   const info=getSetTypeInfo(type);
@@ -6857,10 +6756,22 @@ function openTargetEditor(dayId, rowIdx, setIdx){
   if(type==="cluster")subText += ` · ${row.clusterCount||5} clusters`;
   sub.textContent=subText;
 
-  // Render body
+  renderTargetModeRow();
   renderTargetBody();
+  renderTargetNote();
 
-  // Note (varies per type)
+  document.getElementById("target-bg").classList.add("open");
+  // Focus the weight input on the focused row, after the modal renders
+  setTimeout(()=>{
+    const focused=document.querySelector("#target-body .tgt-w-focused");
+    if(focused)focused.focus();
+  },80);
+}
+
+// Note under the editor body (varies per set type, plus a line about % mode)
+function renderTargetNote(){
+  if(!targetCtx)return;
+  const type=targetCtx.type;
   const note=document.getElementById("target-note");
   const noteMap={
     straight: "Leave a set empty to inherit the previous set's values when saved.",
@@ -6870,14 +6781,84 @@ function openTargetEditor(dayId, rowIdx, setIdx){
     restpause: "Mini-set reps aren't planned — each mini-set goes to failure.",
     cluster: "All clusters use the same weight and rep count."
   };
-  note.innerHTML = `<i class="ti ti-info-circle" aria-hidden="true"></i><span>${noteMap[type]||""}</span>`;
+  let text=noteMap[type]||"";
+  if(targetCtx.mode==="pct"){
+    if(type==="drop")text="Drops step down ~20% from the first weight and go to failure.";
+    text+=` Weights are worked out from your 1RM when you start the workout, rounded to ${prefs.preferredUnit==="kg"?"2.5 kg":"5 lb"}.`;
+  }
+  note.innerHTML = `<i class="ti ti-info-circle" aria-hidden="true"></i><span>${esc(text)}</span>`;
+}
 
-  document.getElementById("target-bg").classList.add("open");
-  // Focus the weight input on the focused row, after the modal renders
-  setTimeout(()=>{
-    const focused=document.querySelector("#target-body .tgt-w-focused");
-    if(focused)focused.focus();
-  },80);
+// "lb | % 1RM" switch plus the reference 1RM it works from.
+function fmtOneRmRef(ref){
+  if(!ref)return "No 1RM yet — log a set first";
+  const unit=prefs.preferredUnit;
+  const kind=ref.kind==="actual"?'<span class="kind-actual">actual</span>':'<span class="kind-est">estimated</span>';
+  const when=ref.stale?` · ${new Date(ref.set.t).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"})}`:"";
+  return `1RM ${fmtNum(Math.round(ref.value))} ${unit} · ${kind}${when}`;
+}
+function renderTargetModeRow(){
+  const el=document.getElementById("target-mode-row");
+  if(!el)return;
+  el.innerHTML="";
+  const ctx=targetCtx; if(!ctx)return;
+  const seg=document.createElement("div");seg.className="tgt-mode-seg";seg.setAttribute("role","group");seg.setAttribute("aria-label","Target by");
+  [["weight",prefs.preferredUnit],["pct","% 1RM"]].forEach(([m,label])=>{
+    const b=document.createElement("button");b.type="button";b.textContent=label;
+    if(ctx.mode===m)b.className="on";
+    b.setAttribute("aria-pressed",String(ctx.mode===m));
+    b.onclick=()=>switchTargetMode(m);
+    seg.appendChild(b);
+  });
+  el.appendChild(seg);
+  const info=document.createElement("div");info.className="tgt-mode-ref";
+  info.innerHTML=fmtOneRmRef(ctx.ref);
+  el.appendChild(info);
+}
+// Switching converts what's already typed where it can (weight ⇄ % of the reference 1RM).
+function switchTargetMode(mode){
+  const ctx=targetCtx;
+  if(!ctx||ctx.mode===mode)return;
+  const ex=ctx.row.ex, ref=ctx.ref, now=new Date().toISOString();
+  ctx.draft.forEach(d=>{
+    if(!d)return;
+    if(mode==="pct"){
+      const w=parseWeightInput(d.weight);
+      const ok=d.weight!=null&&d.weight!==""&&!isNaN(w)&&ref&&ref.value>0;
+      d.pct=ok?String(Math.round(loadOf({ex,weight:w,timestamp:now})/ref.value*100)):"";
+      delete d.weight; delete d.dropWeights;
+    } else {
+      const w=(d.pct!=null&&d.pct!=="")?weightForPct(ex, parseFloat(d.pct), ref):null;
+      d.weight=w==null?"":(w===0?"BW":String(w));
+      delete d.pct;
+    }
+  });
+  ctx.mode=mode;
+  renderTargetModeRow();
+  renderTargetBody();
+  renderTargetNote();
+}
+function tgtKey(){ return targetCtx&&targetCtx.mode==="pct"?"pct":"weight" }
+// Load input for set/sequence i: a weight box, or a % box with a live "≈ 160 lb" hint.
+function buildTargetLoadField(i, opts){
+  const ctx=targetCtx, k=tgtKey(), cur=ctx.draft[i];
+  let hint=null;
+  const inp=buildTargetWeightInput(cur?.[k], v=>{ ensureDraftEntry(i); ctx.draft[i][k]=v; paint(); }, opts);
+  const u=document.createElement("span");u.className="tgt-unit";u.textContent=k==="pct"?"%":prefs.preferredUnit;
+  if(k==="pct"){ hint=document.createElement("span"); hint.className="tgt-pct-hint"; }
+  function paint(){
+    if(!hint)return;
+    const ph=opts&&opts.placeholder&&opts.placeholder!=="—"?opts.placeholder:"";
+    const raw=inp.value.trim()||ph;
+    const w=raw?weightForPct(ctx.row.ex, parseFloat(raw), ctx.ref):null;
+    if(w==null){hint.textContent="";return}
+    const unit=prefs.preferredUnit;
+    hint.textContent="≈ "+(isBodyweightExercise(ctx.row.ex)&&bodyweightExtra({ex:ctx.row.ex,weight:0,timestamp:new Date().toISOString()})>0
+      ? (w>0?`BW+${fmtNum(w)} ${unit}`:"BW")
+      : `${fmtNum(w)} ${unit}`);
+  }
+  paint();
+  return {inp, nodes:[inp,u], hint};
 }
 
 function closeTargetEditor(){
@@ -6939,16 +6920,14 @@ function renderTargetBodyStraight(body, isAmrap){
     row.className="tgt-set-row"+(focused?" focused":"");
     // Placeholder = previous set's draft value (so leaving blank = "inherit on save")
     const prev=i>0?ctx.draft[i-1]:null;
-    const wPh=prev?.weight!=null?String(prev.weight):"—";
+    const wk=tgtKey();
+    const wPh=(prev&&prev[wk]!=null&&prev[wk]!=="")?String(prev[wk]):"—";
     const rPh=prev?.reps!=null?String(prev.reps):"—";
     const cur=ctx.draft[i];
     const num=document.createElement("span");num.className="tgt-set-num";num.textContent=String(i+1);
     row.appendChild(num);
-    row.appendChild(buildTargetWeightInput(cur?.weight, v=>{
-      ensureDraftEntry(i); ctx.draft[i].weight=v;
-    }, {focused, placeholder:wPh}));
-    const u=document.createElement("span");u.className="tgt-unit";u.textContent=prefs.preferredUnit;
-    row.appendChild(u);
+    const lf=buildTargetLoadField(i,{focused, placeholder:wPh});
+    lf.nodes.forEach(n=>row.appendChild(n));
     const x=document.createElement("span");x.className="tgt-x";x.textContent="×";
     row.appendChild(x);
     row.appendChild(buildTargetRepsInput(cur?.reps, v=>{
@@ -6957,8 +6936,9 @@ function renderTargetBodyStraight(body, isAmrap){
     const sfx=document.createElement("span");sfx.className="tgt-suffix";
     sfx.innerHTML = isAmrap ? `reps <i class="ti ti-star" aria-hidden="true" style="font-size:10px;opacity:0.7"></i>` : "reps";
     row.appendChild(sfx);
+    if(lf.hint)row.appendChild(lf.hint);
     // Clear-this-row button (only when this set has a target)
-    if(cur && (cur.weight!=null||cur.reps!=null)){
+    if(cur && (cur.weight!=null||cur.pct!=null||cur.reps!=null)){
       const clr=document.createElement("button");clr.type="button";clr.className="tgt-clear";clr.innerHTML='<i class="ti ti-x" aria-hidden="true"></i>';clr.title="Clear this set";
       clr.onclick=()=>{ctx.draft[i]=null;renderTargetBody()};
       row.appendChild(clr);
@@ -6988,13 +6968,9 @@ function renderTargetBodyDrop(body){
     // Initial weight input: on input, just update the draft; on blur, re-render to refresh
     // cascaded drop placeholders. Re-rendering on every keystroke destroys the input mid-typing,
     // closing the mobile keyboard and clamping to single-digit entries.
-    const initWInp=buildTargetWeightInput(cur?.weight, v=>{
-      ensureDraftEntry(i); ctx.draft[i].weight=v;
-    }, {focused, placeholder:"—"});
-    initWInp.addEventListener("blur",()=>renderTargetBody());
-    initLine.appendChild(initWInp);
-    const u=document.createElement("span");u.className="tgt-unit";u.textContent=prefs.preferredUnit;
-    initLine.appendChild(u);
+    const initLf=buildTargetLoadField(i,{focused, placeholder:"—"});
+    if(ctx.mode!=="pct")initLf.inp.addEventListener("blur",()=>renderTargetBody());
+    initLf.nodes.forEach(n=>initLine.appendChild(n));
     const x=document.createElement("span");x.className="tgt-x";x.textContent="×";
     initLine.appendChild(x);
     initLine.appendChild(buildTargetRepsInput(cur?.reps, v=>{
@@ -7002,6 +6978,7 @@ function renderTargetBodyDrop(body){
     }, {placeholder:"—"}));
     const sfx=document.createElement("span");sfx.className="tgt-suffix";sfx.textContent="reps";
     initLine.appendChild(sfx);
+    if(initLf.hint)initLine.appendChild(initLf.hint);
     card.appendChild(initLine);
     // Drop lines — one per dropCount. Compute cascaded placeholders from the initial weight.
     // Build a synthetic weights[] array with initial + user-set drop weights, then cascade nulls
@@ -7014,7 +6991,16 @@ function renderTargetBodyDrop(body){
     }
     const placeholders=[...synth];
     cascadeDropWeights(placeholders, prefs.preferredUnit);
-    for(let d=0;d<dropN;d++){
+    if(ctx.mode==="pct"){
+      // % mode: drops aren't planned individually — they cascade from the first weight.
+      const line=document.createElement("div");line.className="tgt-seq-line";
+      const k=document.createElement("span");k.className="tgt-seq-key";
+      k.innerHTML=`<i class="ti ti-arrow-down" aria-hidden="true"></i>${dropN} drop${dropN===1?"":"s"}`;
+      line.appendChild(k);
+      const f=document.createElement("span");f.className="tgt-suffix";f.style.fontStyle="italic";f.textContent="~20% lighter each, to failure";
+      line.appendChild(f);
+      card.appendChild(line);
+    } else for(let d=0;d<dropN;d++){
       const line=document.createElement("div");line.className="tgt-seq-line";
       const k=document.createElement("span");k.className="tgt-seq-key";
       k.innerHTML='<i class="ti ti-arrow-down" aria-hidden="true"></i>drop '+(d+1);
@@ -7039,7 +7025,7 @@ function renderTargetBodyDrop(body){
       card.appendChild(line);
     }
     // Clear button (sequence-level)
-    if(cur && (cur.weight!=null||cur.reps!=null||(cur.dropWeights||[]).some(x=>x!=null))){
+    if(cur && (cur.weight!=null||cur.pct!=null||cur.reps!=null||(cur.dropWeights||[]).some(x=>x!=null))){
       const footer=document.createElement("div");footer.className="tgt-seq-footer";
       const clr=document.createElement("button");clr.type="button";clr.className="tgt-clear";
       clr.innerHTML='<i class="ti ti-x" aria-hidden="true"></i> Clear sequence';
@@ -7074,11 +7060,7 @@ function renderTargetBodyMyoOrRestPause(body, type){
     const wLine=document.createElement("div");wLine.className="tgt-seq-line";
     const k1=document.createElement("span");k1.className="tgt-seq-key";k1.textContent="weight";
     wLine.appendChild(k1);
-    wLine.appendChild(buildTargetWeightInput(cur?.weight, v=>{
-      ensureDraftEntry(i); ctx.draft[i].weight=v;
-    }, {focused, placeholder:"—"}));
-    const u=document.createElement("span");u.className="tgt-unit";u.textContent=prefs.preferredUnit;
-    wLine.appendChild(u);
+    {const lf=buildTargetLoadField(i,{focused, placeholder:"—"}); lf.nodes.forEach(n=>wLine.appendChild(n)); if(lf.hint)wLine.appendChild(lf.hint);}
     card.appendChild(wLine);
     // Reps line
     const rLine=document.createElement("div");rLine.className="tgt-seq-line";
@@ -7094,7 +7076,7 @@ function renderTargetBodyMyoOrRestPause(body, type){
     const ftr=document.createElement("div");ftr.className="tgt-seq-footer";ftr.textContent=footerText;
     card.appendChild(ftr);
     // Clear
-    if(cur && (cur.weight!=null||cur.reps!=null)){
+    if(cur && (cur.weight!=null||cur.pct!=null||cur.reps!=null)){
       const clr=document.createElement("button");clr.type="button";clr.className="tgt-clear";
       clr.innerHTML='<i class="ti ti-x" aria-hidden="true"></i> Clear sequence';
       clr.style.background="transparent";clr.style.border="none";clr.style.color="var(--text3)";clr.style.cursor="pointer";clr.style.fontSize="11px";clr.style.padding="2px 0";clr.style.fontFamily="inherit";clr.style.alignSelf="flex-start";
@@ -7122,11 +7104,7 @@ function renderTargetBodyCluster(body){
     const wLine=document.createElement("div");wLine.className="tgt-seq-line";
     const k1=document.createElement("span");k1.className="tgt-seq-key";k1.textContent="weight";
     wLine.appendChild(k1);
-    wLine.appendChild(buildTargetWeightInput(cur?.weight, v=>{
-      ensureDraftEntry(i); ctx.draft[i].weight=v;
-    }, {focused, placeholder:"—"}));
-    const u=document.createElement("span");u.className="tgt-unit";u.textContent=prefs.preferredUnit;
-    wLine.appendChild(u);
+    {const lf=buildTargetLoadField(i,{focused, placeholder:"—"}); lf.nodes.forEach(n=>wLine.appendChild(n)); if(lf.hint)wLine.appendChild(lf.hint);}
     card.appendChild(wLine);
     // Reps per cluster
     const rLine=document.createElement("div");rLine.className="tgt-seq-line";
@@ -7138,7 +7116,7 @@ function renderTargetBodyCluster(body){
     const sfx=document.createElement("span");sfx.className="tgt-suffix";sfx.textContent=`× ${clusterN} clusters`;
     rLine.appendChild(sfx);
     card.appendChild(rLine);
-    if(cur && (cur.weight!=null||cur.reps!=null)){
+    if(cur && (cur.weight!=null||cur.pct!=null||cur.reps!=null)){
       const clr=document.createElement("button");clr.type="button";clr.className="tgt-clear";
       clr.innerHTML='<i class="ti ti-x" aria-hidden="true"></i> Clear sequence';
       clr.style.background="transparent";clr.style.border="none";clr.style.color="var(--text3)";clr.style.cursor="pointer";clr.style.fontSize="11px";clr.style.padding="2px 0";clr.style.fontFamily="inherit";clr.style.alignSelf="flex-start";
@@ -7164,17 +7142,28 @@ function saveTargetMulti(){
   const row=mem[curBlock].days[ctx.dayId].rows[ctx.rowIdx];
   const type=ctx.type;
   const seqs=row.sets||1;
+  const k=tgtKey();
   // Build the final targets array
   const finalTargets=new Array(seqs).fill(null);
   // For straight/AMRAP: inherit from previous when both weight & reps are blank
   let lastFilled=null;
   for(let i=0;i<seqs;i++){
     const d=ctx.draft[i];
-    if(!d || (d.weight==null||d.weight==="") && (d.reps==null||d.reps==="") && !(d.dropWeights||[]).some(x=>x!=null&&x!=="")){
+    if(!d || (d[k]==null||d[k]==="") && (d.reps==null||d.reps==="") && !(d.dropWeights||[]).some(x=>x!=null&&x!=="")){
       // Empty — for straight/AMRAP, inherit from previous if there's one
       if((type==="straight"||type==="amrap") && lastFilled){
         finalTargets[i]={...lastFilled};
       }
+      continue;
+    }
+    if(k==="pct"){
+      const pct=parseFloat(d.pct), reps=parseInt(d.reps,10);
+      if(isNaN(pct)||pct<=0||pct>120||isNaN(reps)||reps<=0){
+        alert(`Sequence ${i+1}: enter a percentage (1–120) and reps, or leave both blank to clear.`);
+        return;
+      }
+      finalTargets[i]={pct:Math.round(pct*10)/10, reps, unit:prefs.preferredUnit};
+      lastFilled=finalTargets[i];
       continue;
     }
     const w=parseWeightInput(d.weight);
@@ -7212,6 +7201,7 @@ function saveTargetMulti(){
     if(finalTargets[i])setRowTarget(row, i, finalTargets[i]);
     else clearRowTarget(row, i);
   }
+  if(ctx.mode==="pct")row.targetMode="pct"; else delete row.targetMode;
   closeTargetEditor();
   renderDay(ctx.dayId);
   autoSave();
@@ -7677,7 +7667,7 @@ function buildSetPill(row, dayId, rowIdx, setIdx, opts){
   const u=tgt?(tgt.unit||prefs.preferredUnit):prefs.preferredUnit;
   if(tgt){
     // Filled state — show the target
-    let text=`${fmtW(tgt.weight)}×${tgt.reps}`;
+    let text=isPctTarget(tgt)?`${fmtNum(Number(tgt.pct))}%×${tgt.reps}`:`${fmtW(tgt.weight)}×${tgt.reps}`;
     if(opts.extended==="myorep" || opts.extended==="restpause"){
       const placeholder = opts.extended==="restpause" ? "?" : String(Math.max(1,Math.floor(tgt.reps/3)));
       const minis = Array(opts.internalN).fill(placeholder).join(",");
@@ -8169,6 +8159,81 @@ function refE1rm(idx, ex, t){
   for(let i=lo;i<a.length && a[i].t<=t;i++) if(a[i].e>best)best=a[i].e;
   return best;
 }
+// ===== Reference 1RM (planner % targets + intensity calculator) =====
+// The reference is the heavier of: your best logged single (an "actual" 1RM) and your best
+// estimated 1RM from multi-rep sets, over the same 12-week window the Intensity view uses.
+// That's exactly what refE1rm gives Intensity (singles count at face value there), so all
+// three agree. A single lighter than your estimate was probably not a max, so the estimate
+// wins and is labelled as such. If nothing was logged in the last 12 weeks, fall back to the
+// 12 weeks ending at your most recent set for that exercise (flagged stale).
+function oneRmCandidates(exName){
+  const source=prefs.actualSource||"sessions";
+  const out=[];
+  const push=(w,r,ts)=>{ if(!(r>0))return; const t=new Date(ts).getTime(); if(!isFinite(t))return; out.push({ex:exName,weight:w||0,reps:r,timestamp:ts,t}) };
+  if(source==="sessions") sessions.forEach(s=>s.sets.forEach(st=>{ if(st.ex===exName)push(st.weight,st.reps,st.timestamp||s.date) }));
+  else flexifyHistory.forEach(rec=>{ if(rec.ours===exName)push(rec.weight,rec.reps,rec.date) });
+  return out;
+}
+function referenceOneRm(exName, at){
+  if(!exName)return null;
+  const t=at==null?Date.now():at;
+  const span=INTENSITY_REF_DAYS*86400000;
+  let c=oneRmCandidates(exName).filter(x=>x.t<=t);
+  if(!c.length)return null;
+  const latest=c.reduce((m,x)=>Math.max(m,x.t),0);
+  const stale=t-latest>span;
+  const end=stale?latest:t;
+  c=c.filter(x=>x.t>=end-span);
+  let single=null, est=null;
+  c.forEach(x=>{
+    const e=est1rm(x); if(!(e>0))return;
+    if(x.reps===1){ if(!single||e>single.e||(e===single.e&&x.t>single.t))single={...x,e} }
+    else if(!est||e>est.e||(e===est.e&&x.t>est.t))est={...x,e};
+  });
+  if(!single&&!est)return null;
+  const actual=!!single&&(!est||single.e>=est.e);
+  const pick=actual?single:est;
+  return {value:pick.e, kind:actual?"actual":"estimated", set:pick,
+          actual:single?single.e:null, estimated:est?est.e:null, stale};
+}
+// Weight to put on the bar for pct% of the reference. Rounded to the nearest 5 lb / 2.5 kg.
+// Bodyweight exercises: the reference is total load, so your bodyweight comes off the top
+// and the answer is the added weight (0 = BW when the target is at or below bodyweight).
+// Returns null when there's no reference to work from.
+function weightForPct(exName, pct, ref, at){
+  pct=Number(pct);
+  if(!ref||!(ref.value>0)||!(pct>0))return null;
+  const unit=prefs.preferredUnit;
+  const load=ref.value*pct/100;
+  const when=new Date(at==null?Date.now():at).toISOString();
+  const extra=bodyweightExtra({ex:exName,weight:0,timestamp:when});
+  if(extra>0){ const added=roundToPlate(load-extra,unit); return added>0?added:0; }
+  const step=unit==="kg"?2.5:5;
+  // Never round a loaded exercise down to 0 — 0 means bodyweight.
+  return Math.max(step, roundToPlate(load,unit));
+}
+function isPctTarget(t){ return !!t && Number(t.pct)>0 }
+function tgtHasWeight(t){ return !!t && t.weight!=null && t.weight!=="" && isFinite(Number(t.weight)) }
+// Workout-side target hint: "target 160×8 · 70%", or "target 70%×8" when no 1RM exists yet.
+function fmtTgtHint(t){
+  if(!t)return "";
+  const pct=isPctTarget(t)?`${fmtNum(Number(t.pct))}%`:"";
+  if(!tgtHasWeight(t))return `target ${pct||"—"}×${t.reps}`;
+  return `target ${fmtW(t.weight)}×${t.reps}${pct?" · "+pct:""}`;
+}
+// Snapshot helper used at workout launch: percentage targets get a concrete weight from the
+// reference 1RM as it stands before the workout starts. The percentage stays on the target
+// so the workout can show it. Weight is null when there's no history yet.
+function resolvePctTargets(exName, targets, at){
+  if(!Array.isArray(targets)||!targets.some(isPctTarget))return targets;
+  const ref=referenceOneRm(exName, at);
+  return targets.map(t=>{
+    if(!isPctTarget(t))return t;
+    const w=weightForPct(exName, t.pct, ref, at);
+    return {...t, weight:w};
+  });
+}
+
 // Returns {m: {total, buckets:{key:{sum, ex:{name:sum}}}}} for every muscle with volume.
 function calcIntensity(mode, ids){
   const source=prefs.actualSource||"sessions";
@@ -8216,6 +8281,8 @@ function calcIntensity(mode, ids){
         const ref=refE1rm(idx, row.ex, now);
         for(let i=0;i<row.sets;i++){
           const tgt=resolveSlotTarget(row,i);
+          // Percentage targets already say their intensity.
+          if(isPctTarget(tgt)){ credit(row.ex, Number(tgt.pct)/100, mult); continue; }
           // Target weight is the added weight; bodyweight exercises add your current bodyweight.
           const load=tgt&&isFinite(Number(tgt.weight))?loadOf({ex:row.ex,weight:Number(tgt.weight),timestamp:now}):0;
           credit(row.ex, (load>0&&ref)?load/ref:null, mult);
@@ -8604,6 +8671,102 @@ function renderSummary(){
   sg.appendChild(tc);
 }
 
+// ===== Gym buddy: a tiny monochrome-LCD lifter =====
+// Drawn on a canvas as chunky "LCD" pixels, unlit pixels faintly visible like the real thing.
+// He does a set of one lift, strikes a bodybuilding pose, then moves on to the next lift.
+// Tap him to skip ahead. He pauses while the app is in the background. With "reduce motion" on he holds a still flex.
+// Sprites: 24×20 LCD pixels, one row per 6 hex digits (24 bits, leftmost pixel = high bit).
+const NANO_SPRITES={"stand":"000000000000007e0000810001ffe00100b0016690010080013c8000ff0001ff80037ec0027e40027e40037ec000ff0000e70000c30001c380cccccc","squatUp":"000000000000007e0000810001ffe00100b0016690010080013c80ccff33ffffffcdffb3067e6003dbc0007e0000ff0000e70000c30001c380cccccc","squatDown":"000000000000000000000000007e0000810001ffb00542e0012480010080017e80ccab33ffffffcdffb3067e6003dbc001c3800300c00381c0cccccc","benchUp":"000000000000000e00001f00001f00000e000006003e06006306004a86004a860042ffe042ffe042fffe6280091f00097fffe0200040200040cccccc","benchDown":"000000000000000000000000000000000000000e003e1f00631f00268e004a860002ffe042ffe042fffe6280091f00097fffe0200040200040cccccc","deadDown":"000000000000000000000000000000007e0000810001ffe00100b0016690010080013c8000ff0001ff80e37ec7e27e47ffffffe300c7e381c7cccccc","deadUp":"000000000000000000007e0000810001ffb00542e0012480010080017e8000ab0001ff80e37ec7e27e47ffffffe07e07e0ff0700c30001c380cccccc","pressDown":"000000000000007e0000810001ffe00100b0016690010080013c8060ff067ffffe637ec6017e80007e00007e0000ff0000e70000c30001c380cccccc","pressUp":"6000067ffffe647e2604812005ffb00542e00524a00500a0057ea004ab2001ff80017e80007e00007e00007e0000ff0000e70000c30001c380cccccc","curlDown":"000000000000007e0000810001ffe00100b0016690010080013c8000ff0001ff80037ec00e7e701e7e78127e481eff780ce73000c30001c380cccccc","curlUp":"000000000000007e0000810001ff800542800124800100800d7eb01eab7813ffc81f7ef80e7e70037ec0007e0000ff0000e70000c30001c380cccccc","latDown":"000000000000007e0000810001ffe00100b0016690010080013c8000ff0001ff80037ec00e7e701e7e78127e481eff780ce73000c30001c380cccccc","latUp":"000000000000007e0000810001ff80054280012480010080017e8060ab06ffffff9ffff9f07e0f607e06007e0000ff0000e70000c30001c380cccccc","pullHang":"000000000000000000000000000000000000000000000000ffffff060060067e6006816007ffe00700f00766f00700e0073ce007ffe003ffc0007e00","pullUp":"007e0000810001ffb00542e0012480010080017e8000ab00ffffff037ec0027e4001bd80007e00007e0000ff0000e70000c30000c300000000000000","poseFrontBiceps":"000000000000007e0000810001ffe00100b00166900700e0073ce002ff4003ffc001ff80007e00007e00007e0000ff0000e70000c30001c380cccccc","poseLatSpread":"000000000000007e0000810001ffe00100b0016690010080013c8000ff0007ffe00ffff01dffb818ff180c7e3007ff7000c30000c30001c380cccccc","poseMostMuscular":"000000000000000000007e0000810001ffb00542e0012480010080017e8000ab000ffff01ffff83bffdc31ff8c1cff3807e7e000c30001c380cccccc"};
+const NANO_ROWS=20, NANO_W=24;
+const NANO_LIFTS=[["squatUp","squatDown"],["benchUp","benchDown"],["deadDown","deadUp"],["pressDown","pressUp"],
+                  ["curlDown","curlUp"],["latDown","latUp"],["pullHang","pullUp"]];
+const NANO_POSES=["poseFrontBiceps","poseLatSpread","poseMostMuscular"];
+const NANO_FRAME_MS=420, NANO_REPS=6, NANO_SETUP_MS=500, NANO_POSE_MS=1600;
+const nanoRowCache={};
+function nanoRows(k){
+  if(nanoRowCache[k])return nanoRowCache[k];
+  const h=NANO_SPRITES[k]||NANO_SPRITES.stand, rows=[];
+  for(let i=0;i<NANO_ROWS;i++)rows.push(parseInt(h.slice(i*6,i*6+6),16));
+  return (nanoRowCache[k]=rows);
+}
+function createNanoLifter(canvas){
+  if(!canvas||typeof canvas.getContext!=="function")return null;
+  const ctx=canvas.getContext("2d"); if(!ctx)return null;
+  const mq=q=>{try{return typeof matchMedia==="function"&&matchMedia(q).matches}catch(e){return false}};
+  let cell=2, cols=NANO_W, ox=0, oy=0, gap=1, ghost=null, running=false;
+  let lift=Math.floor(Math.random()*NANO_LIFTS.length), phase="lift", frame=0, reps=0, pose=NANO_POSES[0];
+  const palette=()=>mq("(prefers-color-scheme: dark)")
+    ?{bg:"#1d2418",on:"#a9c47f",off:"rgba(169,196,127,0.07)"}
+    :{bg:"#a7b48c",on:"#232d1c",off:"rgba(35,45,28,0.09)"};
+  let pal=palette();
+  function cellRect(c,x,y){
+    const x0=ox+Math.round(x*cell), y0=oy+Math.round(y*cell);
+    c.fillRect(x0,y0,ox+Math.round((x+1)*cell)-x0-gap,oy+Math.round((y+1)*cell)-y0-gap);
+  }
+  function size(){
+    const r=canvas.getBoundingClientRect(); if(!r.width||!r.height)return false;
+    const dpr=Math.max(1,Math.min(3,window.devicePixelRatio||1));
+    const W=Math.round(r.width*dpr), H=Math.round(r.height*dpr);
+    // LCD pixels are square: 20 rows tall unless the box is too narrow for a 24-wide figure.
+    cell=Math.min(H/NANO_ROWS, W/NANO_W);
+    cols=Math.floor(W/cell); gap=Math.max(1,Math.round(dpr*0.5));
+    ox=Math.floor((W-cols*cell)/2); oy=Math.floor((H-NANO_ROWS*cell)/2);
+    canvas.width=W; canvas.height=H; pal=palette();
+    ghost=document.createElement("canvas"); ghost.width=W; ghost.height=H;
+    const g=ghost.getContext("2d");
+    g.fillStyle=pal.bg; g.fillRect(0,0,W,H); g.fillStyle=pal.off;
+    for(let y=0;y<NANO_ROWS;y++)for(let x=0;x<cols;x++)cellRect(g,x,y);
+    return true;
+  }
+  function draw(k){
+    if(!ghost&&!size())return;
+    ctx.drawImage(ghost,0,0); ctx.fillStyle=pal.on;
+    const rows=nanoRows(k), x0=Math.floor((cols-NANO_W)/2);
+    for(let y=0;y<NANO_ROWS;y++){const r=rows[y]; if(!r)continue;
+      for(let x=0;x<NANO_W;x++) if(r&(1<<(NANO_W-1-x)))cellRect(ctx,x0+x,y);}
+  }
+  function current(){
+    if(mq("(prefers-reduced-motion: reduce)"))return "poseFrontBiceps";
+    return phase==="lift"?NANO_LIFTS[lift][frame]:phase==="setup"?"stand":pose;
+  }
+  // Event-driven: each step advances the state, draws, and sleeps until the next change
+  // (~2–3 wakeups a second). Paused while the app is hidden.
+  let timer=0;
+  function nextLift(){ lift=(lift+1)%NANO_LIFTS.length; phase="lift"; frame=0; reps=0; }
+  function step(){
+    timer=0;
+    if(!running||document.visibilityState==="hidden")return;
+    let wait=NANO_FRAME_MS;
+    if(phase==="lift"){
+      frame^=1;
+      if(frame===0&&++reps>=NANO_REPS){ phase="setup"; wait=NANO_SETUP_MS; }
+    } else if(phase==="setup"){
+      phase="pose"; pose=NANO_POSES[Math.floor(Math.random()*NANO_POSES.length)]; wait=NANO_POSE_MS;
+    } else nextLift();
+    draw(current());
+    timer=setTimeout(step,wait);
+  }
+  function schedule(){ if(timer)clearTimeout(timer); timer=0;
+    if(running&&!mq("(prefers-reduced-motion: reduce)")&&document.visibilityState!=="hidden")timer=setTimeout(step,NANO_FRAME_MS); }
+  function start(){ if(running)return; running=true; size(); draw(current()); schedule(); }
+  function stop(){ running=false; if(timer)clearTimeout(timer); timer=0; }
+  canvas.addEventListener("click",()=>{ nextLift(); draw(current()); schedule(); });
+  document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible")schedule(); });
+  const redraw=()=>{ if(size())draw(current()); };
+  window.addEventListener("resize",redraw);
+  try{ matchMedia("(prefers-color-scheme: dark)").addEventListener("change",redraw) }catch(e){}
+  return {start, stop, redraw};
+}
+let nanoLifter=null;
+function applyLifterPref(){
+  const cv=document.getElementById("nano-lifter"); if(!cv)return;
+  const on=prefs.showLifter!==false;
+  cv.classList.toggle("off",!on);
+  if(on){ if(!nanoLifter)nanoLifter=createNanoLifter(cv); if(nanoLifter)nanoLifter.start(); }
+  else if(nanoLifter)nanoLifter.stop();
+}
+function setShowLifter(on){ prefs.showLifter=!!on; savePrefs(); applyLifterPref(); }
+
 // Boot
 loadCustomExercises();
 loadBuiltinOverrides();
@@ -8636,6 +8799,7 @@ const _active=activeSession();
 if(_active)openWorkoutModal(_active.id);
 // Check if a backup reminder should be shown (after sessions and prefs are loaded)
 checkBackupReminder();
+applyLifterPref();             // the little LCD lifter beside Days/Weeks
 {const v=document.getElementById("app-version");if(v)v.textContent=APP_VERSION;}
 reportLoadProblems();          // tell the user if any saved data was unreadable and set aside
 // Ask the browser to mark this origin's storage as persistent so training history isn't
