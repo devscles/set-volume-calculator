@@ -1362,7 +1362,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
         <p>Graph metrics:</p>
         <ul>
           <li><b>Weight</b> — the weight you logged per set (for bodyweight exercises, the added weight)</li>
-          <li><b>Est 1RM</b> — Epley-formula estimated one-rep max from your actual sets (useful for trending strength when you're not maxing out). Sets logged at <b>1 rep</b> are treated as <b>true 1RMs</b> and drawn as <b>squares</b> instead of circles; multi-rep sets are estimated and drawn as circles. When a day has both a true 1RM and a higher Epley estimate from a multi-rep set, the true 1RM wins as the best-of-day point — a measured single is more truthful than an estimate.</li>
+          <li><b>Est 1RM</b> — Epley-formula estimated one-rep max from your actual sets (useful for trending strength when you're not maxing out). Sets logged at <b>1 rep</b> are treated as <b>true 1RMs</b> and drawn as <b>squares</b> instead of circles; multi-rep sets are estimated and drawn as circles. Each day's point is the heavier of its best single and its best estimate, the same rule the % targets and intensity calculator use: a single lighter than what you managed for reps that day wasn't a max. On a tie, the single wins.</li>
           <li><b>Volume</b> — weight × reps per set</li>
           <li><b>Sets</b> — daily aggregated effective set count, with set-type multipliers applied</li>
           <li><b>Reps</b> — best reps per session, with a separate line for each load (bodyweight, +25 lb, and so on), since reps at different loads aren't comparable. The four most-used loads get their own colored lines; any others appear as gray dots. This is the way to track progress on bodyweight exercises.</li>
@@ -1452,7 +1452,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 
 <script>
 // Build stamp, matched to the service-worker cache name. Shown in Settings → About.
-const APP_VERSION="20261119115919";
+const APP_VERSION="20261121132217";
 
 // ===== App banner (crash reports, update notices) =====
 // Built with plain DOM calls and no app state, so it still works if the rest of the app failed
@@ -3758,6 +3758,23 @@ function niceTicks(min, max, targetCount){
   return ticks;
 }
 
+// Best point per day for the progression graph (per day and load series in Reps mode).
+// In Est 1RM mode the day's value is the heavier of its best single (counted at face value)
+// and its best Epley estimate — the same rule as the reference 1RM behind % targets and the
+// intensity calculator. A single lighter than an estimate from the same day wasn't a max
+// (e.g. 225×1 then 225×2), so it shouldn't drag the day down. On a tie the single wins,
+// since it was actually lifted.
+function pickDailyBest(points, metric, bySeries){
+  const byDay={};
+  const single=p=>metric==="estimated1rm" && p && p.src && p.src.reps===1;
+  points.forEach(p=>{
+    const d=localDayKey(p.t)+(bySeries?"#"+p.series:"");
+    const cur=byDay[d];
+    if(!cur || p.m>cur.m || (p.m===cur.m && single(p) && !single(cur)))
+      byDay[d]={t:p.t,m:p.m,src:p.src,isAggregate:p.isAggregate,daySets:p.daySets,series:p.series};
+  });
+  return Object.values(byDay).sort((a,b)=>a.t-b.t);
+}
 function buildSvgGraph(sets){
   const W=480, H=340, P=40; // larger viewbox; CSS controls actual rendered size
   const svg=document.createElementNS("http://www.w3.org/2000/svg","svg");
@@ -3826,23 +3843,8 @@ function buildSvgGraph(sets){
   const colorOf=p=>isReps?(seriesColor[p.series]||OTHER_COLOR):"var(--accent)";
   if(points.length===0)return svg;
 
-  // Compute best-per-day points (always — used for trend line and "best only" view).
-  // In Est 1RM mode, prefer true 1RMs (reps===1) over higher Epley estimates from multi-rep sets:
-  // a measured single is more truthful than an estimate, even if the estimate computes higher.
-  const byDayBest={};
-  points.forEach(p=>{
-    const d=localDayKey(p.t)+(isReps?"#"+p.series:"");
-    const cur=byDayBest[d];
-    const isTrue1rm = graphMetric==="estimated1rm" && p.src && p.src.reps===1;
-    const curIsTrue1rm = cur && graphMetric==="estimated1rm" && cur.src && cur.src.reps===1;
-    let replace=false;
-    if(!cur)replace=true;
-    else if(isTrue1rm && !curIsTrue1rm)replace=true; // true 1RM always wins over estimate
-    else if(!isTrue1rm && curIsTrue1rm)replace=false; // never let estimate win over true 1RM
-    else if(p.m > cur.m)replace=true; // otherwise standard "highest metric wins"
-    if(replace)byDayBest[d]={t:p.t,m:p.m,src:p.src,isAggregate:p.isAggregate,daySets:p.daySets,series:p.series};
-  });
-  const dailyMax=Object.values(byDayBest).sort((a,b)=>a.t-b.t);
+  // Best-per-day points (always — used for trend line and "best only" view).
+  const dailyMax=pickDailyBest(points, graphMetric, isReps);
 
   // Decide which points drive the axis range and which points to scatter:
   //  - "Sets" and "Volume" modes always show daily aggregates (no per-set scatter).
