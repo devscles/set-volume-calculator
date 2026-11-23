@@ -191,6 +191,9 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 .sum-toggle{display:flex;gap:0;margin-bottom:10px;border-radius:var(--radius);border:0.5px solid var(--border2);overflow:hidden;width:fit-content}
 .sum-toggle button{padding:5px 12px;font-size:11px;font-weight:500;border:none;background:var(--bg);color:var(--text2);cursor:pointer;font-family:inherit;letter-spacing:0.03em}
 .sum-toggle button.active{background:var(--accent);color:var(--accent-text)}
+.sum-range{width:fit-content;margin:-4px 0 10px}
+.sum-range button{padding:5px 10px;font-size:11px}
+.m-wk{font-size:11px;color:var(--text2);font-weight:400;margin-left:4px}
 .sum-toggle button:first-child{border-right:0.5px solid var(--border2)}
 /* Top-level view tabs (Muscles / Patterns) — sit ABOVE the Planned/Actual sub-toggle.
    Larger and more prominent than sum-toggle since they're the main navigation. */
@@ -1405,7 +1408,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
           <li><span class="help-swatch neutral"></span> 10–14.5 sets/week — solid maintenance/growth</li>
           <li><span class="help-swatch high"></span> ≥15 sets/week — high-volume range</li>
         </ul>
-        <p>The <b>Planned / Actual</b> toggle at the top switches between your planned volume and your actual logged volume from imported Flexify history. Actual mode uses the last 4 weeks of history and scales the thresholds by 4× (so ≤24, 25–36, 40–59, ≥60).</p>
+        <p>The <b>Planned / Actual</b> toggle at the top switches between your planned volume and your actual logged volume from imported Flexify history. Actual mode covers 1, 2, 4, 8, or 12 weeks (pick under the toggle; 4 by default) and scales the thresholds by the number of weeks, so 4 weeks means ×4 (under 24, 24–39.5, 40–59.5, 60+). If your history is shorter than the range, the thresholds scale to the weeks you actually have. Each card also shows a per-week average to compare with your weekly targets.</p>
       </details>
 
       <details class="help-section">
@@ -1452,7 +1455,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto}
 
 <script>
 // Build stamp, matched to the service-worker cache name. Shown in Settings → About.
-const APP_VERSION="20261121132217";
+const APP_VERSION="20261123104232";
 
 // ===== App banner (crash reports, update notices) =====
 // Built with plain DOM calls and no app state, so it still works if the rest of the app failed
@@ -4592,7 +4595,25 @@ let summaryMode="planned"; // "planned" or "actual"
 // Top-level Summary view: "muscles" (default) shows the muscle cards;
 // "patterns" shows the 10 movement-pattern cards. Each view has its own Planned/Actual mode.
 let summaryView="muscles";
-const ACTUAL_WINDOW_DAYS=28;
+// Actual-mode window: a whole number of weeks back from now, chosen on the Summary tab.
+const ACTUAL_WEEK_OPTIONS=[1,2,4,8,12];
+function actualWeeks(){ return ACTUAL_WEEK_OPTIONS.includes(prefs.actualWeeks)?prefs.actualWeeks:4 }
+function actualWindowDays(){ return actualWeeks()*7 }
+function actualWindowLabel(){ const w=actualWeeks(); return w===1?"last week":`last ${w} weeks` }
+// Weeks the thresholds scale by: the selected range, or less if your history doesn't go back
+// that far (so a 12-week view of 5 weeks of logs isn't judged against 12 weeks of targets).
+// Rounded to whole weeks, minimum 1.
+function actualThresholdWeeks(){
+  const sel=actualWeeks();
+  let first=Infinity;
+  if((prefs.actualSource||"sessions")==="sessions"){
+    sessions.forEach(s=>{ if(s.status==="in_progress")return; s.sets.forEach(st=>{ const t=new Date(st.timestamp||s.date).getTime(); if(t<first)first=t }) });
+  } else flexifyHistory.forEach(r=>{ const t=new Date(r.date).getTime(); if(t<first)first=t });
+  if(!isFinite(first))return sel;
+  const have=Math.max(1,Math.round((Date.now()-first)/(7*86400000)));
+  return Math.min(sel,have);
+}
+function setActualWeeks(w){ if(!ACTUAL_WEEK_OPTIONS.includes(w))return; prefs.actualWeeks=w; savePrefs(); renderSummary(); }
 
 function loadFlexifyHistory(){
   try{
@@ -4640,7 +4661,7 @@ function downloadFile(name,content,mime){
 // Returns {totals: {muscle: sets}, sessionsCounted: number, firstDate, lastDate, source}
 function calcActualVolume(){
   const now=new Date();
-  const cutoff=new Date(now.getTime()-ACTUAL_WINDOW_DAYS*24*60*60*1000);
+  const cutoff=new Date(now.getTime()-actualWindowDays()*24*60*60*1000);
   const totals={};ALL_MUS.forEach(m=>totals[m]=0);
   let counted=0,firstDate=null,lastDate=null;
   const source=prefs.actualSource||"sessions";
@@ -4684,13 +4705,13 @@ function openMuscleExercises(muscle){
 
   // Collect exercise names to highlight. Source depends on which Summary mode is active:
   //   - "planned" → exercises with sets > 0 in the current block (what's on the schedule)
-  //   - "actual"  → exercises actually trained in the last 28 days (matches the Actual chip window)
+  //   - "actual"  → exercises actually trained in the selected Actual window
   // This keeps the popup consistent with the volume the user just saw on the muscle card.
   const highlightNames=new Set();
   let highlightLabel;
   if(summaryMode==="actual"){
     highlightLabel="trained recently";
-    const cutoff=Date.now() - 28*86400000;
+    const cutoff=Date.now() - actualWindowDays()*86400000;
     sessions.forEach(s=>{
       (s.sets||[]).forEach(st=>{
         const ts = st.timestamp ? new Date(st.timestamp).getTime() : new Date(s.date).getTime();
@@ -4897,7 +4918,7 @@ function closeExerciseHistory(){
 const SESSIONS_KEY="trainblock_sessions_v1";
 const PREFS_KEY="trainblock_prefs_v1";
 let sessions=[];
-let prefs={preferredUnit:"lb", defaultRestSec:90, actualSource:"sessions", lastBackupAt:null, backupReminderSnoozedUntil:null, flexifyMigrated:false, graphShowAllSets:false, graphMetric:"weight", graphRange:"all", showLifter:true};
+let prefs={preferredUnit:"lb", defaultRestSec:90, actualSource:"sessions", lastBackupAt:null, backupReminderSnoozedUntil:null, flexifyMigrated:false, graphShowAllSets:false, graphMetric:"weight", graphRange:"all", showLifter:true, actualWeeks:4};
 
 function loadPrefs(){
   try{
@@ -4918,6 +4939,7 @@ function loadPrefs(){
           .sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0);
         if(typeof p.graphShowAllSets==="boolean")prefs.graphShowAllSets=p.graphShowAllSets;
         if(typeof p.showLifter==="boolean")prefs.showLifter=p.showLifter;
+        if([1,2,4,8,12].includes(p.actualWeeks))prefs.actualWeeks=p.actualWeeks;
         if(["all","3m","6m","1y"].includes(p.graphRange))prefs.graphRange=p.graphRange;
         if(["weight","estimated1rm","volume","setCount","reps"].includes(p.graphMetric))prefs.graphMetric=p.graphMetric;
       }
@@ -8083,13 +8105,13 @@ function fmt(v){return v%1===0?v.toString():v.toFixed(1)}
 
 // === Patterns view ===
 // Renders the 10 movement-pattern cards. Each is green/red based on whether the active mode
-// (planned in current block, or actual in last 28 days) contains any exercises tagged with
+// (planned in current block, or actual in the selected window) contains any exercises tagged with
 // that pattern. Long-press → popup listing all exercises in the pattern, with highlights
 // matching the same "covered" set.
 function getCoveredExercisesForPatterns(mode){
   // Returns Set<exercise name> covering whichever mode the user is viewing.
   // Planned: any row in the current block with sets > 0.
-  // Actual:  any logged set in the last ACTUAL_WINDOW_DAYS days, from the selected data source.
+  // Actual:  any logged set in the selected Actual window, from the selected data source.
   const covered=new Set();
   if(mode==="planned"){
     const curBlk=mem[curBlock];
@@ -8101,7 +8123,7 @@ function getCoveredExercisesForPatterns(mode){
       });
     }
   } else {
-    const cutoff=Date.now() - ACTUAL_WINDOW_DAYS*86400000;
+    const cutoff=Date.now() - actualWindowDays()*86400000;
     // Respect the Actual data-source setting, the same way the muscle view does.
     const source=prefs.actualSource||"sessions";
     if(source==="sessions")sessions.forEach(s=>{
@@ -8251,7 +8273,7 @@ function calcIntensity(mode, ids){
     });
   };
   if(mode==="actual"){
-    const cutoff=Date.now()-ACTUAL_WINDOW_DAYS*86400000;
+    const cutoff=Date.now()-actualWindowDays()*86400000;
     if(source==="sessions"){
       sessions.forEach(s=>{
         if(s.status==="in_progress")return; // same rule as the Volume view
@@ -8302,7 +8324,7 @@ function renderIntensityCards(ids){
   const data=calcIntensity(summaryMode, ids);
   const blk=mem[curBlock];
   meta.textContent = summaryMode==="actual"
-    ? `Sets by % of estimated 1RM — last ${ACTUAL_WINDOW_DAYS} days`
+    ? `Sets by % of estimated 1RM — ${actualWindowLabel()}`
     : `Planned sets by target % of estimated 1RM${(blk&&blk.weekCount>1)?` · Week ${curWeek+1}`:""}`;
   legend.innerHTML=INTENSITY_BUCKETS.map(b=>`<span><span class="leg-dot" style="background:var(--int-${b.key})"></span>${b.key==="lt60"?"&lt;60%":b.label}</span>`).join("");
   const show=n=>fmtNum(r05(n));
@@ -8310,7 +8332,7 @@ function renderIntensityCards(ids){
   const muscles=ALL_MUS.filter(m=>data[m]&&r05(data[m].total)>0).sort((a,b)=>data[b].total-data[a].total);
   if(!muscles.length){
     const e=document.createElement("div");e.className="i-empty";
-    e.textContent = summaryMode==="actual" ? `No logged sets in the last ${ACTUAL_WINDOW_DAYS} days.` : "No exercises planned for this week yet.";
+    e.textContent = summaryMode==="actual" ? `No logged sets in the ${actualWindowLabel()}.` : "No exercises planned for this week yet.";
     sg.appendChild(e); return;
   }
   muscles.forEach(m=>{
@@ -8352,14 +8374,14 @@ function renderPatternCards(ids, actualDisabled){
   // Legend explains the binary scheme — much simpler than the muscle 4-tier
   legend.innerHTML=
     `<span><span class="leg-dot" style="background:var(--success-text)"></span>covered</span>`+
-    `<span><span class="leg-dot" style="background:var(--danger-text)"></span>not in ${summaryMode==="planned"?"plan":"last 4 wks"}</span>`;
+    `<span><span class="leg-dot" style="background:var(--danger-text)"></span>not in ${summaryMode==="planned"?"plan":actualWindowLabel()}</span>`;
   const covered=getCoveredExercisesForPatterns(summaryMode);
   const coveredCount=ALL_PATTERNS.filter(p=>{
     return (PATTERN_TO_EX[p]||[]).some(ex=>covered.has(ex));
   }).length;
   meta.textContent = summaryMode==="planned"
     ? `Movement-pattern coverage — ${coveredCount} of ${ALL_PATTERNS.length} patterns${(mem[curBlock]&&mem[curBlock].weekCount>1)?` · Week ${curWeek+1}`:" in current block"}`
-    : `Movement-pattern coverage, last ${ACTUAL_WINDOW_DAYS} days — ${coveredCount} of ${ALL_PATTERNS.length} patterns covered`;
+    : `Movement-pattern coverage, ${actualWindowLabel()} — ${coveredCount} of ${ALL_PATTERNS.length} patterns covered`;
   // Render in spec order (Vertical Push first), NOT sorted by coverage — order conveys structure
   // (push/pull, vertical/horizontal, squat/lunge/hinge, rotation/anti-rotation, carry).
   ALL_PATTERNS.forEach(pattern=>{
@@ -8381,7 +8403,7 @@ function renderPatternCards(ids, actualDisabled){
     if(coveredInPattern.length>0){
       examples.textContent = coveredInPattern.slice(0,3).join(", ") + (coveredInPattern.length>3 ? `, +${coveredInPattern.length-3} more` : "");
     } else {
-      examples.textContent = summaryMode==="planned" ? "none in plan" : "none in last 4 wks";
+      examples.textContent = summaryMode==="planned" ? "none in plan" : "none in "+actualWindowLabel();
     }
     card.appendChild(examples);
 
@@ -8397,7 +8419,7 @@ function renderPatternCards(ids, actualDisabled){
     const exp=document.createElement("div");exp.className="p-expanded";
     if(coveredInPattern.length>0){
       const hdr=document.createElement("div");hdr.className="p-expanded-header";
-      hdr.textContent = summaryMode==="planned" ? "In current plan" : `In last ${ACTUAL_WINDOW_DAYS} days`;
+      hdr.textContent = summaryMode==="planned" ? "In current plan" : `In the ${actualWindowLabel()}`;
       exp.appendChild(hdr);
       coveredInPattern.forEach(exName=>{
         const r=document.createElement("div");r.className="p-expanded-row";
@@ -8417,7 +8439,7 @@ function renderPatternCards(ids, actualDisabled){
       const msg=document.createElement("div");msg.className="p-expanded-uncov-msg";
       msg.textContent = summaryMode==="planned"
         ? `No exercises in the current block train this pattern. Long-press to browse ${exercisesInPattern.length} option${exercisesInPattern.length===1?"":"s"}.`
-        : `Nothing logged for this pattern in the last ${ACTUAL_WINDOW_DAYS} days. Long-press to browse ${exercisesInPattern.length} option${exercisesInPattern.length===1?"":"s"}.`;
+        : `Nothing logged for this pattern in the ${actualWindowLabel()}. Long-press to browse ${exercisesInPattern.length} option${exercisesInPattern.length===1?"":"s"}.`;
       exp.appendChild(msg);
     }
     card.appendChild(exp);
@@ -8489,8 +8511,9 @@ function renderSummary(){
     </div>
     <div class="sum-toggle">
       <button id="sum-planned" class="${summaryMode==='planned'?'active':''}">Planned</button>
-      <button id="sum-actual" class="${summaryMode==='actual'?'active':''}" ${actualDisabled?'disabled style="opacity:0.4;cursor:not-allowed"':''} title="${actualDisabled?'Log a workout or import Flexify history first':''}">Actual (last 4 wks)</button>
+      <button id="sum-actual" class="${summaryMode==='actual'?'active':''}" ${actualDisabled?'disabled style="opacity:0.4;cursor:not-allowed"':''} title="${actualDisabled?'Log a workout or import Flexify history first':''}">Actual</button>
     </div>
+    ${summaryMode==="actual"?`<div class="graph-toggle sum-range" role="group" aria-label="Actual range">${ACTUAL_WEEK_OPTIONS.map(w=>`<button type="button" data-weeks="${w}" class="${w===actualWeeks()?"active":""}">${w}W</button>`).join("")}</div>`:""}
     <div class="sum-meta" id="sum-meta"></div>
     <div class="legend" id="sum-legend"></div>
     <div class="summary-grid" id="sg"></div>`;
@@ -8500,6 +8523,7 @@ function renderSummary(){
   document.getElementById("sum-view-patterns").onclick=()=>{summaryView="patterns";renderSummary()};
   document.getElementById("sum-planned").onclick=()=>{summaryMode="planned";renderSummary()};
   document.getElementById("sum-actual").onclick=()=>{if(!actualDisabled){summaryMode="actual";renderSummary()}};
+  el.querySelectorAll(".sum-range button").forEach(b=>{b.onclick=()=>setActualWeeks(Number(b.dataset.weeks))});
 
   if(summaryView==="patterns"){
     renderPatternCards(ids, actualDisabled);
@@ -8510,8 +8534,9 @@ function renderSummary(){
     return;
   }
 
-  // Thresholds: planned mode = weekly targets; actual mode = 4× because it's a 4-week window.
-  const scale=summaryMode==="actual"?4:1;
+  // Thresholds: planned mode = weekly targets; actual mode = weekly targets × weeks in the window
+  // (capped at how far back your history goes — see actualThresholdWeeks).
+  const scale=summaryMode==="actual"?actualThresholdWeeks():1;
   // Thresholds based on Pak's minimum-effective-dose research:
   //   <6 sets/wk = below MED (red), 6-9 = MED range (yellow),
   //   10-14 = solid (grey/neutral), >=15 = high volume (green).
@@ -8586,17 +8611,18 @@ function renderSummary(){
     // Actual mode
     const actual=calcActualVolume();
     const setsByMuscle=actual.totals;
-    const window=`last ${ACTUAL_WINDOW_DAYS} days`;
+    const window=actualWindowLabel();
     const range=(actual.firstDate&&actual.lastDate)
       ? `${localDayKey(actual.firstDate)} → ${localDayKey(actual.lastDate)}`
       : "no sets in window";
     const sourceLabel=actual.source==="sessions"?"native sessions":"Flexify history";
-    meta.textContent=`Actual volume from ${sourceLabel} — ${actual.sessionsCounted} set${actual.sessionsCounted===1?"":"s"}, ${range}`;
+    const short=scale<actualWeeks()?` · your history covers ${scale} week${scale===1?"":"s"}, so targets are ×${scale}`:` · targets ×${scale}`;
+    meta.textContent=`Actual volume, ${window}, from ${sourceLabel} — ${actual.sessionsCounted} set${actual.sessionsCounted===1?"":"s"}, ${range}${short}`;
 
     if(actual.sessionsCounted===0){
       sg.innerHTML=`<div class="empty-state">
         <div class="empty-state-icon"><i class="ti ti-calendar-off"></i></div>
-        <div class="empty-state-title">No sets in the last 4 weeks</div>
+        <div class="empty-state-title">No sets in the ${actualWindowLabel()}</div>
         <div class="empty-state-text">${actual.source==="sessions"?"Log a workout to populate this view.":"Re-import your Flexify history to refresh."}</div>
       </div>`;
       return;
@@ -8604,7 +8630,7 @@ function renderSummary(){
 
     const byMuscleExercise={};
     ALL_MUS.forEach(m=>byMuscleExercise[m]={});
-    const cutoff=new Date(Date.now()-ACTUAL_WINDOW_DAYS*24*60*60*1000);
+    const cutoff=new Date(Date.now()-actualWindowDays()*24*60*60*1000);
     if(actual.source==="sessions"){
       sessions.forEach(s=>{
         if(s.status==="in_progress")return;
@@ -8639,7 +8665,9 @@ function renderSummary(){
         const card=document.createElement("div");card.className="m-card "+cls+(openCards.has(m)?" open":"");card.dataset.muscle=m;
         const nameRow=document.createElement("div");nameRow.className="m-name";nameRow.innerHTML=`<span>${m}</span><span class="chevron">▾</span>`;
         const valsRow=document.createElement("div");valsRow.className="m-vals";
-        valsRow.innerHTML=`<span class="m-total">${fmt(tot)}</span><span class="m-days">${window}</span>`;
+        // Per-week average beside the total, so any range reads against weekly targets
+        const perWk=tot/scale;
+        valsRow.innerHTML=`<span class="m-total">${fmt(tot)}${scale>1?`<span class="m-wk">${fmtNum(Math.round(perWk*10)/10)}/wk</span>`:""}</span>`;
         const detail=document.createElement("div");detail.className="m-detail";
         const exList=Object.entries(byMuscleExercise[m]).sort((a,b)=>b[1].count-a[1].count);
         if(exList.length){
